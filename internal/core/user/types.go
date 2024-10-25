@@ -9,9 +9,9 @@ func Roles(rolesJSON []string) []Role {
 }
 
 type CreateProfileParams struct {
-	Name     string `json:"name" validate:"required"`
-	LastName string `json:"lastName" validate:"required"`
-	Phone    string `json:"phone" validate:"required,phone"`
+	Name     string `json:"name" validate:"required" example:"John"`
+	LastName string `json:"lastName" validate:"required" example:"Doe"`
+	Phone    string `json:"phone" validate:"required,phone" example:"13997590579"`
 }
 
 func (d CreateProfileParams) ToEntity() Profile {
@@ -23,8 +23,8 @@ func (d CreateProfileParams) ToEntity() Profile {
 }
 
 type CreateParams struct {
-	Email    string              `json:"email" validate:"required,email"`
-	Password string              `json:"password" validate:"required"`
+	Email    string              `json:"email" validate:"required,email" example:"johndoe@example.com"`
+	Password string              `json:"password" validate:"required" example:"*********"`
 	Profile  CreateProfileParams `json:"profile" validate:"required"`
 }
 
@@ -37,13 +37,13 @@ func (d CreateParams) ToEntity() User {
 }
 
 type UpdateProfileParams struct {
-	Name     string `json:"name" validate:"required"`
-	LastName string `json:"lastName" validate:"required"`
-	Phone    string `json:"phone" validate:"required"`
+	Name     string `json:"name" validate:"required" example:"John"`
+	LastName string `json:"lastName" validate:"required" example:"Doe"`
+	Phone    string `json:"phone" validate:"required" example:"13997590579"`
 }
 
 type AddRolesParams struct {
-	Roles []Role `json:"roles" validate:"required,role"`
+	Roles []Role `json:"roles" validate:"required,role" enums:"consumer, delivery_man, owner, employee"`
 }
 
 func (d UpdateProfileParams) ToEntity() User {
@@ -57,11 +57,11 @@ func (d UpdateProfileParams) ToEntity() User {
 }
 
 type LoginParams struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	Email    string `json:"email" validate:"required,email" example:"johndoe@example.com"`
+	Password string `json:"password" validate:"required" example:"*********"`
 }
 
 type UpdatePasswordParams struct {
-	Password    string `json:"password" validate:"required"`
-	NewPassword string `json:"newPassword" validate:"required"`
+	Password    string `json:"password" validate:"required" example:"********"`
+	NewPassword string `json:"newPassword" validate:"required" example:"********"`
 }

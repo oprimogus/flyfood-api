@@ -12,6 +12,6 @@ func NewUseCaseGetByFilter(repository Repository) *useCaseGetByFilter {
 	return &useCaseGetByFilter{repository: repository}
 }
 
-func (u *useCaseGetByFilter) Execute(ctx context.Context, filter GetItemFilter) (*[]GetItemFilter, error) {
+func (u *useCaseGetByFilter) Execute(ctx context.Context, filter GetItemFilterOutput) (*[]GetItemFilterOutput, error) {
 	return u.repository.GetItemsByFilter(ctx, filter)
 }

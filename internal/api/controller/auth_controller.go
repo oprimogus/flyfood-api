@@ -27,15 +27,15 @@ func NewAuthController(validator *validatorutils.Validator, authRepository authe
 // SignIn godoc
 //
 //	@Summary		Sign-In with email and password
-//	@Description	Authenticate a user using email and password and issue a JWT on successful login.
+//	@Description	Authenticate a user using their email and password. If successful, a JWT is returned which can be used for subsequent authenticated requests.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		authentication.SignInParams	false	"SignInParams"
-//	@Success		200		{object}	authentication.JWT
-//	@Failure		400		{object}	xerrors.ErrorResponse
-//	@Failure		500		{object}	xerrors.ErrorResponse
-//	@Failure		502		{object}	xerrors.ErrorResponse
+//	@Param			request	body		authentication.SignInParams	false	"Request body containing email and password."
+//	@Success		200		{object}	authentication.JWT		"Returns the generated JWT upon successful authentication."
+//	@Failure		400		{object}	xerrors.ErrorResponse	"Bad request due to validation errors or malformed input."
+//	@Failure		500		{object}	xerrors.ErrorResponse	"Internal server error, something went wrong while processing the request."
+//	@Failure		502		{object}	xerrors.ErrorResponse	"Bad gateway, likely due to an external service failure."
 //	@Router			/v1/auth/sign-in [post]
 func (c *AuthController) SignIn(ctx *gin.Context) {
 	var params authentication.SignInParams
@@ -64,16 +64,16 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 
 // RefreshUserToken godoc
 //
-//	@Summary		Refresh token when access token expires
-//	@Description	Refresh token when access token expires
+//	@Summary		Refresh JWT using a refresh token
+//	@Description	Refresh an expired access token by providing a valid refresh token. Returns a new JWT if the refresh is successful.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		authentication.RefreshParams	true	"RefreshParams"
-//	@Success		200		{object}	authentication.JWT
-//	@Failure		400		{object}	xerrors.ErrorResponse
-//	@Failure		500		{object}	xerrors.ErrorResponse
-//	@Failure		502		{object}	xerrors.ErrorResponse
+//	@Param			request	body		authentication.RefreshParams	true	"Request body containing the refresh token."
+//	@Success		200		{object}	authentication.JWT		"Returns a new JWT upon successful token refresh."
+//	@Failure		400		{object}	xerrors.ErrorResponse	"Bad request due to validation errors or malformed input."
+//	@Failure		500		{object}	xerrors.ErrorResponse	"Internal server error, something went wrong while processing the request."
+//	@Failure		502		{object}	xerrors.ErrorResponse	"Bad gateway, likely due to an external service failure."
 //	@Router			/v1/auth/refresh [post]
 func (c *AuthController) RefreshUserToken(ctx *gin.Context) {
 	var params authentication.RefreshParams

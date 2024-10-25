@@ -8,11 +8,11 @@ import (
 )
 
 type CreateParams struct {
-	CpfCnpj string          `json:"cpfCnpj" validate:"required,cpfCnpj"`
-	Name    string          `json:"name" validate:"required,lte=25"`
-	Phone   string          `json:"phone" validate:"required,phone"`
+	CpfCnpj string          `json:"cpfCnpj" validate:"required,cpfCnpj" example:"83193927805"`
+	Name    string          `json:"name" validate:"required,lte=25" example:"John"`
+	Phone   string          `json:"phone" validate:"required,phone" example:"13997590579"`
 	Address address.Address `json:"address" validate:"required"`
-	Type    ShopType        `json:"type" validate:"required,shopType"`
+	Type    ShopType        `json:"type" validate:"required,shopType" enums:"restaurant, pharmacy, tobbaco, market, convenience, pub"`
 }
 
 type CreatedStore struct {
@@ -24,8 +24,8 @@ type UpdateParams struct {
 	Name               string          `json:"name" validate:"required,lte=25"`
 	Phone              string          `json:"phone" validate:"required,phone"`
 	Address            address.Address `json:"address" validate:"required"`
-	Type               ShopType        `json:"type" validate:"required,shopType"`
-	PaymentMethodEnums []PaymentMethod `json:"paymentMethod" validate:"dive"`
+	Type               ShopType        `json:"type" validate:"required,shopType" enums:"restaurant, pharmacy, tobbaco, market, convenience, pub"`
+	PaymentMethodEnums []PaymentMethod `json:"paymentMethod" validate:"dive" enums:"credit, debit, pix, cash"`
 }
 
 type StoreBusinessHoursParams struct {
@@ -76,9 +76,9 @@ type GetStoreByIdOutput struct {
 	Phone              string                `json:"phone"`
 	Score              int                   `json:"score"`
 	Address            AddressOutput         `json:"address"`
-	Type               ShopType              `json:"type"`
+	Type               ShopType              `json:"type" enums:"restaurant, pharmacy, tobbaco, market, convenience, pub"`
 	BusinessHours      []BusinessHoursParams `json:"businessHours"`
-	PaymentMethodEnums []PaymentMethod       `json:"paymentMethod"`
+	PaymentMethodEnums []PaymentMethod       `json:"paymentMethod" enums:"credit, debit, pix, cash"`
 }
 
 type GetStoreByFilterOutput struct {

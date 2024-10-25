@@ -26,7 +26,7 @@ const docTemplate = `{
     "paths": {
         "/v1/auth/refresh": {
             "post": {
-                "description": "Refresh token when access token expires",
+                "description": "Refresh an expired access token by providing a valid refresh token. Returns a new JWT if the refresh is successful.",
                 "consumes": [
                     "application/json"
                 ],
@@ -36,10 +36,10 @@ const docTemplate = `{
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Refresh token when access token expires",
+                "summary": "Refresh JWT using a refresh token",
                 "parameters": [
                     {
-                        "description": "RefreshParams",
+                        "description": "Request body containing the refresh token.",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -50,25 +50,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Returns a new JWT upon successful token refresh.",
                         "schema": {
                             "$ref": "#/definitions/authentication.JWT"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request due to validation errors or malformed input.",
                         "schema": {
                             "$ref": "#/definitions/xerrors.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error, something went wrong while processing the request.",
                         "schema": {
                             "$ref": "#/definitions/xerrors.ErrorResponse"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway, likely due to an external service failure.",
                         "schema": {
                             "$ref": "#/definitions/xerrors.ErrorResponse"
                         }
@@ -78,7 +78,7 @@ const docTemplate = `{
         },
         "/v1/auth/sign-in": {
             "post": {
-                "description": "Authenticate a user using email and password and issue a JWT on successful login.",
+                "description": "Authenticate a user using their email and password. If successful, a JWT is returned which can be used for subsequent authenticated requests.",
                 "consumes": [
                     "application/json"
                 ],
@@ -91,7 +91,7 @@ const docTemplate = `{
                 "summary": "Sign-In with email and password",
                 "parameters": [
                     {
-                        "description": "SignInParams",
+                        "description": "Request body containing email and password.",
                         "name": "request",
                         "in": "body",
                         "schema": {
@@ -101,25 +101,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Returns the generated JWT upon successful authentication.",
                         "schema": {
                             "$ref": "#/definitions/authentication.JWT"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request due to validation errors or malformed input.",
                         "schema": {
                             "$ref": "#/definitions/xerrors.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error, something went wrong while processing the request.",
                         "schema": {
                             "$ref": "#/definitions/xerrors.ErrorResponse"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway, likely due to an external service failure.",
                         "schema": {
                             "$ref": "#/definitions/xerrors.ErrorResponse"
                         }
@@ -177,7 +177,7 @@ const docTemplate = `{
         },
         "/v1/store": {
             "get": {
-                "description": "Any user can view filtered stores.",
+                "description": "Fetches stores based on a set of filters such as range, score, name, city, or type.",
                 "consumes": [
                     "application/json"
                 ],
@@ -263,7 +263,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Owner can update your stores.",
+                "description": "Allows an owner to update the details of their store.",
                 "consumes": [
                     "application/json"
                 ],
@@ -273,10 +273,10 @@ const docTemplate = `{
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update your stores.",
+                "summary": "Owner can update stores.",
                 "parameters": [
                     {
-                        "description": "Params to update a store",
+                        "description": "Parameters for updating a store",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -328,7 +328,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Owner user can create store",
+                "description": "Allows an owner to create a new store.",
                 "consumes": [
                     "application/json"
                 ],
@@ -341,7 +341,7 @@ const docTemplate = `{
                 "summary": "Owner can create stores.",
                 "parameters": [
                     {
-                        "description": "Params to create a store",
+                        "description": "Parameters for creating a store",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -398,7 +398,7 @@ const docTemplate = `{
         },
         "/v1/store/business-hours": {
             "put": {
-                "description": "Owner can update business hours of store.",
+                "description": "Allows an owner to update the business hours of their store.",
                 "consumes": [
                     "application/json"
                 ],
@@ -408,10 +408,10 @@ const docTemplate = `{
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update business hours of store.",
+                "summary": "Owner can update business hours.",
                 "parameters": [
                     {
-                        "description": "Params to update business hours of store",
+                        "description": "Parameters for updating business hours",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -463,7 +463,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Owner can delete business hours of store.",
+                "description": "Allows an owner to delete business hours of their store.",
                 "consumes": [
                     "application/json"
                 ],
@@ -473,10 +473,10 @@ const docTemplate = `{
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can delete business hours of store.",
+                "summary": "Owner can delete business hours.",
                 "parameters": [
                     {
-                        "description": "Params to delete business hours of store",
+                        "description": "Parameters for deleting business hours",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -650,7 +650,7 @@ const docTemplate = `{
         },
         "/v1/store/{id}": {
             "get": {
-                "description": "Any user can view a store.",
+                "description": "Fetches details of a store based on its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -700,7 +700,7 @@ const docTemplate = `{
         },
         "/v1/store/{id}/header-image": {
             "post": {
-                "description": "Owner can update header image of store.",
+                "description": "Allows an owner to update the header image of their store.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -710,7 +710,7 @@ const docTemplate = `{
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update header image of store.",
+                "summary": "Owner can update store header image.",
                 "parameters": [
                     {
                         "type": "string",
@@ -775,7 +775,7 @@ const docTemplate = `{
         },
         "/v1/store/{id}/profile-image": {
             "post": {
-                "description": "Owner can update profile image of store.",
+                "description": "Allows an owner to update the profile image of their store.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -785,7 +785,7 @@ const docTemplate = `{
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update profile image of store.",
+                "summary": "Owner can update store profile image.",
                 "parameters": [
                     {
                         "type": "string",
@@ -1008,31 +1008,40 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "accessToken": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "eysjs9a..."
                 },
                 "expiresIn": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 300
                 },
                 "idToken": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "eysjg54g3ba..."
                 },
                 "notBeforePolicy": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 150
                 },
                 "refreshExpiresIn": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 300
                 },
                 "refreshToken": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "eynmiks.ewij..."
                 },
                 "scope": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "email client user ..."
                 },
                 "sessionState": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "634g43y3..."
                 },
                 "tokenType": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Bearer"
                 }
             }
         },
@@ -1043,7 +1052,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "refreshToken": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "eyajbhhkd....."
                 }
             }
         },
@@ -1055,10 +1065,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "johndoe@example.com"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "*********"
                 }
             }
         },
@@ -1082,7 +1094,8 @@ const docTemplate = `{
             "properties": {
                 "description": {
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "example": "The best burguer!"
                 },
                 "details": {
                     "type": "object",
@@ -1090,17 +1103,28 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 25
+                    "maxLength": 25,
+                    "example": "Hamburguer"
                 },
                 "price": {
                     "type": "integer",
-                    "minimum": 0
+                    "minimum": 0,
+                    "example": 2990
                 },
                 "storeID": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "3279gbf23gb-fb23-6f239"
                 },
                 "type": {
-                    "$ref": "#/definitions/item.ItemType"
+                    "enum": [
+                        "FOOD",
+                        " WATERGALLON"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/item.ItemType"
+                        }
+                    ]
                 }
             }
         },
@@ -1127,39 +1151,55 @@ const docTemplate = `{
             ],
             "properties": {
                 "active": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
                 },
                 "description": {
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "example": "Com blend de 150g e molho especial."
                 },
                 "details": {
                     "type": "object",
                     "additionalProperties": true
                 },
                 "discountActive": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
                 },
                 "discountPrice": {
                     "type": "integer",
-                    "minimum": 0
+                    "minimum": 0,
+                    "example": 2499
                 },
                 "image": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://cardapiogo.com.br/fgbjkgr7erg793bj3lk"
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 25
+                    "maxLength": 25,
+                    "example": "Hambúrguer Artesanal"
                 },
                 "price": {
                     "type": "integer",
-                    "minimum": 0
+                    "minimum": 0,
+                    "example": 2990
                 },
                 "score": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 475
                 },
                 "type": {
-                    "$ref": "#/definitions/item.ItemType"
+                    "enum": [
+                        "FOOD",
+                        " WATERGALLON"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/item.ItemType"
+                        }
+                    ]
                 }
             }
         },
@@ -1231,17 +1271,32 @@ const docTemplate = `{
                     "$ref": "#/definitions/address.Address"
                 },
                 "cpfCnpj": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "83193927805"
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 25
+                    "maxLength": 25,
+                    "example": "John"
                 },
                 "phone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "13997590579"
                 },
                 "type": {
-                    "$ref": "#/definitions/store.ShopType"
+                    "enum": [
+                        "restaurant",
+                        " pharmacy",
+                        " tobbaco",
+                        " market",
+                        " convenience",
+                        " pub"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.ShopType"
+                        }
+                    ]
                 }
             }
         },
@@ -1277,6 +1332,12 @@ const docTemplate = `{
                 "paymentMethod": {
                     "type": "array",
                     "items": {
+                        "enum": [
+                            "credit",
+                            " debit",
+                            " pix",
+                            " cash"
+                        ],
                         "$ref": "#/definitions/store.PaymentMethod"
                     }
                 },
@@ -1290,7 +1351,19 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "type": {
-                    "$ref": "#/definitions/store.ShopType"
+                    "enum": [
+                        "restaurant",
+                        " pharmacy",
+                        " tobbaco",
+                        " market",
+                        " convenience",
+                        " pub"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.ShopType"
+                        }
+                    ]
                 }
             }
         },
@@ -1372,6 +1445,12 @@ const docTemplate = `{
                 "paymentMethod": {
                     "type": "array",
                     "items": {
+                        "enum": [
+                            "credit",
+                            " debit",
+                            " pix",
+                            " cash"
+                        ],
                         "$ref": "#/definitions/store.PaymentMethod"
                     }
                 },
@@ -1379,7 +1458,19 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/store.ShopType"
+                    "enum": [
+                        "restaurant",
+                        " pharmacy",
+                        " tobbaco",
+                        " market",
+                        " convenience",
+                        " pub"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.ShopType"
+                        }
+                    ]
                 }
             }
         },
@@ -1392,6 +1483,12 @@ const docTemplate = `{
                 "roles": {
                     "type": "array",
                     "items": {
+                        "enum": [
+                            "consumer",
+                            " delivery_man",
+                            " owner",
+                            " employee"
+                        ],
                         "$ref": "#/definitions/user.Role"
                     }
                 }
@@ -1406,10 +1503,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "johndoe@example.com"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "*********"
                 },
                 "profile": {
                     "$ref": "#/definitions/user.CreateProfileParams"
@@ -1425,13 +1524,16 @@ const docTemplate = `{
             ],
             "properties": {
                 "lastName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Doe"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John"
                 },
                 "phone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "13997590579"
                 }
             }
         },
@@ -1461,13 +1563,16 @@ const docTemplate = `{
             ],
             "properties": {
                 "lastName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Doe"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John"
                 },
                 "phone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "13997590579"
                 }
             }
         },

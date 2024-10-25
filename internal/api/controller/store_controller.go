@@ -28,7 +28,7 @@ func NewStoreController(validator *validatorutils.Validator, repository store.Re
 // GetStoreByID godoc
 //
 //	@Summary		Any user can view a store.
-//	@Description	Any user can view a store.
+//	@Description	Fetches details of a store based on its ID.
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
@@ -53,7 +53,7 @@ func (c *StoreController) GetStoreByID(ctx *gin.Context) {
 // GetStoreByFilter godoc
 //
 //	@Summary		Any user can view filtered stores.
-//	@Description	Any user can view filtered stores.
+//	@Description	Fetches stores based on a set of filters such as range, score, name, city, or type.
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
@@ -118,11 +118,11 @@ func (c *StoreController) GetStoreByFilter(ctx *gin.Context) {
 // Create godoc
 //
 //	@Summary		Owner can create stores.
-//	@Description	Owner user can create store
+//	@Description	Allows an owner to create a new store.
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
-//	@Param			Params	body	store.CreateParams	true	"Params to create a store"
+//	@Param			Params	body	store.CreateParams	true	"Parameters for creating a store"
 //	@Success		201 {object}    store.CreatedStore
 //	@Failure		400	{object}	xerrors.ErrorResponse
 //	@Failure		401	{object}	xerrors.ErrorResponse
@@ -158,12 +158,12 @@ func (c *StoreController) Create(ctx *gin.Context) {
 
 // Update godoc
 //
-//	@Summary		Owner can update your stores.
-//	@Description	Owner can update your stores.
+//	@Summary		Owner can update stores.
+//	@Description	Allows an owner to update the details of their store.
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
-//	@Param			Params	body	store.UpdateParams	true	"Params to update a store"
+//	@Param			Params	body	store.UpdateParams	true	"Parameters for updating a store"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
 //	@Failure		401	{object}	xerrors.ErrorResponse
@@ -199,12 +199,12 @@ func (c *StoreController) Update(ctx *gin.Context) {
 
 // AddBusinessHours godoc
 //
-//	@Summary		Owner can update business hours of store.
-//	@Description	Owner can update business hours of store.
+//	@Summary		Owner can update business hours.
+//	@Description	Allows an owner to update the business hours of their store.
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
-//	@Param			Params	body	store.StoreBusinessHoursParams	true	"Params to update business hours of store"
+//	@Param			Params	body	store.StoreBusinessHoursParams	true	"Parameters for updating business hours"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
 //	@Failure		401	{object}	xerrors.ErrorResponse
@@ -240,12 +240,12 @@ func (c *StoreController) AddBusinessHours(ctx *gin.Context) {
 
 // DeleteBusinessHours godoc
 //
-//	@Summary		Owner can delete business hours of store.
-//	@Description	Owner can delete business hours of store.
+//	@Summary		Owner can delete business hours.
+//	@Description	Allows an owner to delete business hours of their store.
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
-//	@Param			Params	body	store.StoreBusinessHoursParams	true	"Params to delete business hours of store"
+//	@Param			Params	body	store.StoreBusinessHoursParams	true	"Parameters for deleting business hours"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
 //	@Failure		401	{object}	xerrors.ErrorResponse
@@ -281,8 +281,8 @@ func (c *StoreController) DeleteBusinessHours(ctx *gin.Context) {
 
 // SetProfileImage godoc
 //
-//	@Summary		Owner can update profile image of store.
-//	@Description	Owner can update profile image of store.
+//	@Summary		Owner can update store profile image.
+//	@Description	Allows an owner to update the profile image of their store.
 //	@Tags			Store
 //	@Accept			multipart/form-data
 //	@Produce		json
@@ -350,8 +350,8 @@ func (c *StoreController) SetProfileImage(ctx *gin.Context) {
 
 // SetHeaderImage godoc
 //
-//	@Summary		Owner can update header image of store.
-//	@Description	Owner can update header image of store.
+//	@Summary		Owner can update store header image.
+//	@Description	Allows an owner to update the header image of their store.
 //	@Tags			Store
 //	@Accept			multipart/form-data
 //	@Produce		json

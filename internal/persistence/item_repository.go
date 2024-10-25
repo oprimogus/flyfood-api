@@ -77,7 +77,7 @@ func (i *itemRepository) GetItemByID(ctx context.Context, id int) (item.GetItemB
 	}, nil
 }
 
-func (i *itemRepository) GetItemsByFilter(ctx context.Context, filter item.GetItemFilter) (*[]item.GetItemFilter, error) {
+func (i *itemRepository) GetItemsByFilter(ctx context.Context, filter item.GetItemFilterOutput) (*[]item.GetItemFilterOutput, error) {
 	return nil, nil
 }
 

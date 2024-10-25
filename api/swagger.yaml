@@ -41,27 +41,37 @@ definitions:
   authentication.JWT:
     properties:
       accessToken:
+        example: eysjs9a...
         type: string
       expiresIn:
+        example: 300
         type: integer
       idToken:
+        example: eysjg54g3ba...
         type: string
       notBeforePolicy:
+        example: 150
         type: integer
       refreshExpiresIn:
+        example: 300
         type: integer
       refreshToken:
+        example: eynmiks.ewij...
         type: string
       scope:
+        example: email client user ...
         type: string
       sessionState:
+        example: 634g43y3...
         type: string
       tokenType:
+        example: Bearer
         type: string
     type: object
   authentication.RefreshParams:
     properties:
       refreshToken:
+        example: eyajbhhkd.....
         type: string
     required:
     - refreshToken
@@ -69,8 +79,10 @@ definitions:
   authentication.SignInParams:
     properties:
       email:
+        example: johndoe@example.com
         type: string
       password:
+        example: '*********'
         type: string
     required:
     - email
@@ -84,21 +96,29 @@ definitions:
   item.CreateItemInput:
     properties:
       description:
+        example: The best burguer!
         maxLength: 50
         type: string
       details:
         additionalProperties: true
         type: object
       name:
+        example: Hamburguer
         maxLength: 25
         type: string
       price:
+        example: 2990
         minimum: 0
         type: integer
       storeID:
+        example: 3279gbf23gb-fb23-6f239
         type: string
       type:
-        $ref: '#/definitions/item.ItemType'
+        allOf:
+        - $ref: '#/definitions/item.ItemType'
+        enum:
+        - FOOD
+        - ' WATERGALLON'
     required:
     - description
     - name
@@ -114,30 +134,42 @@ definitions:
   item.GetItemByIDOutput:
     properties:
       active:
+        example: true
         type: boolean
       description:
+        example: Com blend de 150g e molho especial.
         maxLength: 50
         type: string
       details:
         additionalProperties: true
         type: object
       discountActive:
+        example: true
         type: boolean
       discountPrice:
+        example: 2499
         minimum: 0
         type: integer
       image:
+        example: https://cardapiogo.com.br/fgbjkgr7erg793bj3lk
         type: string
       name:
+        example: Hambúrguer Artesanal
         maxLength: 25
         type: string
       price:
+        example: 2990
         minimum: 0
         type: integer
       score:
+        example: 475
         type: integer
       type:
-        $ref: '#/definitions/item.ItemType'
+        allOf:
+        - $ref: '#/definitions/item.ItemType'
+        enum:
+        - FOOD
+        - ' WATERGALLON'
     required:
     - active
     - description
@@ -191,14 +223,25 @@ definitions:
       address:
         $ref: '#/definitions/address.Address'
       cpfCnpj:
+        example: "83193927805"
         type: string
       name:
+        example: John
         maxLength: 25
         type: string
       phone:
+        example: "13997590579"
         type: string
       type:
-        $ref: '#/definitions/store.ShopType'
+        allOf:
+        - $ref: '#/definitions/store.ShopType'
+        enum:
+        - restaurant
+        - ' pharmacy'
+        - ' tobbaco'
+        - ' market'
+        - ' convenience'
+        - ' pub'
     required:
     - address
     - cpfCnpj
@@ -228,6 +271,11 @@ definitions:
       paymentMethod:
         items:
           $ref: '#/definitions/store.PaymentMethod'
+          enum:
+          - credit
+          - ' debit'
+          - ' pix'
+          - ' cash'
         type: array
       phone:
         type: string
@@ -236,7 +284,15 @@ definitions:
       score:
         type: integer
       type:
-        $ref: '#/definitions/store.ShopType'
+        allOf:
+        - $ref: '#/definitions/store.ShopType'
+        enum:
+        - restaurant
+        - ' pharmacy'
+        - ' tobbaco'
+        - ' market'
+        - ' convenience'
+        - ' pub'
     type: object
   store.PaymentMethod:
     enum:
@@ -292,11 +348,24 @@ definitions:
       paymentMethod:
         items:
           $ref: '#/definitions/store.PaymentMethod'
+          enum:
+          - credit
+          - ' debit'
+          - ' pix'
+          - ' cash'
         type: array
       phone:
         type: string
       type:
-        $ref: '#/definitions/store.ShopType'
+        allOf:
+        - $ref: '#/definitions/store.ShopType'
+        enum:
+        - restaurant
+        - ' pharmacy'
+        - ' tobbaco'
+        - ' market'
+        - ' convenience'
+        - ' pub'
     required:
     - address
     - id
@@ -309,6 +378,11 @@ definitions:
       roles:
         items:
           $ref: '#/definitions/user.Role'
+          enum:
+          - consumer
+          - ' delivery_man'
+          - ' owner'
+          - ' employee'
         type: array
     required:
     - roles
@@ -316,8 +390,10 @@ definitions:
   user.CreateParams:
     properties:
       email:
+        example: johndoe@example.com
         type: string
       password:
+        example: '*********'
         type: string
       profile:
         $ref: '#/definitions/user.CreateProfileParams'
@@ -329,10 +405,13 @@ definitions:
   user.CreateProfileParams:
     properties:
       lastName:
+        example: Doe
         type: string
       name:
+        example: John
         type: string
       phone:
+        example: "13997590579"
         type: string
     required:
     - lastName
@@ -356,10 +435,13 @@ definitions:
   user.UpdateProfileParams:
     properties:
       lastName:
+        example: Doe
         type: string
       name:
+        example: John
         type: string
       phone:
+        example: "13997590579"
         type: string
     required:
     - lastName
@@ -388,9 +470,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: Refresh token when access token expires
+      description: Refresh an expired access token by providing a valid refresh token.
+        Returns a new JWT if the refresh is successful.
       parameters:
-      - description: RefreshParams
+      - description: Request body containing the refresh token.
         in: body
         name: request
         required: true
@@ -400,32 +483,33 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Returns a new JWT upon successful token refresh.
           schema:
             $ref: '#/definitions/authentication.JWT'
         "400":
-          description: Bad Request
+          description: Bad request due to validation errors or malformed input.
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error, something went wrong while processing
+            the request.
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
         "502":
-          description: Bad Gateway
+          description: Bad gateway, likely due to an external service failure.
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Refresh token when access token expires
+      summary: Refresh JWT using a refresh token
       tags:
       - Authentication
   /v1/auth/sign-in:
     post:
       consumes:
       - application/json
-      description: Authenticate a user using email and password and issue a JWT on
-        successful login.
+      description: Authenticate a user using their email and password. If successful,
+        a JWT is returned which can be used for subsequent authenticated requests.
       parameters:
-      - description: SignInParams
+      - description: Request body containing email and password.
         in: body
         name: request
         schema:
@@ -434,19 +518,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Returns the generated JWT upon successful authentication.
           schema:
             $ref: '#/definitions/authentication.JWT'
         "400":
-          description: Bad Request
+          description: Bad request due to validation errors or malformed input.
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error, something went wrong while processing
+            the request.
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
         "502":
-          description: Bad Gateway
+          description: Bad gateway, likely due to an external service failure.
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
       summary: Sign-In with email and password
@@ -487,7 +572,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Any user can view filtered stores.
+      description: Fetches stores based on a set of filters such as range, score,
+        name, city, or type.
       parameters:
       - description: Specify max range
         in: query
@@ -544,9 +630,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Owner user can create store
+      description: Allows an owner to create a new store.
       parameters:
-      - description: Params to create a store
+      - description: Parameters for creating a store
         in: body
         name: Params
         required: true
@@ -589,9 +675,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Owner can update your stores.
+      description: Allows an owner to update the details of their store.
       parameters:
-      - description: Params to update a store
+      - description: Parameters for updating a store
         in: body
         name: Params
         required: true
@@ -626,14 +712,14 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update your stores.
+      summary: Owner can update stores.
       tags:
       - Store
   /v1/store/{id}:
     get:
       consumes:
       - application/json
-      description: Any user can view a store.
+      description: Fetches details of a store based on its ID.
       parameters:
       - description: Store ID
         in: path
@@ -666,7 +752,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Owner can update header image of store.
+      description: Allows an owner to update the header image of their store.
       parameters:
       - description: Store ID
         in: path
@@ -709,14 +795,14 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update header image of store.
+      summary: Owner can update store header image.
       tags:
       - Store
   /v1/store/{id}/profile-image:
     post:
       consumes:
       - multipart/form-data
-      description: Owner can update profile image of store.
+      description: Allows an owner to update the profile image of their store.
       parameters:
       - description: Store ID
         in: path
@@ -759,16 +845,16 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update profile image of store.
+      summary: Owner can update store profile image.
       tags:
       - Store
   /v1/store/business-hours:
     delete:
       consumes:
       - application/json
-      description: Owner can delete business hours of store.
+      description: Allows an owner to delete business hours of their store.
       parameters:
-      - description: Params to delete business hours of store
+      - description: Parameters for deleting business hours
         in: body
         name: Params
         required: true
@@ -803,15 +889,15 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can delete business hours of store.
+      summary: Owner can delete business hours.
       tags:
       - Store
     put:
       consumes:
       - application/json
-      description: Owner can update business hours of store.
+      description: Allows an owner to update the business hours of their store.
       parameters:
-      - description: Params to update business hours of store
+      - description: Parameters for updating business hours
         in: body
         name: Params
         required: true
@@ -846,7 +932,7 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update business hours of store.
+      summary: Owner can update business hours.
       tags:
       - Store
   /v1/store/item:
