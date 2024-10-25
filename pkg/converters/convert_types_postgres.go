@@ -27,7 +27,7 @@ func ConvertUUIDToString(uuidVal pgtype.UUID) (*string, error) {
 func ConvertStringToUUID(str string) (pgtype.UUID, error) {
 	u, err := uuid.Parse(str)
 	if err != nil {
-		return pgtype.UUID{}, err
+		return pgtype.UUID{}, fmt.Errorf("fail on convert string to uuid: %w", err)
 	}
 
 	return pgtype.UUID{

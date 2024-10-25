@@ -11,6 +11,48 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type ItemType string
+
+const (
+	ItemTypeFOOD        ItemType = "FOOD"
+	ItemTypeWATERGALLON ItemType = "WATERGALLON"
+)
+
+func (e *ItemType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ItemType(s)
+	case string:
+		*e = ItemType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ItemType: %T", src)
+	}
+	return nil
+}
+
+type NullItemType struct {
+	ItemType ItemType `json:"item_type"`
+	Valid    bool     `json:"valid"` // Valid is true if ItemType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullItemType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ItemType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ItemType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullItemType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ItemType), nil
+}
+
 type PaymentMethodEnum string
 
 const (
@@ -123,6 +165,24 @@ type BusinessHour struct {
 	OpeningTime pgtype.Time `db:"opening_time" json:"opening_time"`
 	ClosingTime pgtype.Time `db:"closing_time" json:"closing_time"`
 	Timezone    string      `db:"timezone" json:"timezone"`
+}
+
+type Item struct {
+	ID             int64            `db:"id" json:"id"`
+	StoreID        pgtype.UUID      `db:"store_id" json:"store_id"`
+	Type           ItemType         `db:"type" json:"type"`
+	Name           string           `db:"name" json:"name"`
+	Description    string           `db:"description" json:"description"`
+	Score          int32            `db:"score" json:"score"`
+	Active         bool             `db:"active" json:"active"`
+	DiscountActive bool             `db:"discount_active" json:"discount_active"`
+	Image          pgtype.Text      `db:"image" json:"image"`
+	Detail         []byte           `db:"detail" json:"detail"`
+	Price          int32            `db:"price" json:"price"`
+	DiscountPrice  int32            `db:"discount_price" json:"discount_price"`
+	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
+	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	DeletedAt      pgtype.Timestamp `db:"deleted_at" json:"deleted_at"`
 }
 
 type PaymentMethod struct {

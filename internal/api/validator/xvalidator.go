@@ -24,6 +24,7 @@ var personalizedValidations = map[string]func(fl validator.FieldLevel) bool{
 	"phone":         IsValidPhone,
 	"businessHour":  IsValidBusinessHour,
 	"weekDay":       isValidWeekDay,
+	"itemType":      IsValidItemType,
 }
 
 type Validator struct {

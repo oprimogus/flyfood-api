@@ -6,7 +6,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/oprimogus/cardapiogo/internal/config"
 )
@@ -18,6 +17,7 @@ const (
 	NULL_VIOLATION        = "Null value not allowed for column."
 	VALUE_TOO_LONG        = "Input value too long for column."
 	INTERNAL_SERVER_ERROR = "Internal Server Error."
+	TOO_MANY_VALUES       = "There is more than one record"
 	INVALID_VALUES        = "Invalid values for few fields"
 	UNKNOWN_ERROR         = "Unknown error."
 )
@@ -32,10 +32,6 @@ type fieldError struct {
 func handleDatabaseErrors(err error, transactionID string) *ErrorResponse {
 	if err == nil {
 		return nil
-	}
-
-	if errors.Is(err, pgx.ErrNoRows) {
-		return New(http.StatusNotFound, NOT_FOUND_RECORD, transactionID)
 	}
 
 	var pgErr *pgconn.PgError

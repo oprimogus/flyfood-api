@@ -3,6 +3,7 @@ package persistence
 import (
 	"github.com/oprimogus/cardapiogo/internal/core"
 	"github.com/oprimogus/cardapiogo/internal/core/authentication"
+	"github.com/oprimogus/cardapiogo/internal/core/item"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 	"github.com/oprimogus/cardapiogo/internal/database/postgres"
@@ -33,4 +34,8 @@ func (d *DatabaseRepositoryFactory) NewAuthenticationRepository() authentication
 
 func (d *DatabaseRepositoryFactory) NewStoreRepository() store.Repository {
 	return NewStoreRepository(d.db, d.querier)
+}
+
+func (d *DatabaseRepositoryFactory) NewItemRepository() item.Repository {
+	return NewItemRepository(d.db, d.querier)
 }

@@ -522,6 +522,126 @@
                 }
             }
         },
+        "/v1/store/item": {
+            "post": {
+                "description": "Owner can create store items.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Owner can create store items.",
+                "parameters": [
+                    {
+                        "description": "Params to create a store item",
+                        "name": "Params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/item.CreateItemInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/item.CreatedItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/store/item/{id}": {
+            "get": {
+                "description": "Any user can view store items.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Any user can view store items.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/item.GetItemByIDOutput"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/store/{id}": {
             "get": {
                 "description": "Any user can view a store.",
@@ -943,6 +1063,110 @@
                     "type": "string"
                 }
             }
+        },
+        "item.CreateItemInput": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "price",
+                "storeID",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "details": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25
+                },
+                "price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "storeID": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/item.ItemType"
+                }
+            }
+        },
+        "item.CreatedItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "item.GetItemByIDOutput": {
+            "type": "object",
+            "required": [
+                "active",
+                "description",
+                "discountActive",
+                "discountPrice",
+                "image",
+                "name",
+                "price",
+                "score",
+                "type"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "details": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "discountActive": {
+                    "type": "boolean"
+                },
+                "discountPrice": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25
+                },
+                "price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/item.ItemType"
+                }
+            }
+        },
+        "item.ItemType": {
+            "type": "string",
+            "enum": [
+                "FOOD",
+                "WATERGALLON"
+            ],
+            "x-enum-varnames": [
+                "FoodItemType",
+                "WaterGallonItemType"
+            ]
         },
         "store.AddressOutput": {
             "type": "object",

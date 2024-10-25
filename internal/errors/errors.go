@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Nerzal/gocloak/v13"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/oprimogus/cardapiogo/internal/config"
@@ -86,6 +87,10 @@ func HandleError(err error, transactionID string) *ErrorResponse {
 
 func handleCoreError(err error, transactionID string) *ErrorResponse {
 	switch err {
+	case pgx.ErrNoRows:
+		return New(http.StatusNotFound, NOT_FOUND_RECORD, transactionID)
+	case pgx.ErrTooManyRows:
+		return New(http.StatusInternalServerError, TOO_MANY_VALUES, transactionID)
 	case user.ErrExistUserWithDocument,
 		user.ErrExistUserWithEmail,
 		user.ErrExistUserWithPhone:

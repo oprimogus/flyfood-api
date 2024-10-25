@@ -1,3 +1,7 @@
+-- Migration 000001
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Migration 000002
 CREATE TYPE "ShopType" AS ENUM (
   'restaurant',
   'pharmacy',
@@ -82,3 +86,28 @@ ALTER TABLE "store_payment_method" ADD FOREIGN KEY ("store_id") REFERENCES "stor
 
 ALTER TABLE "store_payment_method" ADD FOREIGN KEY ("payment_method_id") REFERENCES "payment_method" ("id");
 
+-- Migration 000003
+CREATE TYPE "ItemType" AS ENUM (
+  'FOOD',
+  'WATERGALLON'
+);
+
+CREATE TABLE "item" (
+  "id" bigserial UNIQUE PRIMARY KEY,
+  "store_id" uuid NOT NULL,
+  "type" "ItemType" NOT NULL,
+  "name" varchar(25) NOT NULL,
+  "description" varchar(50) NOT NULL,
+  "score" int NOT NULL,
+  "active" bool NOT NULL,
+  "discount_active" bool NOT NULL,
+  "image" varchar,
+  "detail" JSONB,
+  "price" int NOT NULL,
+  "discount_price" int NOT NULL,
+  "created_at" timestamp NOT NULL,
+  "updated_at" timestamp,
+  "deleted_at" timestamp
+);
+
+ALTER TABLE "item" ADD FOREIGN KEY ("store_id") REFERENCES "store" ("id");

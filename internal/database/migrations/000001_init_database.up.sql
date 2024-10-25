@@ -1,1 +1,2 @@
+-- Migration 000001
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

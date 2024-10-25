@@ -81,6 +81,82 @@ definitions:
       objectURL:
         type: string
     type: object
+  item.CreateItemInput:
+    properties:
+      description:
+        maxLength: 50
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      name:
+        maxLength: 25
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      storeID:
+        type: string
+      type:
+        $ref: '#/definitions/item.ItemType'
+    required:
+    - description
+    - name
+    - price
+    - storeID
+    - type
+    type: object
+  item.CreatedItem:
+    properties:
+      id:
+        type: integer
+    type: object
+  item.GetItemByIDOutput:
+    properties:
+      active:
+        type: boolean
+      description:
+        maxLength: 50
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      discountActive:
+        type: boolean
+      discountPrice:
+        minimum: 0
+        type: integer
+      image:
+        type: string
+      name:
+        maxLength: 25
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      score:
+        type: integer
+      type:
+        $ref: '#/definitions/item.ItemType'
+    required:
+    - active
+    - description
+    - discountActive
+    - discountPrice
+    - image
+    - name
+    - price
+    - score
+    - type
+    type: object
+  item.ItemType:
+    enum:
+    - FOOD
+    - WATERGALLON
+    type: string
+    x-enum-varnames:
+    - FoodItemType
+    - WaterGallonItemType
   store.AddressOutput:
     properties:
       addressLine1:
@@ -773,6 +849,85 @@ paths:
       summary: Owner can update business hours of store.
       tags:
       - Store
+  /v1/store/item:
+    post:
+      consumes:
+      - application/json
+      description: Owner can create store items.
+      parameters:
+      - description: Params to create a store item
+        in: body
+        name: Params
+        required: true
+        schema:
+          $ref: '#/definitions/item.CreateItemInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/item.CreatedItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+      summary: Owner can create store items.
+      tags:
+      - Item
+  /v1/store/item/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Any user can view store items.
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/item.GetItemByIDOutput'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/xerrors.ErrorResponse'
+      summary: Any user can view store items.
+      tags:
+      - Item
   /v1/user:
     put:
       consumes:

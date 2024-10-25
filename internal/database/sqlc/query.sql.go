@@ -11,6 +11,72 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createItem = `-- name: CreateItem :one
+INSERT INTO item(
+  store_id,
+  type,
+  name, 
+  description, 
+  score,
+  active, 
+  discount_active, 
+  price, 
+  discount_price,
+  created_at,
+  updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,
+  NOW() AT TIME ZONE 'UTC',  
+  NOW() AT TIME ZONE 'UTC')
+RETURNING ID
+`
+
+type CreateItemParams struct {
+	StoreID        pgtype.UUID `db:"store_id" json:"store_id"`
+	Type           ItemType    `db:"type" json:"type"`
+	Name           string      `db:"name" json:"name"`
+	Description    string      `db:"description" json:"description"`
+	Score          int32       `db:"score" json:"score"`
+	Active         bool        `db:"active" json:"active"`
+	DiscountActive bool        `db:"discount_active" json:"discount_active"`
+	Price          int32       `db:"price" json:"price"`
+	DiscountPrice  int32       `db:"discount_price" json:"discount_price"`
+}
+
+// CreateItem
+//
+//	INSERT INTO item(
+//	  store_id,
+//	  type,
+//	  name,
+//	  description,
+//	  score,
+//	  active,
+//	  discount_active,
+//	  price,
+//	  discount_price,
+//	  created_at,
+//	  updated_at)
+//	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,
+//	  NOW() AT TIME ZONE 'UTC',
+//	  NOW() AT TIME ZONE 'UTC')
+//	RETURNING ID
+func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createItem,
+		arg.StoreID,
+		arg.Type,
+		arg.Name,
+		arg.Description,
+		arg.Score,
+		arg.Active,
+		arg.DiscountActive,
+		arg.Price,
+		arg.DiscountPrice,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createStore = `-- name: CreateStore :exec
 INSERT INTO store (id, cpf_cnpj, owner_id, name, active, phone, score, type, address_line_1, address_line_2, neighborhood, city, state, postal_code,
   latitude, longitude, country, created_at, updated_at)
@@ -102,6 +168,201 @@ func (q *Queries) FindStoreBusinessHoursByStoreId(ctx context.Context, dollar_1 
 		return nil, err
 	}
 	return items, nil
+}
+
+const getItemByFilter = `-- name: GetItemByFilter :many
+SELECT 
+    i.id, 
+    i.store_id, 
+    i.type, 
+    i.name, 
+    i.discount_active, 
+    i.discount_price, 
+    i.price,
+    i.image,
+    CASE 
+        WHEN i.discount_active = true THEN i.discount_price
+        ELSE i.price
+    END AS final_price,
+    s.name AS store_name, 
+    s.score AS store_score, 
+    s.profile_image
+FROM item i
+INNER JOIN store s ON s.id = i.store_id
+WHERE 1 = 1
+  AND s.city = $5
+  AND i.active = true
+  AND (COALESCE(NULLIF($1, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($1, ''), i.name) || '%')
+  AND (COALESCE($2, i.score) IS NULL OR i.score >= COALESCE($2, i.score))
+  AND (COALESCE(NULLIF($3, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($3, '')::"ItemType", i.type))
+  AND (COALESCE($4, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR 
+       CASE 
+         WHEN i.discount_active = true THEN i.discount_price 
+         ELSE i.price 
+       END <= COALESCE($4, CASE 
+                             WHEN i.discount_active = true THEN i.discount_price 
+                             ELSE i.price 
+                           END))
+ORDER BY i.score DESC, s.score DESC
+`
+
+type GetItemByFilterParams struct {
+	Column1 interface{} `db:"column_1" json:"column_1"`
+	Column2 interface{} `db:"column_2" json:"column_2"`
+	Column3 interface{} `db:"column_3" json:"column_3"`
+	Column4 interface{} `db:"column_4" json:"column_4"`
+	City    string      `db:"city" json:"city"`
+}
+
+type GetItemByFilterRow struct {
+	ID             int64       `db:"id" json:"id"`
+	StoreID        pgtype.UUID `db:"store_id" json:"store_id"`
+	Type           ItemType    `db:"type" json:"type"`
+	Name           string      `db:"name" json:"name"`
+	DiscountActive bool        `db:"discount_active" json:"discount_active"`
+	DiscountPrice  int32       `db:"discount_price" json:"discount_price"`
+	Price          int32       `db:"price" json:"price"`
+	Image          pgtype.Text `db:"image" json:"image"`
+	FinalPrice     interface{} `db:"final_price" json:"final_price"`
+	StoreName      string      `db:"store_name" json:"store_name"`
+	StoreScore     int32       `db:"store_score" json:"store_score"`
+	ProfileImage   pgtype.Text `db:"profile_image" json:"profile_image"`
+}
+
+// GetItemByFilter
+//
+//	SELECT
+//	    i.id,
+//	    i.store_id,
+//	    i.type,
+//	    i.name,
+//	    i.discount_active,
+//	    i.discount_price,
+//	    i.price,
+//	    i.image,
+//	    CASE
+//	        WHEN i.discount_active = true THEN i.discount_price
+//	        ELSE i.price
+//	    END AS final_price,
+//	    s.name AS store_name,
+//	    s.score AS store_score,
+//	    s.profile_image
+//	FROM item i
+//	INNER JOIN store s ON s.id = i.store_id
+//	WHERE 1 = 1
+//	  AND s.city = $5
+//	  AND i.active = true
+//	  AND (COALESCE(NULLIF($1, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($1, ''), i.name) || '%')
+//	  AND (COALESCE($2, i.score) IS NULL OR i.score >= COALESCE($2, i.score))
+//	  AND (COALESCE(NULLIF($3, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($3, '')::"ItemType", i.type))
+//	  AND (COALESCE($4, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR
+//	       CASE
+//	         WHEN i.discount_active = true THEN i.discount_price
+//	         ELSE i.price
+//	       END <= COALESCE($4, CASE
+//	                             WHEN i.discount_active = true THEN i.discount_price
+//	                             ELSE i.price
+//	                           END))
+//	ORDER BY i.score DESC, s.score DESC
+func (q *Queries) GetItemByFilter(ctx context.Context, arg GetItemByFilterParams) ([]GetItemByFilterRow, error) {
+	rows, err := q.db.Query(ctx, getItemByFilter,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.City,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetItemByFilterRow
+	for rows.Next() {
+		var i GetItemByFilterRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StoreID,
+			&i.Type,
+			&i.Name,
+			&i.DiscountActive,
+			&i.DiscountPrice,
+			&i.Price,
+			&i.Image,
+			&i.FinalPrice,
+			&i.StoreName,
+			&i.StoreScore,
+			&i.ProfileImage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getItemByID = `-- name: GetItemByID :one
+SELECT 
+  i.name, 
+  i.type, 
+  i.description, 
+  i.score, 
+  i.image,
+  i.active, 
+  i.discount_active, 
+  i.discount_price, 
+  i.price,
+  i.detail
+FROM item i
+WHERE id = $1
+`
+
+type GetItemByIDRow struct {
+	Name           string      `db:"name" json:"name"`
+	Type           ItemType    `db:"type" json:"type"`
+	Description    string      `db:"description" json:"description"`
+	Score          int32       `db:"score" json:"score"`
+	Image          pgtype.Text `db:"image" json:"image"`
+	Active         bool        `db:"active" json:"active"`
+	DiscountActive bool        `db:"discount_active" json:"discount_active"`
+	DiscountPrice  int32       `db:"discount_price" json:"discount_price"`
+	Price          int32       `db:"price" json:"price"`
+	Detail         []byte      `db:"detail" json:"detail"`
+}
+
+// GetItemByID
+//
+//	SELECT
+//	  i.name,
+//	  i.type,
+//	  i.description,
+//	  i.score,
+//	  i.image,
+//	  i.active,
+//	  i.discount_active,
+//	  i.discount_price,
+//	  i.price,
+//	  i.detail
+//	FROM item i
+//	WHERE id = $1
+func (q *Queries) GetItemByID(ctx context.Context, id int64) (GetItemByIDRow, error) {
+	row := q.db.QueryRow(ctx, getItemByID, id)
+	var i GetItemByIDRow
+	err := row.Scan(
+		&i.Name,
+		&i.Type,
+		&i.Description,
+		&i.Score,
+		&i.Image,
+		&i.Active,
+		&i.DiscountActive,
+		&i.DiscountPrice,
+		&i.Price,
+		&i.Detail,
+	)
+	return i, err
 }
 
 const getStoreBusinessHoursByID = `-- name: GetStoreBusinessHoursByID :many

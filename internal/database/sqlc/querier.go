@@ -16,6 +16,25 @@ type Querier interface {
 	//  INSERT INTO business_hour(store_id, week_day, opening_time, closing_time, timezone)
 	//  VALUES ($1, $2, $3, $4, $5)
 	AddBusinessHours(ctx context.Context, arg []AddBusinessHoursParams) *AddBusinessHoursBatchResults
+	//CreateItem
+	//
+	//  INSERT INTO item(
+	//    store_id,
+	//    type,
+	//    name,
+	//    description,
+	//    score,
+	//    active,
+	//    discount_active,
+	//    price,
+	//    discount_price,
+	//    created_at,
+	//    updated_at)
+	//  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,
+	//    NOW() AT TIME ZONE 'UTC',
+	//    NOW() AT TIME ZONE 'UTC')
+	//  RETURNING ID
+	CreateItem(ctx context.Context, arg CreateItemParams) (int64, error)
 	//CreateStore
 	//
 	//  INSERT INTO store (id, cpf_cnpj, owner_id, name, active, phone, score, type, address_line_1, address_line_2, neighborhood, city, state, postal_code,
@@ -37,6 +56,58 @@ type Querier interface {
 	//  WHERE 1 = 1
 	//    AND bh.store_id = ANY($1::UUID[])
 	FindStoreBusinessHoursByStoreId(ctx context.Context, dollar_1 []pgtype.UUID) ([]BusinessHour, error)
+	//GetItemByFilter
+	//
+	//  SELECT
+	//      i.id,
+	//      i.store_id,
+	//      i.type,
+	//      i.name,
+	//      i.discount_active,
+	//      i.discount_price,
+	//      i.price,
+	//      i.image,
+	//      CASE
+	//          WHEN i.discount_active = true THEN i.discount_price
+	//          ELSE i.price
+	//      END AS final_price,
+	//      s.name AS store_name,
+	//      s.score AS store_score,
+	//      s.profile_image
+	//  FROM item i
+	//  INNER JOIN store s ON s.id = i.store_id
+	//  WHERE 1 = 1
+	//    AND s.city = $5
+	//    AND i.active = true
+	//    AND (COALESCE(NULLIF($1, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($1, ''), i.name) || '%')
+	//    AND (COALESCE($2, i.score) IS NULL OR i.score >= COALESCE($2, i.score))
+	//    AND (COALESCE(NULLIF($3, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($3, '')::"ItemType", i.type))
+	//    AND (COALESCE($4, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR
+	//         CASE
+	//           WHEN i.discount_active = true THEN i.discount_price
+	//           ELSE i.price
+	//         END <= COALESCE($4, CASE
+	//                               WHEN i.discount_active = true THEN i.discount_price
+	//                               ELSE i.price
+	//                             END))
+	//  ORDER BY i.score DESC, s.score DESC
+	GetItemByFilter(ctx context.Context, arg GetItemByFilterParams) ([]GetItemByFilterRow, error)
+	//GetItemByID
+	//
+	//  SELECT
+	//    i.name,
+	//    i.type,
+	//    i.description,
+	//    i.score,
+	//    i.image,
+	//    i.active,
+	//    i.discount_active,
+	//    i.discount_price,
+	//    i.price,
+	//    i.detail
+	//  FROM item i
+	//  WHERE id = $1
+	GetItemByID(ctx context.Context, id int64) (GetItemByIDRow, error)
 	//GetStoreBusinessHoursByID
 	//
 	//  SELECT week_day, timezone, opening_time, closing_time

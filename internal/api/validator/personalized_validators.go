@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/oprimogus/cardapiogo/internal/core/item"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 )
@@ -41,6 +42,11 @@ func IsValidPhone(fl validator.FieldLevel) bool {
 func IsValidShopType(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
 	return store.IsValidShopType(value)
+}
+
+func IsValidItemType(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	return item.IsValidItemType(value)
 }
 
 func IsValidPaymentMethod(fl validator.FieldLevel) bool {

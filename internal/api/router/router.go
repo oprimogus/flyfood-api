@@ -36,6 +36,7 @@ func Initialize(factory core.RepositoryFactory) {
 	routes.AuthRoutes(router, validator, factory)
 	routes.UserRoutes(router, validator, factory)
 	routes.StoreRoutes(router, validator, factory)
+	routes.ItemRoutes(router, validator, factory)
 	config := config.GetInstance().Api
 	port := config.Port()
 	if port == "" {
