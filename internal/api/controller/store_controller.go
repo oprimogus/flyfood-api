@@ -122,6 +122,9 @@ func (c *StoreController) GetStoreByFilter(ctx *gin.Context) {
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			Params	body	store.CreateParams	true	"Parameters for creating a store"
 //	@Success		201 {object}    store.CreatedStore
 //	@Failure		400	{object}	xerrors.ErrorResponse
@@ -163,6 +166,9 @@ func (c *StoreController) Create(ctx *gin.Context) {
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			Params	body	store.UpdateParams	true	"Parameters for updating a store"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
@@ -204,6 +210,9 @@ func (c *StoreController) Update(ctx *gin.Context) {
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			Params	body	store.StoreBusinessHoursParams	true	"Parameters for updating business hours"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
@@ -245,6 +254,9 @@ func (c *StoreController) AddBusinessHours(ctx *gin.Context) {
 //	@Tags			Store
 //	@Accept			json
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			Params	body	store.StoreBusinessHoursParams	true	"Parameters for deleting business hours"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
@@ -286,6 +298,9 @@ func (c *StoreController) DeleteBusinessHours(ctx *gin.Context) {
 //	@Tags			Store
 //	@Accept			multipart/form-data
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			id	path	string true	"Store ID"
 //	@Param			file	formData	file true	"jpeg/png image"
 //	@Success		200 {object} setFileOutput
@@ -355,6 +370,9 @@ func (c *StoreController) SetProfileImage(ctx *gin.Context) {
 //	@Tags			Store
 //	@Accept			multipart/form-data
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			id	path	string true	"Store ID"
 //	@Param			file	formData	file true	"jpeg/png image"
 //	@Success		200 {object} setFileOutput

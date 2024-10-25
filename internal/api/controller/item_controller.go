@@ -31,6 +31,9 @@ func NewItemController(validator *validatorutils.Validator, repository item.Repo
 //	@Tags			Item
 //	@Accept			json
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			Params	body	item.CreateItemInput	true	"Params to create a store item"
 //	@Success		201 {object}    item.CreatedItem
 //	@Failure		400	{object}	xerrors.ErrorResponse

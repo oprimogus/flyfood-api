@@ -91,6 +91,7 @@ definitions:
   controller.setFileOutput:
     properties:
       objectURL:
+        example: URL of object on storage
         type: string
     type: object
   item.CreateItemInput:
@@ -669,6 +670,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
+      security:
+      - BearerToken: []
       summary: Owner can create stores.
       tags:
       - Store
@@ -712,6 +715,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
+      security:
+      - BearerToken: []
       summary: Owner can update stores.
       tags:
       - Store
@@ -795,6 +800,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
+      security:
+      - BearerToken: []
       summary: Owner can update store header image.
       tags:
       - Store
@@ -845,6 +852,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
+      security:
+      - BearerToken: []
       summary: Owner can update store profile image.
       tags:
       - Store
@@ -889,6 +898,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
+      security:
+      - BearerToken: []
       summary: Owner can delete business hours.
       tags:
       - Store
@@ -932,6 +943,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
+      security:
+      - BearerToken: []
       summary: Owner can update business hours.
       tags:
       - Store
@@ -978,6 +991,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
+      security:
+      - BearerToken: []
       summary: Owner can create store items.
       tags:
       - Item
@@ -1018,7 +1033,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update user profile
+      description: User can update your profile
       parameters:
       - description: UpdateProfileParams
         in: body
@@ -1043,8 +1058,9 @@ paths:
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
       security:
+      - BearerToken: []
       - Bearer Token: []
-      summary: Update user profile
+      summary: User can update your profile
       tags:
       - User
   /v1/user/roles:
@@ -1076,6 +1092,7 @@ paths:
           schema:
             $ref: '#/definitions/xerrors.ErrorResponse'
       security:
+      - BearerToken: []
       - Bearer Token: []
       summary: Add a new role for user
       tags:

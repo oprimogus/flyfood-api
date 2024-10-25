@@ -263,6 +263,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
                 "description": "Allows an owner to update the details of their store.",
                 "consumes": [
                     "application/json"
@@ -328,6 +333,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
                 "description": "Allows an owner to create a new store.",
                 "consumes": [
                     "application/json"
@@ -398,6 +408,11 @@ const docTemplate = `{
         },
         "/v1/store/business-hours": {
             "put": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
                 "description": "Allows an owner to update the business hours of their store.",
                 "consumes": [
                     "application/json"
@@ -463,6 +478,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
                 "description": "Allows an owner to delete business hours of their store.",
                 "consumes": [
                     "application/json"
@@ -530,6 +550,11 @@ const docTemplate = `{
         },
         "/v1/store/item": {
             "post": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
                 "description": "Owner can create store items.",
                 "consumes": [
                     "application/json"
@@ -700,6 +725,11 @@ const docTemplate = `{
         },
         "/v1/store/{id}/header-image": {
             "post": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
                 "description": "Allows an owner to update the header image of their store.",
                 "consumes": [
                     "multipart/form-data"
@@ -775,6 +805,11 @@ const docTemplate = `{
         },
         "/v1/store/{id}/profile-image": {
             "post": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
                 "description": "Allows an owner to update the profile image of their store.",
                 "consumes": [
                     "multipart/form-data"
@@ -852,10 +887,13 @@ const docTemplate = `{
             "put": {
                 "security": [
                     {
+                        "BearerToken": []
+                    },
+                    {
                         "Bearer Token": []
                     }
                 ],
-                "description": "Update user profile",
+                "description": "User can update your profile",
                 "consumes": [
                     "application/json"
                 ],
@@ -865,7 +903,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Update user profile",
+                "summary": "User can update your profile",
                 "parameters": [
                     {
                         "description": "UpdateProfileParams",
@@ -904,6 +942,9 @@ const docTemplate = `{
         "/v1/user/roles": {
             "post": {
                 "security": [
+                    {
+                        "BearerToken": []
+                    },
                     {
                         "Bearer Token": []
                     }
@@ -1078,7 +1119,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "objectURL": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "URL of object on storage"
                 }
             }
         },

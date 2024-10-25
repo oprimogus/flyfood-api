@@ -66,11 +66,14 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 
 // UpdateUser godoc
 //
-//	@Summary		Update user profile
-//	@Description	Update user profile
+//	@Summary		User can update your profile
+//	@Description	User can update your profile
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			request	body	user.UpdateProfileParams	false	"UpdateProfileParams"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
@@ -111,6 +114,9 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
+//
+// @Security BearerToken
+//
 //	@Param			request	body	user.AddRolesParams	false	"AddRolesParams"
 //	@Success		200
 //	@Failure		400	{object}	xerrors.ErrorResponse
