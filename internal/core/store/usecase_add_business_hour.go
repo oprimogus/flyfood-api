@@ -26,7 +26,7 @@ func (a useCaseAddBusinessHour) Execute(ctx context.Context, params StoreBusines
 	}
 
 	if !isOwner {
-		return errNotOwner
+		return ErrNotOwner
 	}
 
 	businessHours := make([]BusinessHours, len(params.BusinessHours))

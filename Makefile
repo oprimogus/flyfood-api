@@ -57,7 +57,7 @@ migrate:
 
 migration:
 	@read -p "Enter migration name: " name; \
-		migrate create -ext sql -dir internal/infrastructure/database/migrations -seq $$name
+		migrate create -ext sql -dir internal/database/migrations -seq $$name
 
 migration-up: 
 	@ migrate -path internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
@@ -67,4 +67,4 @@ migration-down:
 
 migration-fix: 
 	@read -p "Enter migration version: " version; \
-	@ migrate -path internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
+	migrate -path internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version

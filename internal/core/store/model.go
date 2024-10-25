@@ -9,7 +9,7 @@ import (
 
 var ErrClosingTimeBeforeOpeningTime = errors.New("closingTime cannot be before openingTime")
 var ErrOpeningTimeAfterClosingTime = errors.New("openingTime cannot be after closingTime")
-var errNotOwner = errors.New("only owner can do this action")
+var ErrNotOwner = errors.New("only owner can do this action")
 
 const (
 	defaultStoreScore  = 500

@@ -54,9 +54,13 @@ func (i *itemRepository) GetItemByID(ctx context.Context, id int) (item.GetItemB
 	}
 
 	var details map[string]interface{}
-	errMarshall := json.Unmarshal(itemRow.Detail, &details)
-	if err != nil {
-		return item.GetItemByIDOutput{}, fmt.Errorf("fail on convert details column to map: %w", errMarshall)
+	if itemRow.Detail != nil {
+		errUnmarshal := json.Unmarshal(itemRow.Detail, &details)
+		if errUnmarshal != nil {
+			return item.GetItemByIDOutput{}, fmt.Errorf("fail on convert details column to map: %w", errUnmarshal)
+		}
+	} else {
+		details = nil
 	}
 
 	return item.GetItemByIDOutput{

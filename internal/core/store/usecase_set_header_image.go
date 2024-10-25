@@ -28,7 +28,7 @@ func (c useCaseSetHeaderImage) Execute(ctx context.Context, storeID string, imag
 	}
 
 	if !isOwner {
-		return "", errNotOwner
+		return "", ErrNotOwner
 	}
 
 	url, errSaveProfileImage := c.repository.SetHeaderImage(ctx, storeID, image)

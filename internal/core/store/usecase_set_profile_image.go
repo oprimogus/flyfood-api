@@ -28,7 +28,7 @@ func (c useCaseSetProfileImage) Execute(ctx context.Context, storeID string, ima
 	}
 
 	if !isOwner {
-		return "", errNotOwner
+		return "", ErrNotOwner
 	}
 
 	url, errSaveProfileImage := c.repository.SetProfileImage(ctx, storeID, image)

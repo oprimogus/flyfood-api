@@ -27,7 +27,7 @@ func (c useCaseUpdate) Execute(ctx context.Context, params UpdateParams) error {
 	}
 
 	if !isOwner {
-		return errNotOwner
+		return ErrNotOwner
 	}
 
 	UpdatedStore := Store{
