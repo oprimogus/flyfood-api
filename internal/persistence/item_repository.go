@@ -77,14 +77,56 @@ func (i *itemRepository) GetItemByID(ctx context.Context, id int) (item.GetItemB
 	}, nil
 }
 
-func (i *itemRepository) GetItemsByFilter(ctx context.Context, filter item.GetItemFilterOutput) (*[]item.GetItemFilterOutput, error) {
-	return nil, nil
+func (i *itemRepository) GetItemsByFilter(ctx context.Context, filter item.GetItemFilterInput) (*[]item.GetItemFilterOutput, error) {
+	args := sqlc.GetItemByFilterParams{
+		City:     filter.City,
+		Name:     filter.Name,
+		Score:    int32(filter.Score),
+		Type:     sqlc.ItemType(filter.Type),
+		MaxPrice: int32(filter.MaxPrice),
+	}
+
+	items, err := i.querier.GetItemByFilter(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+
+	itemsConverted := make([]item.GetItemFilterOutput, len(items))
+	for i, v := range items {
+		convertedStoreID, err := converters.ConvertUUIDToString(v.StoreID)
+		if err != nil {
+			return nil, err
+		}
+		itemsConverted[i] = item.GetItemFilterOutput{
+			ID:             int(v.ID),
+			StoreID:        *convertedStoreID,
+			Type:           item.ItemType(v.Type),
+			Name:           v.Name,
+			Score:          int(v.Score),
+			DiscountActive: v.DiscountActive,
+			Price:          int(v.Price),
+			DiscountPrice:  int(v.DiscountPrice),
+		}
+	}
+
+	return &itemsConverted, nil
 }
 
 func (i *itemRepository) UpdateItem(ctx context.Context, params item.UpdateItemInput) error {
-	return nil
+	args := sqlc.UpdateItemParams{
+		ID:             int64(params.ID),
+		Type:           sqlc.ItemType(params.Type),
+		Name:           params.Name,
+		Description:    params.Description,
+		Active:         params.Active,
+		DiscountActive: params.DiscountActive,
+		Price:          int32(params.Price),
+		DiscountPrice:  int32(params.DiscountPrice),
+	}
+	err := i.querier.UpdateItem(ctx, args)
+	return err
 }
 
 func (i *itemRepository) DeleteItem(ctx context.Context, id int) error {
-	return nil
+	return i.querier.DeleteItem(ctx, int64(id))
 }

@@ -58,19 +58,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request due to validation errors or malformed input.",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal server error, something went wrong while processing the request.",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad gateway, likely due to an external service failure.",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -109,19 +109,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request due to validation errors or malformed input.",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal server error, something went wrong while processing the request.",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad gateway, likely due to an external service failure.",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -157,19 +157,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -245,19 +245,19 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -297,37 +297,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -370,37 +370,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -442,37 +442,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -512,43 +512,96 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
             }
         },
         "/v1/store/item": {
+            "get": {
+                "description": "Any user can view store items.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Any user can view store items.",
+                "parameters": [
+                    {
+                        "description": "Item Filter",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/item.GetItemFilterInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/item.GetItemByIDOutput"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -587,37 +640,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -625,7 +678,7 @@ const docTemplate = `{
         },
         "/v1/store/item/{id}": {
             "get": {
-                "description": "Any user can view store items.",
+                "description": "Any user can view store item",
                 "consumes": [
                     "application/json"
                 ],
@@ -635,7 +688,7 @@ const docTemplate = `{
                 "tags": [
                     "Item"
                 ],
-                "summary": "Any user can view store items.",
+                "summary": "Any user can view store item",
                 "parameters": [
                     {
                         "type": "string",
@@ -655,19 +708,19 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -705,19 +758,19 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -767,37 +820,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -847,37 +900,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -921,19 +974,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -977,19 +1030,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/xerrors.ErrorResponse"
+                            "$ref": "#/definitions/xerrors.CustomError"
                         }
                     }
                 }
@@ -1231,6 +1284,46 @@ const docTemplate = `{
                 "score": {
                     "type": "integer",
                     "example": 475
+                },
+                "type": {
+                    "enum": [
+                        "FOOD",
+                        " WATERGALLON"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/item.ItemType"
+                        }
+                    ]
+                }
+            }
+        },
+        "item.GetItemFilterInput": {
+            "type": "object",
+            "required": [
+                "city",
+                "maxPrice",
+                "name",
+                "score",
+                "type"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "example": "Guarujá"
+                },
+                "maxPrice": {
+                    "type": "integer",
+                    "example": 4990
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "example": "Burguer"
+                },
+                "score": {
+                    "type": "integer",
+                    "example": 419
                 },
                 "type": {
                     "enum": [
@@ -1618,7 +1711,7 @@ const docTemplate = `{
                 }
             }
         },
-        "xerrors.ErrorResponse": {
+        "xerrors.CustomError": {
             "type": "object",
             "properties": {
                 "debug": {},

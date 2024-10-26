@@ -131,6 +131,24 @@ func (q *Queries) CreateStore(ctx context.Context, arg CreateStoreParams) error 
 	return err
 }
 
+const deleteItem = `-- name: DeleteItem :exec
+UPDATE item
+  SET 
+    deleted_at = NOW() AT TIME ZONE 'UTC'
+WHERE id = $1
+`
+
+// DeleteItem
+//
+//	UPDATE item
+//	  SET
+//	    deleted_at = NOW() AT TIME ZONE 'UTC'
+//	WHERE id = $1
+func (q *Queries) DeleteItem(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteItem, id)
+	return err
+}
+
 const findStoreBusinessHoursByStoreId = `-- name: FindStoreBusinessHoursByStoreId :many
 SELECT bh.store_id, bh.week_day, bh.opening_time, bh.closing_time, bh.timezone
 FROM business_hour bh
@@ -175,7 +193,8 @@ SELECT
     i.id, 
     i.store_id, 
     i.type, 
-    i.name, 
+    i.name,
+    i.score, 
     i.discount_active, 
     i.discount_price, 
     i.price,
@@ -190,16 +209,17 @@ SELECT
 FROM item i
 INNER JOIN store s ON s.id = i.store_id
 WHERE 1 = 1
-  AND s.city = $5
+  AND s.city = $1::text
   AND i.active = true
-  AND (COALESCE(NULLIF($1, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($1, ''), i.name) || '%')
-  AND (COALESCE($2, i.score) IS NULL OR i.score >= COALESCE($2, i.score))
-  AND (COALESCE(NULLIF($3, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($3, '')::"ItemType", i.type))
-  AND (COALESCE($4, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR 
+  AND i.deleted_at IS NULL
+  AND (COALESCE(NULLIF($2::text, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($2::text, ''), i.name) || '%')
+  AND (COALESCE($3::int, i.score) IS NULL OR i.score >= COALESCE($3::int, i.score))
+  AND (COALESCE(NULLIF($4::"ItemType", '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($4::"ItemType", '')::"ItemType", i.type))
+  AND (COALESCE($5::int, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR 
        CASE 
          WHEN i.discount_active = true THEN i.discount_price 
          ELSE i.price 
-       END <= COALESCE($4, CASE 
+       END <= COALESCE($5::int, CASE 
                              WHEN i.discount_active = true THEN i.discount_price 
                              ELSE i.price 
                            END))
@@ -207,11 +227,11 @@ ORDER BY i.score DESC, s.score DESC
 `
 
 type GetItemByFilterParams struct {
-	Column1 interface{} `db:"column_1" json:"column_1"`
-	Column2 interface{} `db:"column_2" json:"column_2"`
-	Column3 interface{} `db:"column_3" json:"column_3"`
-	Column4 interface{} `db:"column_4" json:"column_4"`
-	City    string      `db:"city" json:"city"`
+	City     string   `db:"city" json:"city"`
+	Name     string   `db:"name" json:"name"`
+	Score    int32    `db:"score" json:"score"`
+	Type     ItemType `db:"type" json:"type"`
+	MaxPrice int32    `db:"max_price" json:"max_price"`
 }
 
 type GetItemByFilterRow struct {
@@ -219,6 +239,7 @@ type GetItemByFilterRow struct {
 	StoreID        pgtype.UUID `db:"store_id" json:"store_id"`
 	Type           ItemType    `db:"type" json:"type"`
 	Name           string      `db:"name" json:"name"`
+	Score          int32       `db:"score" json:"score"`
 	DiscountActive bool        `db:"discount_active" json:"discount_active"`
 	DiscountPrice  int32       `db:"discount_price" json:"discount_price"`
 	Price          int32       `db:"price" json:"price"`
@@ -236,6 +257,7 @@ type GetItemByFilterRow struct {
 //	    i.store_id,
 //	    i.type,
 //	    i.name,
+//	    i.score,
 //	    i.discount_active,
 //	    i.discount_price,
 //	    i.price,
@@ -250,27 +272,28 @@ type GetItemByFilterRow struct {
 //	FROM item i
 //	INNER JOIN store s ON s.id = i.store_id
 //	WHERE 1 = 1
-//	  AND s.city = $5
+//	  AND s.city = $1::text
 //	  AND i.active = true
-//	  AND (COALESCE(NULLIF($1, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($1, ''), i.name) || '%')
-//	  AND (COALESCE($2, i.score) IS NULL OR i.score >= COALESCE($2, i.score))
-//	  AND (COALESCE(NULLIF($3, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($3, '')::"ItemType", i.type))
-//	  AND (COALESCE($4, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR
+//	  AND i.deleted_at IS NULL
+//	  AND (COALESCE(NULLIF($2::text, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($2::text, ''), i.name) || '%')
+//	  AND (COALESCE($3::int, i.score) IS NULL OR i.score >= COALESCE($3::int, i.score))
+//	  AND (COALESCE(NULLIF($4::"ItemType", '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($4::"ItemType", '')::"ItemType", i.type))
+//	  AND (COALESCE($5::int, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR
 //	       CASE
 //	         WHEN i.discount_active = true THEN i.discount_price
 //	         ELSE i.price
-//	       END <= COALESCE($4, CASE
+//	       END <= COALESCE($5::int, CASE
 //	                             WHEN i.discount_active = true THEN i.discount_price
 //	                             ELSE i.price
 //	                           END))
 //	ORDER BY i.score DESC, s.score DESC
 func (q *Queries) GetItemByFilter(ctx context.Context, arg GetItemByFilterParams) ([]GetItemByFilterRow, error) {
 	rows, err := q.db.Query(ctx, getItemByFilter,
-		arg.Column1,
-		arg.Column2,
-		arg.Column3,
-		arg.Column4,
 		arg.City,
+		arg.Name,
+		arg.Score,
+		arg.Type,
+		arg.MaxPrice,
 	)
 	if err != nil {
 		return nil, err
@@ -284,6 +307,7 @@ func (q *Queries) GetItemByFilter(ctx context.Context, arg GetItemByFilterParams
 			&i.StoreID,
 			&i.Type,
 			&i.Name,
+			&i.Score,
 			&i.DiscountActive,
 			&i.DiscountPrice,
 			&i.Price,
@@ -595,6 +619,58 @@ type SetProfileImageParams struct {
 //	WHERE id = $1
 func (q *Queries) SetProfileImage(ctx context.Context, arg SetProfileImageParams) error {
 	_, err := q.db.Exec(ctx, setProfileImage, arg.ID, arg.ProfileImage)
+	return err
+}
+
+const updateItem = `-- name: UpdateItem :exec
+UPDATE item
+  SET 
+    type = $2,
+    name = $3, 
+    description = $4,  
+    active = $5, 
+    discount_active = $6, 
+    price = $7, 
+    discount_price = $8,
+    updated_at = NOW() AT TIME ZONE 'UTC'
+WHERE id = $1
+`
+
+type UpdateItemParams struct {
+	ID             int64    `db:"id" json:"id"`
+	Type           ItemType `db:"type" json:"type"`
+	Name           string   `db:"name" json:"name"`
+	Description    string   `db:"description" json:"description"`
+	Active         bool     `db:"active" json:"active"`
+	DiscountActive bool     `db:"discount_active" json:"discount_active"`
+	Price          int32    `db:"price" json:"price"`
+	DiscountPrice  int32    `db:"discount_price" json:"discount_price"`
+}
+
+// UpdateItem
+//
+//	UPDATE item
+//	  SET
+//	    type = $2,
+//	    name = $3,
+//	    description = $4,
+//	    active = $5,
+//	    discount_active = $6,
+//	    price = $7,
+//	    discount_price = $8,
+//	    updated_at = NOW() AT TIME ZONE 'UTC'
+//	WHERE id = $1
+func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
+	_, err := q.db.Exec(ctx, updateItem,
+		arg.ID,
+		arg.Type,
+		arg.Name,
+		arg.Description,
+		arg.Active,
+		arg.DiscountActive,
+		arg.Price,
+		arg.DiscountPrice,
+	)
 	return err
 }
 

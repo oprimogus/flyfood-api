@@ -49,6 +49,13 @@ type Querier interface {
 	//    AND opening_time = $3
 	//    AND closing_time = $4
 	DeleteBusinessHours(ctx context.Context, arg []DeleteBusinessHoursParams) *DeleteBusinessHoursBatchResults
+	//DeleteItem
+	//
+	//  UPDATE item
+	//    SET
+	//      deleted_at = NOW() AT TIME ZONE 'UTC'
+	//  WHERE id = $1
+	DeleteItem(ctx context.Context, id int64) error
 	//FindStoreBusinessHoursByStoreId
 	//
 	//  SELECT bh.store_id, bh.week_day, bh.opening_time, bh.closing_time, bh.timezone
@@ -63,6 +70,7 @@ type Querier interface {
 	//      i.store_id,
 	//      i.type,
 	//      i.name,
+	//      i.score,
 	//      i.discount_active,
 	//      i.discount_price,
 	//      i.price,
@@ -77,16 +85,17 @@ type Querier interface {
 	//  FROM item i
 	//  INNER JOIN store s ON s.id = i.store_id
 	//  WHERE 1 = 1
-	//    AND s.city = $5
+	//    AND s.city = $1::text
 	//    AND i.active = true
-	//    AND (COALESCE(NULLIF($1, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($1, ''), i.name) || '%')
-	//    AND (COALESCE($2, i.score) IS NULL OR i.score >= COALESCE($2, i.score))
-	//    AND (COALESCE(NULLIF($3, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($3, '')::"ItemType", i.type))
-	//    AND (COALESCE($4, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR
+	//    AND i.deleted_at IS NULL
+	//    AND (COALESCE(NULLIF($2::text, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($2::text, ''), i.name) || '%')
+	//    AND (COALESCE($3::int, i.score) IS NULL OR i.score >= COALESCE($3::int, i.score))
+	//    AND (COALESCE(NULLIF($4::"ItemType", '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($4::"ItemType", '')::"ItemType", i.type))
+	//    AND (COALESCE($5::int, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR
 	//         CASE
 	//           WHEN i.discount_active = true THEN i.discount_price
 	//           ELSE i.price
-	//         END <= COALESCE($4, CASE
+	//         END <= COALESCE($5::int, CASE
 	//                               WHEN i.discount_active = true THEN i.discount_price
 	//                               ELSE i.price
 	//                             END))
@@ -151,6 +160,20 @@ type Querier interface {
 	//      profile_image = $2
 	//  WHERE id = $1
 	SetProfileImage(ctx context.Context, arg SetProfileImageParams) error
+	//UpdateItem
+	//
+	//  UPDATE item
+	//    SET
+	//      type = $2,
+	//      name = $3,
+	//      description = $4,
+	//      active = $5,
+	//      discount_active = $6,
+	//      price = $7,
+	//      discount_price = $8,
+	//      updated_at = NOW() AT TIME ZONE 'UTC'
+	//  WHERE id = $1
+	UpdateItem(ctx context.Context, arg UpdateItemParams) error
 	//UpdateStore
 	//
 	//  UPDATE store

@@ -182,6 +182,34 @@ definitions:
     - score
     - type
     type: object
+  item.GetItemFilterInput:
+    properties:
+      city:
+        example: Guarujá
+        type: string
+      maxPrice:
+        example: 4990
+        type: integer
+      name:
+        example: Burguer
+        maxLength: 25
+        type: string
+      score:
+        example: 419
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/item.ItemType'
+        enum:
+        - FOOD
+        - ' WATERGALLON'
+    required:
+    - city
+    - maxPrice
+    - name
+    - score
+    - type
+    type: object
   item.ItemType:
     enum:
     - FOOD
@@ -449,7 +477,7 @@ definitions:
     - name
     - phone
     type: object
-  xerrors.ErrorResponse:
+  xerrors.CustomError:
     properties:
       debug: {}
       details: {}
@@ -490,16 +518,16 @@ paths:
         "400":
           description: Bad request due to validation errors or malformed input.
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal server error, something went wrong while processing
             the request.
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad gateway, likely due to an external service failure.
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       summary: Refresh JWT using a refresh token
       tags:
       - Authentication
@@ -525,16 +553,16 @@ paths:
         "400":
           description: Bad request due to validation errors or malformed input.
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal server error, something went wrong while processing
             the request.
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad gateway, likely due to an external service failure.
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       summary: Sign-In with email and password
       tags:
       - Authentication
@@ -557,15 +585,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       summary: Sign-Up with local credentials and data
       tags:
       - Authentication
@@ -616,15 +644,15 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       summary: Any user can view filtered stores.
       tags:
       - Store
@@ -649,27 +677,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       summary: Owner can create stores.
@@ -694,27 +722,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       summary: Owner can update stores.
@@ -741,15 +769,15 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       summary: Any user can view a store.
       tags:
       - Store
@@ -779,27 +807,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       summary: Owner can update store header image.
@@ -831,27 +859,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       summary: Owner can update store profile image.
@@ -877,27 +905,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       summary: Owner can delete business hours.
@@ -922,33 +950,68 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       summary: Owner can update business hours.
       tags:
       - Store
   /v1/store/item:
+    get:
+      consumes:
+      - application/json
+      description: Any user can view store items.
+      parameters:
+      - description: Item Filter
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/item.GetItemFilterInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/item.GetItemByIDOutput'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      summary: Any user can view store items.
+      tags:
+      - Item
     post:
       consumes:
       - application/json
@@ -970,27 +1033,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       summary: Owner can create store items.
@@ -1000,7 +1063,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Any user can view store items.
+      description: Any user can view store item
       parameters:
       - description: Item ID
         in: path
@@ -1017,16 +1080,16 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Any user can view store items.
+            $ref: '#/definitions/xerrors.CustomError'
+      summary: Any user can view store item
       tags:
       - Item
   /v1/user:
@@ -1048,15 +1111,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       - Bearer Token: []
@@ -1082,15 +1145,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
       - Bearer Token: []

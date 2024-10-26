@@ -1,7 +1,9 @@
 package router
 
 import (
-	"log"
+	"context"
+	"fmt"
+	"log/slog"
 
 	"github.com/gin-gonic/gin"
 
@@ -20,11 +22,10 @@ func Initialize(factory core.RepositoryFactory) {
 		panic(err)
 	}
 
-	logger := logger.NewLogger("Gin Router")
 	router := gin.New()
 	router.Use(gin.Recovery())
+	router.Use(logger.LoggerMiddleware())
 	router.Use(middleware.CorsMiddleware())
-	router.Use(middleware.LoggerMiddleware(logger))
 
 	metrics := middleware.NewPrometheusMetrics()
 	router.Use(middleware.PrometheusMiddleware(metrics))
@@ -43,9 +44,10 @@ func Initialize(factory core.RepositoryFactory) {
 		port = "3000"
 	}
 
-	logger.Infof("Docs available in http://localhost:%s/api/v1/reference/index.html", port)
-	logger.Infof("Docs available in http://localhost:%s/api/v2/reference", port)
-	log.Printf("Listening and serving in HTTP :%v\n", port)
+	ctx := context.Background()
+	slog.InfoContext(ctx, fmt.Sprintf("Docs available in http://localhost:%s/api/v1/reference/index.html", port))
+	slog.InfoContext(ctx, fmt.Sprintf("Docs available in http://localhost:%s/api/v2/reference", port))
+	slog.InfoContext(ctx, fmt.Sprintf("Listening and serving in 0.0.0.0:%v", port))
 	err = router.Run(":" + port)
 	if err != nil {
 		panic(err)

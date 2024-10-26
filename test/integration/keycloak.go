@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/oprimogus/cardapiogo/internal/config"
@@ -27,7 +28,7 @@ func MakeKeycloak(ctx context.Context) (*Container, error) {
 	}
 	hostPort, err := keycloakContainer.MappedPort(ctx, "8080")
 	if err != nil {
-		log.Errorf("failed to get mapped port: %s", err)
+		slog.ErrorContext(ctx, fmt.Sprintf("failed to get mapped port: %s", err))
 		return nil, err
 	}
 	config := config.GetInstance().Keycloak

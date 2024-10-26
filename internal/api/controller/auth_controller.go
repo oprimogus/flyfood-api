@@ -5,13 +5,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oprimogus/cardapiogo/internal/api/middleware"
 	validatorutils "github.com/oprimogus/cardapiogo/internal/api/validator"
 	"github.com/oprimogus/cardapiogo/internal/core/authentication"
 	xerrors "github.com/oprimogus/cardapiogo/internal/errors"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-// UserController struct
 type AuthController struct {
 	validator            *validatorutils.Validator
 	authenticationModule authentication.AuthenticationModule
@@ -33,22 +32,22 @@ func NewAuthController(validator *validatorutils.Validator, authRepository authe
 //	@Produce		json
 //	@Param			request	body		authentication.SignInParams	false	"Request body containing email and password."
 //	@Success		200		{object}	authentication.JWT		"Returns the generated JWT upon successful authentication."
-//	@Failure		400		{object}	xerrors.ErrorResponse	"Bad request due to validation errors or malformed input."
-//	@Failure		500		{object}	xerrors.ErrorResponse	"Internal server error, something went wrong while processing the request."
-//	@Failure		502		{object}	xerrors.ErrorResponse	"Bad gateway, likely due to an external service failure."
+//	@Failure		400		{object}	xerrors.CustomError	"Bad request due to validation errors or malformed input."
+//	@Failure		500		{object}	xerrors.CustomError	"Internal server error, something went wrong while processing the request."
+//	@Failure		502		{object}	xerrors.CustomError	"Bad gateway, likely due to an external service failure."
 //	@Router			/v1/auth/sign-in [post]
 func (c *AuthController) SignIn(ctx *gin.Context) {
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	var params authentication.SignInParams
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
 	err := ctx.BindJSON(&params)
 	if err != nil {
 		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
+	err = c.validator.Validate(transactionID, params)
+	if err != nil {
+		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -71,22 +70,22 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 //	@Produce		json
 //	@Param			request	body		authentication.RefreshParams	true	"Request body containing the refresh token."
 //	@Success		200		{object}	authentication.JWT		"Returns a new JWT upon successful token refresh."
-//	@Failure		400		{object}	xerrors.ErrorResponse	"Bad request due to validation errors or malformed input."
-//	@Failure		500		{object}	xerrors.ErrorResponse	"Internal server error, something went wrong while processing the request."
-//	@Failure		502		{object}	xerrors.ErrorResponse	"Bad gateway, likely due to an external service failure."
+//	@Failure		400		{object}	xerrors.CustomError	"Bad request due to validation errors or malformed input."
+//	@Failure		500		{object}	xerrors.CustomError	"Internal server error, something went wrong while processing the request."
+//	@Failure		502		{object}	xerrors.CustomError	"Bad gateway, likely due to an external service failure."
 //	@Router			/v1/auth/refresh [post]
 func (c *AuthController) RefreshUserToken(ctx *gin.Context) {
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	var params authentication.RefreshParams
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
 	err := ctx.BindJSON(&params)
 	if err != nil {
 		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
+	err = c.validator.Validate(transactionID, params)
+	if err != nil {
+		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}

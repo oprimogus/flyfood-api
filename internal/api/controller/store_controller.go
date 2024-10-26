@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oprimogus/cardapiogo/internal/api/middleware"
 	validatorutils "github.com/oprimogus/cardapiogo/internal/api/validator"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
 	xerrors "github.com/oprimogus/cardapiogo/internal/errors"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type StoreController struct {
@@ -34,12 +34,12 @@ func NewStoreController(validator *validatorutils.Validator, repository store.Re
 //	@Produce		json
 //	@Param			id	path		string	true	"Store ID"
 //	@Success		200	{object}	store.GetStoreByIdOutput
-//	@Failure		404	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
+//	@Failure		404	{object}	xerrors.CustomError
+//	@Failure		500	{object}	xerrors.CustomError
+//	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/store/{id} [get]
 func (c *StoreController) GetStoreByID(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	id := ctx.Param("id")
 	storeInstance, err := c.storeModule.GetByID.Execute(ctx, id)
 	if err != nil {
@@ -65,12 +65,12 @@ func (c *StoreController) GetStoreByID(ctx *gin.Context) {
 //	@Param			longitude	query		string	false	"longitude of address selected"
 //	@Param			type		query		string	false	"Specify store type"
 //	@Success		200			{object}	[]store.GetStoreByIdOutput
-//	@Failure		404			{object}	xerrors.ErrorResponse
-//	@Failure		500			{object}	xerrors.ErrorResponse
-//	@Failure		502			{object}	xerrors.ErrorResponse
+//	@Failure		404			{object}	xerrors.CustomError
+//	@Failure		500			{object}	xerrors.CustomError
+//	@Failure		502			{object}	xerrors.CustomError
 //	@Router			/v1/store [get]
 func (c *StoreController) GetStoreByFilter(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	var params store.StoreFilter
 	params.Name = ctx.Query("name")
 	params.City = ctx.Query("city")
@@ -100,15 +100,15 @@ func (c *StoreController) GetStoreByFilter(ctx *gin.Context) {
 		params.Score = scoreValue
 	}
 
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
+	err := c.validator.Validate(transactionID, params)
+	if err != nil {
+		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	storeList, err := c.storeModule.GetByFilter.Execute(ctx, params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+	storeList, errListStores := c.storeModule.GetByFilter.Execute(ctx, params)
+	if errListStores != nil {
+		xerror := xerrors.HandleError(errListStores, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -127,15 +127,15 @@ func (c *StoreController) GetStoreByFilter(ctx *gin.Context) {
 //
 //	@Param			Params	body	store.CreateParams	true	"Parameters for creating a store"
 //	@Success		201 {object}    store.CreatedStore
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
+//	@Failure		400	{object}	xerrors.CustomError
+//	@Failure		401	{object}	xerrors.CustomError
+//	@Failure		403	{object}	xerrors.CustomError
+//	@Failure		409	{object}	xerrors.CustomError
+//	@Failure		500	{object}	xerrors.CustomError
+//	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/store [post]
 func (c *StoreController) Create(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	var params store.CreateParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
@@ -143,9 +143,9 @@ func (c *StoreController) Create(ctx *gin.Context) {
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
+	err = c.validator.Validate(transactionID, params)
+	if err != nil {
+		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -171,15 +171,15 @@ func (c *StoreController) Create(ctx *gin.Context) {
 //
 //	@Param			Params	body	store.UpdateParams	true	"Parameters for updating a store"
 //	@Success		200
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
+//	@Failure		400	{object}	xerrors.CustomError
+//	@Failure		401	{object}	xerrors.CustomError
+//	@Failure		403	{object}	xerrors.CustomError
+//	@Failure		409	{object}	xerrors.CustomError
+//	@Failure		500	{object}	xerrors.CustomError
+//	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/store [put]
 func (c *StoreController) Update(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	var params store.UpdateParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
@@ -187,9 +187,9 @@ func (c *StoreController) Update(ctx *gin.Context) {
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
+	err = c.validator.Validate(transactionID, params)
+	if err != nil {
+		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -215,15 +215,15 @@ func (c *StoreController) Update(ctx *gin.Context) {
 //
 //	@Param			Params	body	store.StoreBusinessHoursParams	true	"Parameters for updating business hours"
 //	@Success		200
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
+//	@Failure		400	{object}	xerrors.CustomError
+//	@Failure		401	{object}	xerrors.CustomError
+//	@Failure		403	{object}	xerrors.CustomError
+//	@Failure		409	{object}	xerrors.CustomError
+//	@Failure		500	{object}	xerrors.CustomError
+//	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/store/business-hours [put]
 func (c *StoreController) AddBusinessHours(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	var params store.StoreBusinessHoursParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
@@ -231,9 +231,9 @@ func (c *StoreController) AddBusinessHours(ctx *gin.Context) {
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
+	err = c.validator.Validate(transactionID, params)
+	if err != nil {
+		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -259,15 +259,15 @@ func (c *StoreController) AddBusinessHours(ctx *gin.Context) {
 //
 //	@Param			Params	body	store.StoreBusinessHoursParams	true	"Parameters for deleting business hours"
 //	@Success		200
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
+//	@Failure		400	{object}	xerrors.CustomError
+//	@Failure		401	{object}	xerrors.CustomError
+//	@Failure		403	{object}	xerrors.CustomError
+//	@Failure		409	{object}	xerrors.CustomError
+//	@Failure		500	{object}	xerrors.CustomError
+//	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/store/business-hours [delete]
 func (c *StoreController) DeleteBusinessHours(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	var params store.StoreBusinessHoursParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
@@ -275,9 +275,9 @@ func (c *StoreController) DeleteBusinessHours(ctx *gin.Context) {
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
+	err = c.validator.Validate(transactionID, params)
+	if err != nil {
+		xerror := xerrors.HandleError(err, transactionID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -304,18 +304,18 @@ func (c *StoreController) DeleteBusinessHours(ctx *gin.Context) {
 //	@Param			id	path	string true	"Store ID"
 //	@Param			file	formData	file true	"jpeg/png image"
 //	@Success		200 {object} setFileOutput
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
+//	@Failure		400	{object}	xerrors.CustomError
+//	@Failure		401	{object}	xerrors.CustomError
+//	@Failure		403	{object}	xerrors.CustomError
+//	@Failure		409	{object}	xerrors.CustomError
+//	@Failure		500	{object}	xerrors.CustomError
+//	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/store/{id}/profile-image [post]
 func (c *StoreController) SetProfileImage(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	storeID := ctx.Param("id")
 	if storeID == "" {
-		xerror := xerrors.New(http.StatusBadRequest, "Store ID is required", transactionID)
+		xerror := xerrors.New(transactionID, http.StatusBadRequest, "Store ID is required")
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -330,8 +330,8 @@ func (c *StoreController) SetProfileImage(ctx *gin.Context) {
 	openedFile, err := image.Open()
 	if err != nil {
 		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
+		xerror := xerrors.BadRequest(transactionID, message)
+		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 	defer openedFile.Close()
@@ -339,16 +339,16 @@ func (c *StoreController) SetProfileImage(ctx *gin.Context) {
 	buffer := make([]byte, 512)
 	if _, err := openedFile.Read(buffer); err != nil {
 		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
+		xerror := xerrors.BadRequest(transactionID, message)
+		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
 	fileType := http.DetectContentType(buffer)
 
 	if fileType != "image/jpeg" && fileType != "image/png" {
-		xerr := xerrors.BadRequest("Unsupported file type", transactionID)
-		ctx.JSON(xerr.Status, xerr)
+		xerror := xerrors.BadRequest(transactionID, "Unsupported file type")
+		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
@@ -376,18 +376,18 @@ func (c *StoreController) SetProfileImage(ctx *gin.Context) {
 //	@Param			id	path	string true	"Store ID"
 //	@Param			file	formData	file true	"jpeg/png image"
 //	@Success		200 {object} setFileOutput
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
+//	@Failure		400	{object}	xerrors.CustomError
+//	@Failure		401	{object}	xerrors.CustomError
+//	@Failure		403	{object}	xerrors.CustomError
+//	@Failure		409	{object}	xerrors.CustomError
+//	@Failure		500	{object}	xerrors.CustomError
+//	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/store/{id}/header-image [post]
 func (c *StoreController) SetHeaderImage(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
+	transactionID := ctx.GetString(string(logger.TransactionIDKey))
 	storeID := ctx.Param("id")
 	if storeID == "" {
-		xerror := xerrors.New(http.StatusBadRequest, "Store ID is required", transactionID)
+		xerror := xerrors.New(transactionID, http.StatusBadRequest, "Store ID is required")
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -402,8 +402,8 @@ func (c *StoreController) SetHeaderImage(ctx *gin.Context) {
 	openedFile, err := image.Open()
 	if err != nil {
 		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
+		xerror := xerrors.BadRequest(transactionID, message)
+		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 	defer openedFile.Close()
@@ -411,16 +411,16 @@ func (c *StoreController) SetHeaderImage(ctx *gin.Context) {
 	buffer := make([]byte, 512)
 	if _, err := openedFile.Read(buffer); err != nil {
 		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
+		xerror := xerrors.BadRequest(transactionID, message)
+		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
 	fileType := http.DetectContentType(buffer)
 
 	if fileType != "image/jpeg" && fileType != "image/png" {
-		xerr := xerrors.BadRequest("Unsupported file type", transactionID)
-		ctx.JSON(xerr.Status, xerr)
+		xerror := xerrors.BadRequest(transactionID, "Unsupported file type")
+		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 

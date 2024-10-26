@@ -91,7 +91,20 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,
   NOW() AT TIME ZONE 'UTC')
 RETURNING ID;
 
-  -- name: DeleteItem :exec
+-- name: UpdateItem :exec
+UPDATE item
+  SET 
+    type = $2,
+    name = $3, 
+    description = $4,  
+    active = $5, 
+    discount_active = $6, 
+    price = $7, 
+    discount_price = $8,
+    updated_at = NOW() AT TIME ZONE 'UTC'
+WHERE id = $1;
+
+-- name: DeleteItem :exec
 UPDATE item
   SET 
     deleted_at = NOW() AT TIME ZONE 'UTC'
@@ -117,7 +130,8 @@ SELECT
     i.id, 
     i.store_id, 
     i.type, 
-    i.name, 
+    i.name,
+    i.score, 
     i.discount_active, 
     i.discount_price, 
     i.price,
@@ -132,16 +146,17 @@ SELECT
 FROM item i
 INNER JOIN store s ON s.id = i.store_id
 WHERE 1 = 1
-  AND s.city = $5
+  AND s.city = @city::text
   AND i.active = true
-  AND (COALESCE(NULLIF($1, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF($1, ''), i.name) || '%')
-  AND (COALESCE($2, i.score) IS NULL OR i.score >= COALESCE($2, i.score))
-  AND (COALESCE(NULLIF($3, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF($3, '')::"ItemType", i.type))
-  AND (COALESCE($4, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR 
+  AND i.deleted_at IS NULL
+  AND (COALESCE(NULLIF(@name::text, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF(@name::text, ''), i.name) || '%')
+  AND (COALESCE(@score::int, i.score) IS NULL OR i.score >= COALESCE(@score::int, i.score))
+  AND (COALESCE(NULLIF(@type::"ItemType", '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF(@type::"ItemType", '')::"ItemType", i.type))
+  AND (COALESCE(@max_price::int, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR 
        CASE 
          WHEN i.discount_active = true THEN i.discount_price 
          ELSE i.price 
-       END <= COALESCE($4, CASE 
+       END <= COALESCE(@max_price::int, CASE 
                              WHEN i.discount_active = true THEN i.discount_price 
                              ELSE i.price 
                            END))

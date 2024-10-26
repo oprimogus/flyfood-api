@@ -1,15 +1,22 @@
 package item
 
+type GetItemFilterInput struct {
+	Type     ItemType `json:"type" validate:"required,itemType" enums:"FOOD, WATERGALLON"`
+	Name     string   `json:"name" validate:"required,lte=25" example:"Burguer"`
+	Score    int      `json:"score" validate:"required,number" example:"419"`
+	MaxPrice int      `json:"maxPrice" validate:"required,number" example:"4990"`
+	City     string   `json:"city" validate:"required" example:"Guarujá"`
+}
+
 type GetItemFilterOutput struct {
-	ID             int                    `json:"id" validate:"required" example:"246643"`
-	StoreID        string                 `json:"storeID" validate:"required,uuid" example:"65293gfk-fgv3fgvf67-f38f378"`
-	Type           ItemType               `json:"type" validate:"required,itemType" enums:"FOOD, WATERGALLON"`
-	Name           string                 `json:"name" validate:"required,lte=25" example:"Burguer"`
-	Score          int                    `json:"score" validate:"required,number" example:"419"`
-	DiscountActive bool                   `json:"discountActive" validate:"required,boolean" example:"true"`
-	Details        map[string]interface{} `json:"details"`
-	Price          int                    `json:"price" validate:"required,gte=0" example:"3990"`
-	DiscountPrice  int                    `json:"discountPrice" validate:"required,gte=0" example:"2990"`
+	ID             int      `json:"id" validate:"required" example:"246643"`
+	StoreID        string   `json:"storeID" validate:"required,uuid" example:"65293gfk-fgv3fgvf67-f38f378"`
+	Type           ItemType `json:"type" validate:"required,itemType" enums:"FOOD, WATERGALLON"`
+	Name           string   `json:"name" validate:"required,lte=25" example:"Burguer"`
+	Score          int      `json:"score" validate:"required,number" example:"419"`
+	DiscountActive bool     `json:"discountActive" validate:"required,boolean" example:"true"`
+	Price          int      `json:"price" validate:"required,gte=0" example:"3990"`
+	DiscountPrice  int      `json:"discountPrice" validate:"required,gte=0" example:"2990"`
 }
 
 type GetItemByIDOutput struct {
@@ -35,6 +42,7 @@ type CreateItemInput struct {
 }
 
 type UpdateItemInput struct {
+	ID             int                    `json:"id" validate:"required" example:"246643"`
 	StoreID        string                 `json:"storeID" validate:"required,uuid"`
 	Type           ItemType               `json:"type" validate:"required,itemType" enums:"FOOD, WATERGALLON"`
 	Active         bool                   `json:"active" validate:"required,boolean"`

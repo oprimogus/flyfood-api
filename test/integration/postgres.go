@@ -2,6 +2,8 @@ package integration
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 
@@ -35,20 +37,20 @@ func MakePostgres(ctx context.Context) (*Container, error) {
 				WithStartupTimeout(5*time.Second)),
 	)
 	if err != nil {
-		log.Errorf("failed to start container: %s", err)
+		slog.ErrorContext(ctx, fmt.Sprintf("failed to start container: %s", err))
 		return nil, err
 	}
 
 	hostPort, err := postgresContainer.MappedPort(ctx, "5432")
 	if err != nil {
-		log.Errorf("failed to get mapped port: %s", err)
+		slog.ErrorContext(ctx, fmt.Sprintf("failed to get mapped port: %s", err))
 		return nil, err
 	}
 	config.Port = strings.Replace(string(hostPort), "/tcp", "", -1)
 
 	errOnMigration := postgresDB.GetInstance().Migrate()
 	if errOnMigration != nil {
-		log.Errorf("failed on do migrations: %s", errOnMigration)
+		slog.ErrorContext(ctx, fmt.Sprintf("failed on do migrations: %s", errOnMigration))
 		return nil, errOnMigration
 	}
 

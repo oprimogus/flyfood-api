@@ -74,7 +74,7 @@ func keycloakUserToEntityUser(userGocloak *gocloak.User) user.User {
 }
 
 func (u *UserRepository) Create(ctx context.Context, user user.User) error {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (u *UserRepository) Create(ctx context.Context, user user.User) error {
 }
 
 func (u *UserRepository) FindByID(ctx context.Context, id string) (user.User, error) {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return user.User{}, err
 	}
@@ -108,7 +108,7 @@ func (u *UserRepository) FindByID(ctx context.Context, id string) (user.User, er
 }
 
 func (u *UserRepository) FindByEmail(ctx context.Context, email string) (user.User, error) {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return user.User{}, err
 	}
@@ -130,7 +130,7 @@ func (u *UserRepository) FindByEmail(ctx context.Context, email string) (user.Us
 }
 
 func (u *UserRepository) Update(ctx context.Context, user user.User) error {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (u *UserRepository) Update(ctx context.Context, user user.User) error {
 }
 
 func (u *UserRepository) Delete(ctx context.Context, id string) error {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (u *UserRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (u *UserRepository) ResetPasswordByEmail(ctx context.Context, id string) error {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (u *UserRepository) ResetPasswordByEmail(ctx context.Context, id string) er
 }
 
 func (u *UserRepository) AddRoles(ctx context.Context, userID string, roles []user.Role) error {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return err
 	}

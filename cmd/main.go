@@ -1,9 +1,14 @@
 package main
 
 import (
+	"log/slog"
+	"os"
+
 	"github.com/oprimogus/cardapiogo/internal/api/router"
+	"github.com/oprimogus/cardapiogo/internal/config"
 	"github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/persistence"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 //	@title			Cardapiogo API
@@ -21,6 +26,12 @@ import (
 // @in							header
 // @name						Authorization
 func main() {
+
+	if config.GetInstance().Api.Environment == string(config.Production) {
+		logger.InitLogger(os.Stdout, slog.LevelInfo)
+	} else {
+		logger.InitLogger(os.Stdout, slog.LevelDebug)
+	}
 
 	// database
 	db := postgres.GetInstance()

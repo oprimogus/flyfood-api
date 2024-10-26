@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	// "log/slog"
 )
 
 type useCaseCreate struct {
@@ -15,12 +16,13 @@ func newUseCaseCreate(repository Repository) useCaseCreate {
 }
 
 func (c useCaseCreate) Execute(ctx context.Context, input CreateParams) error {
-	existUser, err := c.repository.FindByEmail(ctx, input.Email)
-	if err != nil {
-		return err
-	}
-	if existUser.Email == input.Email {
-		return ErrExistUserWithEmail
-	}
+	// existUser, err := c.repository.FindByEmail(ctx, input.Email)
+	// if err != nil {
+	// 	return err
+	// }
+	// if existUser.Email == input.Email {
+	// 	slog.InfoContext(ctx, "fail on create user")
+	// 	return ErrExistUserWithEmail
+	// }
 	return c.repository.Create(ctx, input.ToEntity())
 }

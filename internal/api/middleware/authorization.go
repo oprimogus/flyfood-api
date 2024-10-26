@@ -7,24 +7,25 @@ import (
 
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 	xerrors "github.com/oprimogus/cardapiogo/internal/errors"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 func AuthorizationMiddleware(allowedRoles []user.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		transactionID := c.GetString(TransactionIDLabel)
+		transactionID := c.GetString(string(logger.TransactionIDKey))
 		userRolesContext, exists := c.Get("userRoles")
 		if !exists {
-			c.AbortWithStatusJSON(http.StatusForbidden, xerrors.Forbidden("", transactionID))
+			c.AbortWithStatusJSON(http.StatusForbidden, xerrors.Forbidden(transactionID, ""))
 			return
 		}
 
 		userRoles, ok := userRolesContext.([]user.Role)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, xerrors.Forbidden("", transactionID))
+			c.AbortWithStatusJSON(http.StatusInternalServerError, xerrors.Forbidden(transactionID, ""))
 			return
 		}
 		if len(userRoles) == 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden("", transactionID))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden(transactionID, ""))
 			return
 		}
 
@@ -37,7 +38,7 @@ func AuthorizationMiddleware(allowedRoles []user.Role) gin.HandlerFunc {
 			}
 		}
 		if !isAllowed && len(allowedRoles) != 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden("", transactionID))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden(transactionID, ""))
 			return
 		}
 		c.Next()

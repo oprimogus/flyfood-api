@@ -4,51 +4,46 @@ import (
 	"net/http"
 )
 
-// InternalServerError creates a new error response representing an internal server error (HTTP 500)
-func InternalServerError(msg string, transactionID string) *ErrorResponse {
+func InternalServerError(transactionID string, msg string) *CustomError {
 	if msg == "" {
 		msg = "We encountered an error while processing your request."
 	}
-	return New(http.StatusInternalServerError, msg, transactionID)
+	return New(transactionID, http.StatusInternalServerError, msg)
 }
 
-func ConflictError(msg string, transactionID string) *ErrorResponse {
+func ConflictError(transactionID string, msg string) *CustomError {
 	if msg == "" {
 		msg = "We encountered an conflict error while processing your request."
 	}
-	return New(http.StatusConflict, msg, transactionID)
+	return New(transactionID, http.StatusConflict, msg)
 }
 
-// NotFound creates a new error response representing a resource-not-found error (HTTP 404)
-func NotFound(msg string, transactionID string) *ErrorResponse {
+func NotFound(transactionID string, msg string) *CustomError {
 	if msg == "" {
 		msg = "The requested resource was not found."
 	}
-	return New(http.StatusNotFound, msg, transactionID)
+	return New(transactionID, http.StatusNotFound, msg)
 }
 
-// Unauthorized creates a new error response representing an authentication/authorization failure (HTTP 401)
-func Unauthorized(msg string, transactionID string) *ErrorResponse {
+func Unauthorized(transactionID string, msg string) *CustomError {
 	if msg == "" {
 		msg = "You are not authenticated to perform the requested action."
 	}
-	return New(http.StatusUnauthorized, msg, transactionID)
+	return New(transactionID, http.StatusUnauthorized, msg)
 }
 
-// Forbidden creates a new error response representing an authorization failure (HTTP 403)
-func Forbidden(msg string, transactionID string) *ErrorResponse {
+func Forbidden(transactionID string, msg string) *CustomError {
 	if msg == "" {
 		msg = "You are not authorized to perform the requested action."
 	}
-	return New(http.StatusForbidden, msg, transactionID)
+	return New(transactionID, http.StatusForbidden, msg)
 }
 
-// BadRequest creates a new error response representing a bad request (HTTP 400)
-func BadRequest(msg string, transactionID string) *ErrorResponse {
+func BadRequest(transactionID string, msg string) *CustomError {
 	if msg == "" {
 		msg = "Your request is in a bad format."
 	}
-	return New(http.StatusBadRequest, msg, transactionID)
+	return New(transactionID, http.StatusBadRequest, msg)
 }
 
 type invalidField struct {
@@ -56,8 +51,7 @@ type invalidField struct {
 	Error string `json:"error"`
 }
 
-func InvalidInput(errs map[string]string, transactionID string) *ErrorResponse {
-
+func InvalidInput(transactionID string, errs map[string]string) *CustomError {
 	details := []invalidField{}
 	for i, v := range errs {
 		details = append(details, invalidField{
@@ -65,7 +59,7 @@ func InvalidInput(errs map[string]string, transactionID string) *ErrorResponse {
 			Error: v,
 		})
 	}
-	return &ErrorResponse{
+	return &CustomError{
 		Status:        http.StatusBadRequest,
 		ErrorMessage:  "There is some problem with the data you submitted.",
 		Details:       details,

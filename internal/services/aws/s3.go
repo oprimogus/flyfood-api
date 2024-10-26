@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -43,8 +44,8 @@ func (c *ClientS3) CreateBucket(ctx context.Context, bucketName Bucket, region R
 		},
 	})
 	if err != nil {
-		log.Errorf("Couldn't create bucket %v in Region %v. Here's why: %v\n",
-			bucketName, region, err)
+		slog.ErrorContext(ctx, fmt.Sprintf("Couldn't create bucket %v in Region %v. Here's why: %v\n",
+			bucketName, region, err))
 		return err
 	}
 	return nil
@@ -63,8 +64,8 @@ func (c *ClientS3) BucketExists(ctx context.Context, bucketName Bucket) (bool, e
 				exists = false
 				err = nil
 			default:
-				log.Errorf("Either you don't have access to bucket %v or another error occurred. "+
-					"Here's what happened: %v\n", bucketName, err)
+				slog.ErrorContext(ctx, fmt.Sprintf("Either you don't have access to bucket %v or another error occurred. "+
+					"Here's what happened: %v\n", bucketName, err))
 			}
 		}
 	}
@@ -98,8 +99,8 @@ func (c *ClientS3) UploadFile(
 		Body:   buffer, // Alterado para bytes.Buffer
 	})
 	if err != nil {
-		log.Errorf("Couldn't upload large object to %v:%v. Here's why: %v\n",
-			bucketName, objectKey, err)
+		slog.ErrorContext(ctx, fmt.Sprintf("Couldn't upload large object to %v:%v. Here's why: %v\n",
+			bucketName, objectKey, err))
 		return "", err
 	}
 

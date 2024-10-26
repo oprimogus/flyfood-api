@@ -41,7 +41,7 @@ func (s *ServiceSuite) TestIsValidCpf() {
 		{"11111111111", false},
 	}
 	for _, test := range cases {
-		err := s.validator.Validate(test, transactionID)
+		err := s.validator.Validate(transactionID, test)
 		if test.expected {
 			assert.Nil(s.T(), err, fmt.Sprintf("Expect nil and got %s for cpf %s", err, test.Cpf))
 		} else {
@@ -65,11 +65,11 @@ func (s *ServiceSuite) TestIsValidCnpj() {
 	}
 
 	for _, test := range cases {
-		err := s.validator.Validate(test, transactionID)
+		err := s.validator.Validate(transactionID, test)
 		if test.Expected {
 			assert.Nil(s.T(), err, fmt.Sprintf("Expect nil and got %s for CNPJ %s", err, test.Cnpj))
 		} else {
-			assert.NotNil(s.T(), err, fmt.Sprintf("Expect error and got %s for CNPJ %s", err.ErrorMessage, test.Cnpj))
+			assert.NotNil(s.T(), err, fmt.Sprintf("Expect error and got %s for CNPJ %s", err, test.Cnpj))
 		}
 	}
 }
@@ -87,7 +87,7 @@ func (s *ServiceSuite) TestIsValidPhone() {
 		{"1234567890", false},
 	}
 	for _, test := range cases {
-		err := s.validator.Validate(test, transactionID)
+		err := s.validator.Validate(transactionID, test)
 		if test.expected {
 			assert.Nil(s.T(), err, fmt.Sprintf("Expect nil and got %s for phone %s", err, test.Phone))
 		} else {

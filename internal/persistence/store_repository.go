@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"mime/multipart"
 
 	"github.com/google/uuid"
@@ -309,7 +310,7 @@ func (s *StoreRepository) SetProfileImage(ctx context.Context, storeID string, i
 
 	objectURL, errOnUpload := awsInstance.S3.UploadFile(ctx, aws.BucketProfileImage, objectName, file)
 	if errOnUpload != nil {
-		log.Errorf("could not upload this file in S3 Bucket: %s", errOnUpload)
+		slog.ErrorContext(ctx, fmt.Sprintf("could not upload this file in S3 Bucket: %s", errOnUpload))
 		return "", errOnUpload
 	}
 
@@ -341,7 +342,7 @@ func (s *StoreRepository) SetHeaderImage(ctx context.Context, storeID string, im
 
 	objectURL, errOnUpload := awsInstance.S3.UploadFile(ctx, aws.BucketHeaderImage, objectName, file)
 	if errOnUpload != nil {
-		log.Errorf("could not upload this file in S3 Bucket: %s", errOnUpload)
+		slog.ErrorContext(ctx, fmt.Sprintf("could not upload this file in S3 Bucket: %s", errOnUpload))
 		return "", errOnUpload
 	}
 

@@ -8,17 +8,18 @@ import (
 
 	"github.com/oprimogus/cardapiogo/internal/core/authentication"
 	"github.com/oprimogus/cardapiogo/internal/core/user"
-	"github.com/oprimogus/cardapiogo/internal/errors"
+	xerrors "github.com/oprimogus/cardapiogo/internal/errors"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		transactionID := c.GetString(TransactionIDLabel)
+		transactionID := c.GetString(string(logger.TransactionIDKey))
 		token := c.GetHeader("Authorization")
 		if token == "" {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.Unauthorized("", transactionID))
+				xerrors.Unauthorized(transactionID, ""))
 			return
 		}
 		token = strings.Replace(token, "Bearer ", "", -1)
@@ -26,14 +27,14 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if err != nil {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.Unauthorized(err.Error(), transactionID))
+				xerrors.Unauthorized(transactionID, err.Error()))
 			return
 		}
 
 		if !isValidToken {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.Unauthorized("Invalid access token", transactionID))
+				xerrors.Unauthorized(transactionID, "Invalid access token"))
 			return
 		}
 
@@ -41,7 +42,7 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if err != nil {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.New(http.StatusUnauthorized, err.Error(), transactionID))
+				xerrors.New(transactionID, http.StatusUnauthorized, err.Error()))
 			return
 		}
 
@@ -49,7 +50,7 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if !ok {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.New(http.StatusUnauthorized, "Invalid token", transactionID))
+				xerrors.New(transactionID, http.StatusUnauthorized, "Invalid token"))
 			return
 		}
 
@@ -57,7 +58,7 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if !ok {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.New(http.StatusUnauthorized, "Invalid token", transactionID))
+				xerrors.New(transactionID, http.StatusUnauthorized, "Invalid token"))
 			return
 		}
 
@@ -70,7 +71,7 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 
 			}
 		}
-		c.Set("userID", claims["sub"])
+		c.Set("user_id", claims["sub"])
 		c.Set("userRoles", userRoles)
 		c.Next()
 	}

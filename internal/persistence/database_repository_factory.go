@@ -8,11 +8,6 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 	"github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/database/sqlc"
-	logger "github.com/oprimogus/cardapiogo/pkg/log"
-)
-
-var (
-	log = logger.NewLogger("RepositoryFactory")
 )
 
 type DatabaseRepositoryFactory struct {

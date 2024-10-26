@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -14,12 +15,10 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/oprimogus/cardapiogo/internal/config"
-	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 var (
 	instance *PostgresDatabase
-	log      = logger.NewLogger("Postgres")
 )
 
 type PostgresDatabase struct {
@@ -41,13 +40,13 @@ func createInstance() *PostgresDatabase {
 	var err error
 	database.pool, err = database.getPgxConnection(strConnection)
 	if err != nil {
-		log.Error(err)
+		slog.Error(err.Error())
 		panic(err)
 	}
 
 	database.sqlDB, err = database.getSQLDBConnection(strConnection)
 	if err != nil {
-		log.Error(err)
+		slog.Error(err.Error())
 		panic(err)
 	}
 	return database
@@ -95,7 +94,7 @@ func (d PostgresDatabase) Close() {
 func (d PostgresDatabase) Migrate() error {
 	sourceURL := "file://internal/database/migrations"
 	dbName := os.Getenv("DB_NAME")
-	log.Info("starting migration execution")
+	slog.Info("starting migration execution")
 	driver, err := postgres.WithInstance(d.sqlDB, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("database: could not create migration driver: %w", err)
@@ -109,9 +108,9 @@ func (d PostgresDatabase) Migrate() error {
 		return fmt.Errorf("database: Could not apply migrations: %w", err)
 	}
 	if err == migrate.ErrNoChange {
-		log.Info("No migrations to run.")
+		slog.Info("No migrations to run.")
 	} else {
-		log.Info("Migrations applied successfully.")
+		slog.Info("Migrations applied successfully.")
 	}
 	return nil
 }

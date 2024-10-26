@@ -2,17 +2,17 @@ package aws
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConf "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/oprimogus/cardapiogo/internal/config"
-	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 var (
-	log        = logger.NewLogger("AWS")
 	AwsService *AwsInstance
 )
 
@@ -34,7 +34,7 @@ func newAwsInstance(ctx context.Context) (awsInstance *AwsInstance, err error) {
 			),
 		))
 	if err != nil {
-		log.Errorf("fail on load default configuration from AWS: %s", err)
+		slog.ErrorContext(ctx, fmt.Sprintf("fail on load default configuration from AWS: %s", err))
 		return nil, err
 	}
 

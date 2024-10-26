@@ -1,17 +1,16 @@
 package config
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/subosito/gotenv"
 
 	"github.com/oprimogus/cardapiogo/internal/utils"
-	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 var (
 	conf *config
-	log  = logger.NewLogger("Config")
 )
 
 type dbConfig struct {
@@ -104,7 +103,7 @@ func newConfig() *config {
 	}
 	err = gotenv.Load(".env")
 	if err != nil {
-		log.Errorf("fail on load env vars: %s", err)
+		slog.Error("fail on load env vars: %s", err)
 		panic("fail on load env vars")
 	}
 	return &config{

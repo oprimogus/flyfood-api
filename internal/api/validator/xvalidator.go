@@ -73,7 +73,7 @@ func NewValidator(locale string) (*Validator, error) {
 	}, nil
 }
 
-func (v *Validator) Validate(i interface{}, transactionID string) *xerrors.ErrorResponse {
+func (v *Validator) Validate(transactionID string, i interface{}) error {
 	out := make(map[string]string)
 
 	err := v.Validator.Struct(i)
@@ -81,7 +81,7 @@ func (v *Validator) Validate(i interface{}, transactionID string) *xerrors.Error
 		errs, ok := err.(validator.ValidationErrors)
 		if !ok {
 			out["error"] = "Unknown validation error"
-			return xerrors.New(http.StatusBadRequest, out["error"], transactionID)
+			return xerrors.New(transactionID, http.StatusBadRequest, out["error"])
 		}
 
 		for _, e := range errs {
@@ -95,14 +95,14 @@ func (v *Validator) Validate(i interface{}, transactionID string) *xerrors.Error
 	}
 
 	if len(out) > 0 {
-		return xerrors.InvalidInput(out, transactionID)
+		return xerrors.InvalidInput(transactionID, out)
 	}
 	return nil
 }
 
 func errorPersonalized(locale string, tag string) string {
 	if locale == "pt" {
-		return fmt.Sprintf("Valor inválido para o campo %v.", tag)
+		return "Valor inválido"
 	}
 	return fmt.Sprintf("Invalid value for field %v", tag)
 }

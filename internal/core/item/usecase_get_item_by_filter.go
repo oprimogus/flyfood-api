@@ -8,10 +8,10 @@ type useCaseGetByFilter struct {
 	repository Repository
 }
 
-func NewUseCaseGetByFilter(repository Repository) *useCaseGetByFilter {
-	return &useCaseGetByFilter{repository: repository}
+func newUseCaseGetByFilter(repository Repository) useCaseGetByFilter {
+	return useCaseGetByFilter{repository: repository}
 }
 
-func (u *useCaseGetByFilter) Execute(ctx context.Context, filter GetItemFilterOutput) (*[]GetItemFilterOutput, error) {
+func (u useCaseGetByFilter) Execute(ctx context.Context, filter GetItemFilterInput) (*[]GetItemFilterOutput, error) {
 	return u.repository.GetItemsByFilter(ctx, filter)
 }

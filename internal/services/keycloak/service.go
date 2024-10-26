@@ -3,17 +3,16 @@ package keycloak
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/Nerzal/gocloak/v13"
 
 	"github.com/oprimogus/cardapiogo/internal/config"
-	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 var (
-	log              = logger.NewLogger("Keycloak")
 	keycloakInstance *KeycloakService
 )
 
@@ -26,9 +25,9 @@ type KeycloakService struct {
 	mu           sync.Mutex
 }
 
-func GetInstance(ctx context.Context) (k *KeycloakService, err error) {
+func GetInstance() (k *KeycloakService, err error) {
 	if keycloakInstance == nil {
-		keycloakInstance, err = newKeycloakService(ctx)
+		keycloakInstance, err = newKeycloakService(context.TODO())
 		if err != nil {
 			return keycloakInstance, err
 		}
@@ -43,7 +42,7 @@ func newKeycloakService(ctx context.Context) (k *KeycloakService, err error) {
 	client := gocloak.NewClient(config.BaseURL)
 	token, err := client.LoginClient(ctx, config.ClientID, config.ClientSecret, config.Realm)
 	if err != nil {
-		log.Errorf("fail on get keycloak client: %s", err)
+		slog.ErrorContext(ctx, fmt.Sprintf("fail on get keycloak client: %s", err))
 		return nil, fmt.Errorf("fail on get keycloak client: %w", err)
 	}
 	service := &KeycloakService{
@@ -64,14 +63,14 @@ func shouldRefreshToken(expirationTime time.Time) bool {
 }
 
 func (k *KeycloakService) startTokenRenewer(ctx context.Context) {
-	log.Info("Starting renew service...")
+	slog.InfoContext(ctx, "Starting renew service...", "service", "keycloak")
 
 	refreshBefore := time.Second * 60 // 1 min
 
-	accessTokenTicker, accessTokenExpireIn := k.startTicker("accessToken", refreshBefore, k.Token.ExpiresIn)
+	accessTokenTicker, accessTokenExpireIn := k.startTicker(ctx, "accessToken", refreshBefore, k.Token.ExpiresIn)
 	defer accessTokenTicker.Stop()
 
-	refreshTokenTicker, refreshTokenExpireIn := k.startTicker("refreshToken", refreshBefore, k.Token.RefreshExpiresIn)
+	refreshTokenTicker, refreshTokenExpireIn := k.startTicker(ctx, "refreshToken", refreshBefore, k.Token.RefreshExpiresIn)
 	defer refreshTokenTicker.Stop()
 
 	for {
@@ -81,17 +80,17 @@ func (k *KeycloakService) startTokenRenewer(ctx context.Context) {
 		case <-refreshTokenTicker.C:
 			k.handleTokenRenewal(ctx, refreshTokenExpireIn, true)
 		case <-ctx.Done():
-			log.Info("AccessToken renewal stopped")
+			slog.InfoContext(ctx, "AccessToken renewal stopped", "service", "keycloak")
 			return
 		}
 	}
 }
 
-func (k *KeycloakService) startTicker(name string, renewBefore time.Duration, tokenExpiresIn int) (ticker *time.Ticker, willExpireIn time.Time) {
+func (k *KeycloakService) startTicker(ctx context.Context, name string, renewBefore time.Duration, tokenExpiresIn int) (ticker *time.Ticker, willExpireIn time.Time) {
 	actualTime := time.Now()
 	tokenExpireIn := time.Second * time.Duration(tokenExpiresIn)
 	willExpireIn = actualTime.Add(time.Duration(tokenExpireIn) - renewBefore)
-	log.Infof("token %s will expire in: %s", name, willExpireIn)
+	slog.InfoContext(ctx, fmt.Sprintf("token %s will expire in: %s", name, willExpireIn), "service", "keycloak")
 
 	return time.NewTicker(time.Duration(tokenExpireIn) - renewBefore), willExpireIn
 }
@@ -111,11 +110,11 @@ func (k *KeycloakService) handleTokenRenewal(ctx context.Context, tokenExpireIn 
 		}
 
 		if err != nil {
-			log.Errorf("Failed to renew token: %v", err)
+			slog.ErrorContext(ctx, fmt.Sprintf("Failed to renew token: %v", err), "service", "keycloak")
 			return
 		}
 
 		k.Token = token
-		log.Infof("Token refreshed successfully (isRefreshToken: %v)", isRefreshToken)
+		slog.InfoContext(ctx, fmt.Sprintf("Token refreshed successfully (isRefreshToken: %v)", isRefreshToken), "service", "keycloak")
 	}
 }

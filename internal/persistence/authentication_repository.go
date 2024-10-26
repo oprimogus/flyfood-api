@@ -16,7 +16,7 @@ func NewAuthenticationRepository() *AuthenticationRepository {
 }
 
 func (a *AuthenticationRepository) SignIn(ctx context.Context, email, password string) (authentication.JWT, error) {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return authentication.JWT{}, err
 	}
@@ -38,7 +38,7 @@ func (a *AuthenticationRepository) SignIn(ctx context.Context, email, password s
 }
 
 func (a *AuthenticationRepository) RefreshToken(ctx context.Context, refreshToken string) (authentication.JWT, error) {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return authentication.JWT{}, err
 	}
@@ -61,7 +61,7 @@ func (a *AuthenticationRepository) RefreshToken(ctx context.Context, refreshToke
 }
 
 func (a *AuthenticationRepository) IsValidToken(ctx context.Context, token string) (bool, error) {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return false, err
 	}
@@ -77,7 +77,7 @@ func (a *AuthenticationRepository) IsValidToken(ctx context.Context, token strin
 }
 
 func (a *AuthenticationRepository) DecodeAccessToken(ctx context.Context, accessToken string) (map[string]interface{}, error) {
-	k, err := keycloak.GetInstance(ctx)
+	k, err := keycloak.GetInstance()
 	if err != nil {
 		return map[string]interface{}{}, err
 	}
