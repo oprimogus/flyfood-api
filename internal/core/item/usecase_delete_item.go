@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/oprimogus/cardapiogo/internal/core/store"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type useCaseDelete struct {
@@ -17,9 +18,9 @@ func NewUseCaseDelete(repository Repository, storeRepository store.Repository) *
 }
 
 func (u *useCaseDelete) Execute(ctx context.Context, storeID string, itemID int) error {
-	userID := ctx.Value("userID").(string)
-	if userID == "" {
-		return fmt.Errorf("invalid userID: %s", userID)
+	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
+	if !ok {
+		return fmt.Errorf("invalid userID: '%s'", userID)
 	}
 	isOwner, err := u.storeRepository.IsOwner(ctx, storeID, userID)
 	if err != nil {

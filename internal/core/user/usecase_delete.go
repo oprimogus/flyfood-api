@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
-	"errors"
+	"fmt"
+
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type useCaseDelete struct {
@@ -14,9 +16,9 @@ func newUseCaseDelete(repository Repository) useCaseDelete {
 }
 
 func (d useCaseDelete) Execute(ctx context.Context) error {
-	userID := ctx.Value("userID").(string)
-	if userID == "" {
-		return errors.New("invalid user")
+	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
+	if !ok {
+		return fmt.Errorf("invalid userID: '%s'", userID)
 	}
 	return d.repository.Delete(ctx, userID)
 }

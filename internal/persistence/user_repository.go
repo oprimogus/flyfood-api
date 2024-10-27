@@ -25,8 +25,11 @@ func entityUserToKeycloakUser(user user.User, userEnabled, userEmailVerified boo
 	if user.Profile.Document != "" {
 		attributes["document"] = []string{user.Profile.Document}
 	}
+	if user.Profile.Phone != "" {
+		attributes["phone"] = []string{user.Profile.Phone}
+	}
 
-	return &gocloak.User{
+	gocloakUser := gocloak.User{
 		FirstName:     &user.Profile.Name,
 		LastName:      &user.Profile.LastName,
 		Username:      &user.Email,
@@ -36,6 +39,7 @@ func entityUserToKeycloakUser(user user.User, userEnabled, userEmailVerified boo
 		RealmRoles:    &realmRoles,
 		Attributes:    &attributes,
 	}
+	return &gocloakUser
 }
 
 func keycloakUserToEntityUser(userGocloak *gocloak.User) user.User {
@@ -151,7 +155,6 @@ func (u *UserRepository) Update(ctx context.Context, user user.User) error {
 		return fmt.Errorf("fail in update user data: %w", errUpdateUser)
 	}
 	return nil
-
 }
 
 func (u *UserRepository) Delete(ctx context.Context, id string) error {
@@ -160,7 +163,6 @@ func (u *UserRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return k.Client.DeleteUser(ctx, k.Token.AccessToken, k.Realm, id)
-
 }
 
 func (u *UserRepository) ResetPasswordByEmail(ctx context.Context, id string) error {
@@ -227,4 +229,25 @@ func (u *UserRepository) AddRoles(ctx context.Context, userID string, roles []us
 		return fmt.Errorf("fail in set new roles for user: %w", errSetRoles)
 	}
 	return nil
+}
+
+func (u *UserRepository) GetUsers(ctx context.Context, params user.CreateParams) (users *[]user.User, err error) {
+	k, err := keycloak.GetInstance()
+	if err != nil {
+		return nil, err
+	}
+	exact := true
+	query := fmt.Sprintf("phone:%s email:%s", params.Profile.Phone, params.Email)
+	usersGoCloak, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
+		Exact: &exact,
+		Q:     &query,
+	})
+	if err != nil {
+		return nil, err
+	}
+	userList := make([]user.User, len(usersGoCloak))
+	for i, v := range usersGoCloak {
+		userList[i] = keycloakUserToEntityUser(v)
+	}
+	return &userList, nil
 }

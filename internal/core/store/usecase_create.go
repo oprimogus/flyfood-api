@@ -20,9 +20,6 @@ func newUseCaseCreate(repository Repository) useCaseCreate {
 func (c useCaseCreate) Execute(ctx context.Context, params CreateParams) (id string, err error) {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
-		userID = ""
-	}
-	if userID == "" {
 		return "", fmt.Errorf("invalid userID: '%s'", userID)
 	}
 	id, err = c.repository.Create(ctx, params.Entity(userID))

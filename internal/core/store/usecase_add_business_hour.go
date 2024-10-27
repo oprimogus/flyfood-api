@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type useCaseAddBusinessHour struct {
@@ -15,8 +17,8 @@ func newUseCaseAddBusinessHour(repository Repository) useCaseAddBusinessHour {
 }
 
 func (a useCaseAddBusinessHour) Execute(ctx context.Context, params StoreBusinessHoursParams) error {
-	userID := ctx.Value("userID").(string)
-	if userID == "" {
+	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
+	if !ok {
 		return fmt.Errorf("invalid userID: '%s'", userID)
 	}
 

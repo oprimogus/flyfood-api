@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type useCaseSetHeaderImage struct {
@@ -17,7 +19,10 @@ func newUseCaseSetHeaderImage(repository Repository) useCaseSetHeaderImage {
 }
 
 func (c useCaseSetHeaderImage) Execute(ctx context.Context, storeID string, image *multipart.FileHeader) (objectURL string, err error) {
-	userID := ctx.Value("userID").(string)
+	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
+	if !ok {
+		return "", fmt.Errorf("invalid userID: '%s'", userID)
+	}
 	if userID == "" {
 		return "", fmt.Errorf("invalid userID: '%s'", userID)
 	}

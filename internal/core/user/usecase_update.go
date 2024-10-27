@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
-	"errors"
+	"fmt"
+
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type useCaseUpdate struct {
@@ -16,9 +18,9 @@ func newUseCaseUpdate(repository Repository) useCaseUpdate {
 }
 
 func (c useCaseUpdate) Execute(ctx context.Context, input UpdateProfileParams) error {
-	userID := ctx.Value("userID").(string)
-	if userID == "" {
-		return errors.New("invalid user")
+	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
+	if !ok {
+		return fmt.Errorf("invalid userID: '%s'", userID)
 	}
 	user := input.ToEntity()
 	user.ID = userID

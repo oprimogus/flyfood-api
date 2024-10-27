@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
+
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type useCaseDeleteBusinessHour struct {
@@ -14,8 +16,8 @@ func newUseCaseDeleteBusinessHour(repository Repository) useCaseDeleteBusinessHo
 }
 
 func (d useCaseDeleteBusinessHour) Execute(ctx context.Context, params StoreBusinessHoursParams) error {
-	userID := ctx.Value("userID").(string)
-	if userID == "" {
+	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
+	if !ok {
 		return fmt.Errorf("invalid userID: '%s'", userID)
 	}
 

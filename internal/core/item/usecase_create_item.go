@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/oprimogus/cardapiogo/internal/core/store"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 type useCaseCreate struct {
@@ -17,9 +18,9 @@ func newUseCaseCreate(repository Repository, storeRepository store.Repository) u
 }
 
 func (u useCaseCreate) Execute(ctx context.Context, params CreateItemInput) (id int, err error) {
-	userID := ctx.Value("userID").(string)
-	if userID == "" {
-		return 0, fmt.Errorf("invalid userID: %s", userID)
+	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
+	if !ok {
+		return 0, fmt.Errorf("invalid userID: '%s'", userID)
 	}
 	isOwner, err := u.storeRepository.IsOwner(ctx, params.StoreID, userID)
 	if err != nil {
