@@ -12,6 +12,7 @@ import (
 	validatorutils "github.com/oprimogus/cardapiogo/internal/api/validator"
 	"github.com/oprimogus/cardapiogo/internal/config"
 	"github.com/oprimogus/cardapiogo/internal/core/authentication"
+	"github.com/oprimogus/cardapiogo/internal/core/user"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/persistence"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +37,7 @@ func (s *AuthControllerSuite) createUserMocked() {
 		"password": "teste123",
 		"profile": map[string]interface{}{
 			"lastName": "Doe",
-			"name":     "John",
+			"name":     "John Mock",
 			"phone":    "+5513995590865",
 		},
 	}
@@ -89,7 +90,7 @@ func (s *AuthControllerSuite) TestSignUp() {
 				"password": "teste123",
 				"profile": map[string]interface{}{
 					"lastName": "Doe",
-					"name":     "John",
+					"name":     "John 1",
 					"phone":    "+5513995590868",
 				},
 			},
@@ -103,13 +104,31 @@ func (s *AuthControllerSuite) TestSignUp() {
 				"password": "teste123",
 				"profile": map[string]interface{}{
 					"lastName": "Doe",
-					"name":     "John",
+					"name":     "John 2",
 					"phone":    "+5513995590865",
 				},
 			},
 			expectedStatusCode: 409,
 			expectedResponse: map[string]interface{}{
-				"error":         "exist user with this email",
+				"error":         user.ErrExistUserWithEmail.Error(),
+				"details":       nil,
+				"transactionID": "",
+			},
+		},
+		{
+			name: "Should return error when exist user with same phone",
+			requestBody: map[string]interface{}{
+				"email":    "johndoe2@example.com",
+				"password": "teste123",
+				"profile": map[string]interface{}{
+					"lastName": "Doe",
+					"name":     "John 3",
+					"phone":    "+5513995590865",
+				},
+			},
+			expectedStatusCode: 409,
+			expectedResponse: map[string]interface{}{
+				"error":         user.ErrExistUserWithPhone.Error(),
 				"details":       nil,
 				"transactionID": "",
 			},
@@ -132,7 +151,7 @@ func (s *AuthControllerSuite) TestSignUp() {
 		} else {
 			var responseBody interface{}
 			err := json.Unmarshal(w.Body.Bytes(), &responseBody)
-			assert.NoError(s.T(), err)
+			assert.NoError(s.T(), err, test.name)
 			assert.Equal(s.T(), test.expectedResponse, responseBody, test.name)
 		}
 	}

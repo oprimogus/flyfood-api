@@ -16,7 +16,11 @@ func newUseCaseCreate(repository Repository) useCaseCreate {
 }
 
 func (c useCaseCreate) Execute(ctx context.Context, input CreateParams) error {
-	users, err := c.repository.GetUsers(ctx, input)
+	getUsersWithUniqueParams := GetUsersWithUniqueParams{
+		Email: input.Email,
+		Phone: input.Profile.Phone,
+	}
+	users, err := c.repository.GetUsersWithUniqueParams(ctx, getUsersWithUniqueParams)
 	if err != nil {
 		return fmt.Errorf("fail on find users with input parameters: %w", err)
 	}

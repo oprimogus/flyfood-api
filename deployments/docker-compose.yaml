@@ -46,11 +46,13 @@ services:
       KC_DB_PASSWORD: cardapiogo
     ports:
       - 8080:8080
-    command: ["start-dev"]
+    command: ["start-dev", "--import-realm"]
+    volumes:
+      - ../test/integration/testdata/keycloak.json:/opt/keycloak/data/import/keycloak.json
     depends_on: 
       - create-keycloak-schema
     networks:
-      - observability  
+      - observability
   
   prometheus:
     image: bitnami/prometheus

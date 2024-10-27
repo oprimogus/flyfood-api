@@ -231,23 +231,46 @@ func (u *UserRepository) AddRoles(ctx context.Context, userID string, roles []us
 	return nil
 }
 
-func (u *UserRepository) GetUsers(ctx context.Context, params user.CreateParams) (users *[]user.User, err error) {
+func (u *UserRepository) GetUsersWithUniqueParams(ctx context.Context, params user.GetUsersWithUniqueParams) (*[]user.User, error) {
 	k, err := keycloak.GetInstance()
 	if err != nil {
 		return nil, err
 	}
+	query := fmt.Sprintf("phone:%s", params.Phone)
+	max := 1
 	exact := true
-	query := fmt.Sprintf("phone:%s email:%s", params.Profile.Phone, params.Email)
-	usersGoCloak, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
-		Exact: &exact,
+	usersWithPhone, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
+		Max: &max,
 		Q:     &query,
 	})
 	if err != nil {
 		return nil, err
 	}
-	userList := make([]user.User, len(usersGoCloak))
-	for i, v := range usersGoCloak {
-		userList[i] = keycloakUserToEntityUser(v)
+
+	usersWithEmail, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
+		Max: &max,
+		Email: &params.Email,
+		Exact: &exact,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	allUsers := make([]gocloak.User, len(usersWithEmail) + len(usersWithPhone))
+	copyIndex := 0
+
+	for _, v := range usersWithEmail {
+		allUsers[copyIndex] = *v
+		copyIndex++
+	}
+	for _, v := range usersWithPhone {
+		allUsers[copyIndex] = *v
+		copyIndex++
+	}
+
+	userList := make([]user.User, len(allUsers))
+	for i, v := range allUsers {
+		userList[i] = keycloakUserToEntityUser(&v)
 	}
 	return &userList, nil
 }
