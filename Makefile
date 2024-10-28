@@ -2,7 +2,7 @@ include .env
 export
 
 
-.PHONY: fmt lint install up down stop mock-database sqlc docs test test-integration migrate run
+.PHONY: fmt lint install up down stop mock-database sqlc docs test test-integration migrate run test test-integration test-benchmark coverage
 
 lint:
 	@gofmt -s -w .
@@ -32,17 +32,32 @@ docs:
 	make lint
 	swag init -g cmd/main.go -o api 
 
-test:
-	go test ./... -v -cover -coverprofile=cover.out
-
+# Executa somente testes unitários
 test-unit:
-	go test ./... -run Unit -v -cover -coverprofile=cover.out
+	go test ./... -v -count=1 -race -run "TestUnit" -cover -coverprofile=coverage.unit.out
 
+# Executa somente testes de integração
 test-integration:
-	go test ./... -run Integration -v -cover -coverprofile=cover.out
+	go test ./... -v -count=1 -race -run "TestIntegration" -cover -coverprofile=coverage.integration.out
 
-test-cover:
-	go tool cover -html=cover.out
+# Executa benchmarks
+test-benchmark:
+	go test ./... -v -run=^$ -bench=. -benchmem
+
+# Gera relatório de cobertura em HTML
+coverage:
+	go tool cover -html=coverage.out -o coverage.html
+
+# Limpa arquivos de coverage
+clean:
+	rm -f coverage.* 
+
+#Executa todos os testes
+test:
+	go test ./... -v -count=1 -race -cover -coverprofile=coverage.out
+
+# Executa todos os testes e gera relatório de cobertura
+test-all: clean test coverage
 
 dev:
 	make docs

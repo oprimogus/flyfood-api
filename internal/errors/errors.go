@@ -1,39 +1,46 @@
 package xerrors
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
+
 	"log/slog"
 	"net/http"
-	"strings"
-
-	"github.com/Nerzal/gocloak/v13"
 
 	"github.com/oprimogus/cardapiogo/internal/config"
-	"github.com/oprimogus/cardapiogo/internal/core/store"
-	"github.com/oprimogus/cardapiogo/internal/core/user"
 )
 
-var (
-	environment = config.GetInstance().Api.Environment
+const (
+	NOT_FOUND_RECORD      = "Record not found"
+	DUPLICATED_RECORD     = "There is a record with this data"
+	FOREIGN_KEY_VIOLATION = "Foreign key violation"
+	NULL_VIOLATION        = "Null value not allowed for column"
+	VALUE_TOO_LONG        = "Input value too long for column"
+	INTERNAL_SERVER_ERROR = "Internal Server Error"
+	TOO_MANY_VALUES       = "There is more than one record"
+	INVALID_VALUES        = "Invalid values for few fields"
+	UNKNOWN_ERROR         = "Unknown error"
 )
 
 type CustomError struct {
 	Status        int         `json:"-"`
 	ErrorMessage  string      `json:"error"`
-	Details       interface{} `json:"details"`
+	Details       interface{} `json:"details,omitempty"`
 	TransactionID string      `json:"transactionID"`
 	Debug         interface{} `json:"debug,omitempty"`
 }
 
 func New(transactionID string, status int, message string, details ...interface{}) *CustomError {
-	return &CustomError{
+	err := &CustomError{
 		Status:        status,
 		ErrorMessage:  message,
-		Details:       details,
 		TransactionID: transactionID,
 	}
+
+	if len(details) > 0 {
+		err.Details = details[0]
+	}
+
+	return err
 }
 
 func (e *CustomError) Error() string {
@@ -45,62 +52,26 @@ func (e *CustomError) StatusCode() int {
 }
 
 func HandleError(err error, transactionID string) *CustomError {
+	if err == nil {
+		return nil
+	}
+
 	slog.Debug(err.Error())
 
-	var unmarshalTypeError *json.UnmarshalTypeError
-	if errors.As(err, &unmarshalTypeError) {
-		er := err.(*json.UnmarshalTypeError)
-		return &CustomError{
-			Status: http.StatusBadRequest,
-			ErrorMessage: fmt.Sprintf(
-				"Invalid JSON: field %s is not valid for type %s",
-				er.Field,
-				er.Value),
-			Details:       er.Struct,
-			TransactionID: transactionID,
-		}
+	if jsonErr := handleJSONError(err, transactionID); jsonErr != nil {
+		return jsonErr
 	}
 
-	var jsonSyntaxError *json.SyntaxError
-	if errors.As(err, &jsonSyntaxError) {
-		er := err.(*json.SyntaxError)
-		return &CustomError{
-			Status:        http.StatusBadRequest,
-			ErrorMessage:  fmt.Sprintf("Invalid JSON: %s", er),
-			Details:       er.Offset,
-			TransactionID: transactionID,
-		}
+	if gocloakErr := handleGocloakError(err, transactionID); gocloakErr != nil {
+		return gocloakErr
 	}
 
-	var gocloakApiError *gocloak.APIError
-	if errors.As(err, &gocloakApiError) {
-		er := err.(*gocloak.APIError)
-		messages := strings.Split(er.Message, ":")
-		if environment != string(config.Production) {
-			if len(messages) == 2 {
-				return &CustomError{
-					Status:        er.Code,
-					ErrorMessage:  strings.TrimSpace(messages[len(messages)-1]),
-					TransactionID: transactionID,
-				}
-			}
-			return &CustomError{
-				Status:        er.Code,
-				ErrorMessage:  strings.TrimSpace(messages[len(messages)-1]),
-				Details:       strings.TrimSpace(messages[len(messages)-2]),
-				TransactionID: transactionID,
-			}
-		}
-		return &CustomError{
-			Status:        er.Code,
-			ErrorMessage:  "Occurred an error when you request was processed.",
-			TransactionID: transactionID,
-		}
+	if dbErr := handleDatabaseError(err, transactionID); dbErr != nil {
+		return dbErr
 	}
 
-	handledCoreError := handleCoreError(err, transactionID)
-	if handledCoreError != nil {
-		return handledCoreError
+	if coreErr := handleCoreError(err, transactionID); coreErr != nil {
+		return coreErr
 	}
 
 	var customError *CustomError
@@ -109,46 +80,9 @@ func HandleError(err error, transactionID string) *CustomError {
 		return customError
 	}
 
-	if isDatabaseError(err) {
-		return handleDatabaseErrors(err, transactionID)
+	if config.GetInstance().Api.Environment != string(config.Production) {
+		return New(transactionID, http.StatusInternalServerError, err.Error(), err)
 	}
 
-	if environment != string(config.Production) {
-		return &CustomError{
-			Status:        http.StatusInternalServerError,
-			ErrorMessage:  err.Error(),
-			Details:       err,
-			TransactionID: transactionID,
-		}
-	}
-
-	return &CustomError{
-		Status:        http.StatusInternalServerError,
-		ErrorMessage:  INTERNAL_SERVER_ERROR,
-		TransactionID: transactionID,
-	}
-
-}
-
-func handleCoreError(err error, transactionID string) *CustomError {
-	switch err {
-	case user.ErrExistUserWithDocument,
-		user.ErrExistUserWithEmail,
-		user.ErrExistUserWithPhone:
-		return &CustomError{
-			Status:        http.StatusConflict,
-			ErrorMessage:  err.Error(),
-			TransactionID: transactionID,
-		}
-	case store.ErrClosingTimeBeforeOpeningTime,
-		store.ErrOpeningTimeAfterClosingTime:
-		return &CustomError{
-			Status:        http.StatusBadRequest,
-			ErrorMessage:  err.Error(),
-			TransactionID: transactionID,
-		}
-	default:
-		return nil
-	}
-
+	return New(transactionID, http.StatusInternalServerError, INTERNAL_SERVER_ERROR)
 }

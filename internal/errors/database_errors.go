@@ -12,41 +12,8 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/config"
 )
 
-const (
-	NOT_FOUND_RECORD      = "Record not found"
-	DUPLICATED_RECORD     = "There is a record with this data"
-	FOREIGN_KEY_VIOLATION = "Foreign key violation"
-	NULL_VIOLATION        = "Null value not allowed for column"
-	VALUE_TOO_LONG        = "Input value too long for column"
-	INTERNAL_SERVER_ERROR = "Internal Server Error"
-	TOO_MANY_VALUES       = "There is more than one record"
-	INVALID_VALUES        = "Invalid values for few fields"
-	UNKNOWN_ERROR         = "Unknown error"
-)
-
-type fieldError struct {
-	Field   string      `json:"field"`
-	Input   string      `json:"input"`
-	Message string      `json:"message"`
-	Debug   interface{} `json:"debug,omitempty"`
-}
-
-func isDatabaseError(err error) bool {
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		return true
-	}
-	if errors.Is(err, pgx.ErrNoRows) {
-		return true
-	}
-	if errors.Is(err, pgx.ErrTooManyRows) {
-		return true
-	}
-	return false
-}
-
-func handleDatabaseErrors(err error, transactionID string) *CustomError {
-	if err == nil {
+func handleDatabaseError(err error, transactionID string) *CustomError {
+	if !isDatabaseError(err) {
 		return nil
 	}
 
@@ -67,13 +34,22 @@ func handleDatabaseErrors(err error, transactionID string) *CustomError {
 		case "23502", "22001", "22P02":
 			return handleColumnViolation(transactionID, pgErr)
 		default:
-			if environment != string(config.Production) {
+			if config.GetInstance().Api.Environment != string(config.Production) {
 				return New(transactionID, http.StatusInternalServerError, UNKNOWN_ERROR, pgErr)
 			}
 			return New(transactionID, http.StatusInternalServerError, UNKNOWN_ERROR)
 		}
 	}
+
 	return nil
+}
+
+// Utils
+func isDatabaseError(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) ||
+		errors.Is(err, pgx.ErrNoRows) ||
+		errors.Is(err, pgx.ErrTooManyRows)
 }
 
 func snakeToCamelCase(s string) string {
@@ -83,7 +59,6 @@ func snakeToCamelCase(s string) string {
 		words[i] = string(unicode.ToUpper(firstChar)) + words[i][1:]
 	}
 	return strings.Join(words, "")
-
 }
 
 func handleUniqueViolation(transactionID string, pgErr *pgconn.PgError) *CustomError {
@@ -95,27 +70,29 @@ func handleUniqueViolation(transactionID string, pgErr *pgconn.PgError) *CustomE
 	endValue := strings.LastIndex(pgErr.Detail, ")")
 	value := pgErr.Detail[startValue:endValue]
 
-	description := "This value is already in use"
-
-	fieldError := fieldError{
+	fieldErr := FieldError{
 		Field:   field,
 		Input:   value,
-		Message: description,
+		Message: "This value is already in use",
 	}
-	if environment != string(config.Production) {
-		fieldError.Debug = pgErr
+
+	if config.GetInstance().Api.Environment != string(config.Production) {
+		fieldErr.Debug = pgErr
 	}
-	return New(transactionID, http.StatusConflict, DUPLICATED_RECORD, fieldError)
+
+	return New(transactionID, http.StatusConflict, DUPLICATED_RECORD, fieldErr)
 }
 
 func handleColumnViolation(transactionID string, pgErr *pgconn.PgError) *CustomError {
-	fieldError := fieldError{
+	fieldErr := FieldError{
 		Field:   "",
 		Input:   "",
 		Message: pgErr.Message,
 	}
-	if environment != string(config.Production) {
-		fieldError.Debug = pgErr
+
+	if config.GetInstance().Api.Environment != string(config.Production) {
+		fieldErr.Debug = pgErr
 	}
-	return New(transactionID, http.StatusBadRequest, INVALID_VALUES, fieldError)
+
+	return New(transactionID, http.StatusBadRequest, INVALID_VALUES, fieldErr)
 }

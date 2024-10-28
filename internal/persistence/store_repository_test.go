@@ -34,6 +34,7 @@ func TestIntegrationStoreRepositorySuite(t *testing.T) {
 		panic("fail on initialize postgres with testContainers")
 	}
 	defer mockPostgres.Kill(ctx)
+
 	suite.Run(t, new(StoreRepositorySuite))
 }
 

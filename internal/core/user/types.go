@@ -67,6 +67,6 @@ type UpdatePasswordParams struct {
 }
 
 type GetUsersWithUniqueParams struct {
-	Email    string              `json:"email" validate:"required,email" example:"johndoe@example.com"`
-	Phone    string `json:"phone" validate:"required,phone" example:"13997590579"`
+	Email string `json:"email" validate:"required,email" example:"johndoe@example.com"`
+	Phone string `json:"phone" validate:"required,phone" example:"13997590579"`
 }

@@ -241,14 +241,14 @@ func (u *UserRepository) GetUsersWithUniqueParams(ctx context.Context, params us
 	exact := true
 	usersWithPhone, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
 		Max: &max,
-		Q:     &query,
+		Q:   &query,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	usersWithEmail, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
-		Max: &max,
+		Max:   &max,
 		Email: &params.Email,
 		Exact: &exact,
 	})
@@ -256,7 +256,7 @@ func (u *UserRepository) GetUsersWithUniqueParams(ctx context.Context, params us
 		return nil, err
 	}
 
-	allUsers := make([]gocloak.User, len(usersWithEmail) + len(usersWithPhone))
+	allUsers := make([]gocloak.User, len(usersWithEmail)+len(usersWithPhone))
 	copyIndex := 0
 
 	for _, v := range usersWithEmail {

@@ -2,6 +2,7 @@ package controller_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +16,7 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/persistence"
+	"github.com/oprimogus/cardapiogo/test/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -57,7 +59,7 @@ func (s *AuthControllerSuite) SetupSuite() {
 		s.T().Fatal("fail on make validator: %w", err)
 	}
 	db := postgresDB.GetInstance()
-	config.GetInstance().Api.Environment = string(config.Staging)
+	config.GetInstance().Api.Environment = string(config.Production)
 
 	factory := persistence.NewDataBaseRepositoryFactory(db)
 	s.authController = controller.NewAuthController(validator, factory.NewAuthenticationRepository())
@@ -72,6 +74,19 @@ func (s *AuthControllerSuite) SetupSuite() {
 }
 
 func TestIntegrationAuthControllerSuite(t *testing.T) {
+	ctx := context.Background()
+	postgres, err := integration.MakePostgres(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer postgres.Kill(ctx)
+
+	keycloak, err := integration.MakeKeycloak(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer keycloak.Kill(ctx)
+
 	suite.Run(t, new(AuthControllerSuite))
 }
 
@@ -111,7 +126,6 @@ func (s *AuthControllerSuite) TestSignUp() {
 			expectedStatusCode: 409,
 			expectedResponse: map[string]interface{}{
 				"error":         user.ErrExistUserWithEmail.Error(),
-				"details":       nil,
 				"transactionID": "",
 			},
 		},
@@ -129,7 +143,6 @@ func (s *AuthControllerSuite) TestSignUp() {
 			expectedStatusCode: 409,
 			expectedResponse: map[string]interface{}{
 				"error":         user.ErrExistUserWithPhone.Error(),
-				"details":       nil,
 				"transactionID": "",
 			},
 		},
@@ -167,6 +180,7 @@ func (s *AuthControllerSuite) TestSignIn() {
 	}{
 		{
 			name: "Should sign-in with success",
+			
 			requestBody: map[string]interface{}{
 				"email":    "johndoe@example.com",
 				"password": "teste123",
@@ -182,8 +196,7 @@ func (s *AuthControllerSuite) TestSignIn() {
 			},
 			expectedStatusCode: 401,
 			expectedResponse: map[string]interface{}{
-				"error":         "Invalid user credentials",
-				"details":       "invalid_grant",
+				"error":         "An authentication error occurred while processing your request.",
 				"transactionID": "",
 			},
 		},
@@ -213,13 +226,13 @@ func (s *AuthControllerSuite) TestSignIn() {
 			assert.Contains(s.T(), responseBody, "scope", test.name)
 
 			assert.IsType(s.T(), "", responseBody["accessToken"], test.name)
-			assert.IsType(s.T(), "", responseBody["idToken"])
+			assert.IsType(s.T(), "", responseBody["idToken"], test.name)
 			assert.IsType(s.T(), float64(0), responseBody["expiresIn"], test.name)
 			assert.IsType(s.T(), "", responseBody["refreshToken"], test.name)
 			assert.IsType(s.T(), "", responseBody["tokenType"], test.name)
 			assert.IsType(s.T(), "", responseBody["scope"], test.name)
 		} else {
-			assert.Equal(s.T(), test.expectedResponse, responseBody)
+			assert.Equal(s.T(), test.expectedResponse, responseBody, test.name)
 		}
 
 	}

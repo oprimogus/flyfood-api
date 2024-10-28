@@ -90,10 +90,10 @@ func (a aws) SessionKey() string {
 
 type config struct {
 	Database *dbConfig
-	Api      apiConfig
+	Api      *apiConfig
 	Keycloak *keycloakConfig
-	Resend   resendConfig
-	Aws      aws
+	Resend   *resendConfig
+	Aws      *aws
 }
 
 func newConfig() *config {
@@ -114,7 +114,7 @@ func newConfig() *config {
 			User:     os.Getenv("DB_USERNAME"),
 			Password: os.Getenv("DB_PASSWORD"),
 		},
-		Api: apiConfig{
+		Api: &apiConfig{
 			basePath:    os.Getenv("API_BASE_PATH"),
 			port:        os.Getenv("API_PORT"),
 			ginMode:     os.Getenv("GIN_MODE"),
@@ -127,10 +127,10 @@ func newConfig() *config {
 			ClientID:     os.Getenv("KEYCLOAK_CLIENT_ID"),
 			ClientSecret: os.Getenv("KEYCLOAK_CLIENT_SECRET"),
 		},
-		Resend: resendConfig{
+		Resend: &resendConfig{
 			apiKey: os.Getenv("RESEND_API_KEY"),
 		},
-		Aws: aws{
+		Aws: &aws{
 			region:          os.Getenv("AWS_REGION"),
 			accessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
 			secretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
