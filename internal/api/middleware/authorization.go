@@ -12,20 +12,20 @@ import (
 
 func AuthorizationMiddleware(allowedRoles []user.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		transactionID := c.GetString(string(logger.TransactionIDKey))
-		userRolesContext, exists := c.Get("userRoles")
+		traceID := c.GetString(string(logger.TraceIDKey))
+		userRolesContext, exists := c.Get("user_roles")
 		if !exists {
-			c.AbortWithStatusJSON(http.StatusForbidden, xerrors.Forbidden(transactionID, ""))
+			c.AbortWithStatusJSON(http.StatusForbidden, xerrors.Forbidden(traceID, ""))
 			return
 		}
 
 		userRoles, ok := userRolesContext.([]user.Role)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, xerrors.Forbidden(transactionID, ""))
+			c.AbortWithStatusJSON(http.StatusInternalServerError, xerrors.Forbidden(traceID, ""))
 			return
 		}
 		if len(userRoles) == 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden(transactionID, ""))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden(traceID, ""))
 			return
 		}
 
@@ -38,7 +38,7 @@ func AuthorizationMiddleware(allowedRoles []user.Role) gin.HandlerFunc {
 			}
 		}
 		if !isAllowed && len(allowedRoles) != 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden(transactionID, ""))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, xerrors.Forbidden(traceID, ""))
 			return
 		}
 		c.Next()

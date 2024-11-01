@@ -4,16 +4,16 @@ import (
 	"context"
 )
 
-type useCaseFindByEmail struct {
+type UseCaseFindByEmail struct {
 	repository Repository
 }
 
-func newUseCaseFindByEmail(repository Repository) useCaseFindByEmail {
-	return useCaseFindByEmail{
+func NewUseCaseFindByEmail(repository Repository) UseCaseFindByEmail {
+	return UseCaseFindByEmail{
 		repository: repository,
 	}
 }
 
-func (c useCaseFindByEmail) Execute(ctx context.Context, email string) (User, error) {
+func (c UseCaseFindByEmail) Execute(ctx context.Context, email string) (User, error) {
 	return c.repository.FindByEmail(ctx, email)
 }

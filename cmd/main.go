@@ -8,6 +8,7 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/config"
 	"github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/persistence"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter"
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
@@ -37,7 +38,12 @@ func main() {
 	db := postgres.GetInstance()
 	defer db.Close()
 
-	// routes
-	factoryRepository := persistence.NewDataBaseRepositoryFactory(db)
-	router.Initialize(factoryRepository)
+	// Service factory
+	serviceFactory := adapter.NewServiceFactory()
+
+	// Repository factory
+	repositoryFactory := persistence.NewDataBaseRepositoryFactory(db, serviceFactory)
+
+	// Web server
+	router.Initialize(repositoryFactory, serviceFactory)
 }

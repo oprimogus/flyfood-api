@@ -14,17 +14,17 @@ import (
 type ContextKey string
 
 const (
-	TransactionIDKey ContextKey = "transaction_id"
-	UserIDKey        ContextKey = "user_id"
-	RequestDataKey   ContextKey = "request_data"
+	TraceIDKey     ContextKey = "trace_id"
+	UserIDKey      ContextKey = "user_id"
+	RequestDataKey ContextKey = "request_data"
 )
 
 type RequestData struct {
-	UserID        string `json:"user_id"`
-	TransactionID string `json:"transaction_id"`
-	Method        string `json:"method"`
-	Path          string `json:"path"`
-	ClientIP      string `json:"client_ip"`
+	UserID   string `json:"user_id"`
+	TraceID  string `json:"trace_id"`
+	Method   string `json:"method"`
+	Path     string `json:"path"`
+	ClientIP string `json:"client_ip"`
 }
 
 type ContextualHandler struct {
@@ -53,7 +53,7 @@ func (h *ContextualHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	if reqData, ok := ctx.Value(RequestDataKey).(*RequestData); ok {
 		m["request"] = reqData
-		// m["transaction_id"] = reqData.TransactionID
+		// m["transaction_id"] = reqData.TraceID
 		// m["method"] = reqData.Method
 		// m["path"] = reqData.Path
 		// m["client_ip"] = reqData.ClientIP
@@ -90,18 +90,18 @@ func (h *ContextualHandler) WithGroup(string) slog.Handler {
 	return h
 }
 
-func LoggerMiddleware() gin.HandlerFunc {
+func GinMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetString(string(UserIDKey))
-		transactionID := uuid.New().String()
+		traceID := uuid.New().String()
 		reqData := &RequestData{
-			UserID:        userID,
-			TransactionID: transactionID,
-			Method:        c.Request.Method,
-			Path:          c.Request.URL.Path,
-			ClientIP:      c.ClientIP(),
+			UserID:   userID,
+			TraceID:  traceID,
+			Method:   c.Request.Method,
+			Path:     c.Request.URL.Path,
+			ClientIP: c.ClientIP(),
 		}
-		c.Set(string(TransactionIDKey), transactionID)
+		c.Set(string(TraceIDKey), traceID)
 		ctx := context.WithValue(c.Request.Context(), RequestDataKey, reqData)
 		c.Request = c.Request.WithContext(ctx)
 

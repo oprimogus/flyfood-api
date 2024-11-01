@@ -4,17 +4,17 @@ import (
 	"context"
 )
 
-type useCaseGetByFilter struct {
+type UseCaseGetByFilter struct {
 	repository Repository
 }
 
-func newUseCaseGetByFilter(repository Repository) useCaseGetByFilter {
-	return useCaseGetByFilter{
+func NewUseCaseGetByFilter(repository Repository) UseCaseGetByFilter {
+	return UseCaseGetByFilter{
 		repository: repository,
 	}
 }
 
-func (g useCaseGetByFilter) Execute(ctx context.Context, params StoreFilter) (*[]GetStoreByFilterOutput, error) {
+func (g UseCaseGetByFilter) Execute(ctx context.Context, params GetStoresFilterInput) (*[]GetStoreByFilterOutput, error) {
 	stores, err := g.repository.FindByFilter(ctx, params)
 	if err != nil {
 		return nil, err

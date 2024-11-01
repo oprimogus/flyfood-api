@@ -6,11 +6,11 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/api/controller"
 	validatorutils "github.com/oprimogus/cardapiogo/internal/api/validator"
 	"github.com/oprimogus/cardapiogo/internal/config"
-	"github.com/oprimogus/cardapiogo/internal/core"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter"
 )
 
-func AuthRoutes(router *gin.Engine, validator *validatorutils.Validator, factory core.RepositoryFactory) {
-	authRepository := factory.NewAuthenticationRepository()
+func AuthRoutes(router *gin.Engine, validator *validatorutils.Validator, factory adapter.Factory) {
+	authRepository := factory.NewIdentityService()
 	authController := controller.NewAuthController(validator, authRepository)
 
 	basePath := config.GetInstance().Api.BasePath()

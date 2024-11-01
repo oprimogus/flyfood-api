@@ -111,53 +111,58 @@ UPDATE item
 WHERE id = $1;
 
 -- name: GetItemByID :one
-SELECT 
-  i.name, 
-  i.type, 
-  i.description, 
-  i.score, 
-  i.image,
-  i.active, 
-  i.discount_active, 
-  i.discount_price, 
-  i.price,
-  i.detail
+SELECT
+    i.id,
+    i.store_id,
+    i.type,
+    i.name,
+    i.description,
+    i.score,
+    i.active,
+    i.discount_active,
+    i.image,
+    i.detail,
+    i.price,
+    i.discount_price,
+    i.created_at,
+    i.updated_at,
+    i.deleted_at
 FROM item i
 WHERE id = $1;
 
 -- name: GetItemByFilter :many
-SELECT 
-    i.id, 
-    i.store_id, 
-    i.type, 
+SELECT
+    i.id,
+    i.store_id,
+    i.type,
     i.name,
-    i.score, 
-    i.discount_active, 
-    i.discount_price, 
+    i.score,
+    i.discount_active,
+    i.discount_price,
     i.price,
     i.image,
-    CASE 
+    CASE
         WHEN i.discount_active = true THEN i.discount_price
         ELSE i.price
-    END AS final_price,
-    s.name AS store_name, 
-    s.score AS store_score, 
+        END AS final_price,
+    s.name AS store_name,
+    s.score AS store_score,
     s.profile_image
 FROM item i
-INNER JOIN store s ON s.id = i.store_id
+         INNER JOIN store s ON s.id = i.store_id
 WHERE 1 = 1
   AND s.city = @city::text
   AND i.active = true
   AND i.deleted_at IS NULL
   AND (COALESCE(NULLIF(@name::text, ''), i.name) IS NULL OR i.name LIKE '%' || COALESCE(NULLIF(@name::text, ''), i.name) || '%')
   AND (COALESCE(@score::int, i.score) IS NULL OR i.score >= COALESCE(@score::int, i.score))
-  AND (COALESCE(NULLIF(@type::"ItemType", '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF(@type::"ItemType", '')::"ItemType", i.type))
-  AND (COALESCE(@max_price::int, CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR 
-       CASE 
-         WHEN i.discount_active = true THEN i.discount_price 
-         ELSE i.price 
-       END <= COALESCE(@max_price::int, CASE 
-                             WHEN i.discount_active = true THEN i.discount_price 
-                             ELSE i.price 
+  AND (COALESCE(NULLIF(@type, '')::"ItemType", i.type) IS NULL OR i.type = COALESCE(NULLIF(@type, '')::"ItemType", i.type))
+  AND (COALESCE(NULLIF(@max_price::int, 0), CASE WHEN i.discount_active = true THEN i.discount_price ELSE i.price END) IS NULL OR
+       CASE
+         WHEN i.discount_active = true THEN i.discount_price
+         ELSE i.price
+       END <= COALESCE(NULLIF(@max_price::int, 0), CASE
+                             WHEN i.discount_active = true THEN i.discount_price
+                             ELSE i.price
                            END))
 ORDER BY i.score DESC, s.score DESC;

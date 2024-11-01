@@ -29,5 +29,11 @@ func ItemRoutes(router *gin.Engine,
 		v1.GET("/store/item/:id",
 			middleware.AuthenticationMiddleware(authenticationRepository),
 			itemController.GetItemByID)
+		v1.GET("/store/item",
+			middleware.AuthenticationMiddleware(authenticationRepository),
+			itemController.GetItemByFilter)
+		v1.DELETE("/store/item/:id",
+			middleware.AuthenticationMiddleware(authenticationRepository),
+			itemController.DeleteItem)
 	}
 }

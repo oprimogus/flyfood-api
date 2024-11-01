@@ -45,7 +45,7 @@ services:
       KC_DB_USERNAME: cardapiogo
       KC_DB_PASSWORD: cardapiogo
     ports:
-      - 8080:8080
+      - "8080:8080"
     command: ["start-dev", "--import-realm"]
     volumes:
       - ../test/integration/testdata/keycloak.json:/opt/keycloak/data/import/keycloak.json
@@ -58,7 +58,7 @@ services:
     image: bitnami/prometheus
     container_name: cardapiogo-prometheus
     ports:
-      - 9090:9090
+      - "9090:9090"
     volumes:
       - ../configs/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -98,7 +98,7 @@ services:
     image: grafana/grafana
     container_name: cardapiogo-grafana
     ports:
-      - 3001:3000
+      - "3001:3000"
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin

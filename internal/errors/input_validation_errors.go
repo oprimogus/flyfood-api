@@ -14,9 +14,9 @@ type InvalidField struct {
 	Error string `json:"error"`
 }
 
-const INVALID_INPUT_MESSAGE = "There are some problems with the data you submitted"
+const InvalidInputMessage = "There are some problems with the data you submitted"
 
-func InvalidInput(transactionID string, errs map[string]string) *CustomError {
+func InvalidInput(traceID string, errs map[string]string) *CustomError {
 	details := make([]InvalidField, 0, len(errs))
 	for field, msg := range errs {
 		details = append(details, InvalidField{
@@ -26,9 +26,9 @@ func InvalidInput(transactionID string, errs map[string]string) *CustomError {
 	}
 
 	return &CustomError{
-		Status:        http.StatusBadRequest,
-		ErrorMessage:  INVALID_INPUT_MESSAGE,
-		Details:       details,
-		TransactionID: transactionID,
+		Status:       http.StatusBadRequest,
+		ErrorMessage: InvalidInputMessage,
+		Details:      details,
+		TraceID:      traceID,
 	}
 }

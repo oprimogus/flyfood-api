@@ -4,16 +4,16 @@ import (
 	"context"
 )
 
-type useCaseRefresh struct {
+type UseCaseRefresh struct {
 	repository Repository
 }
 
-func newUseCaseRefresh(repository Repository) useCaseRefresh {
-	return useCaseRefresh{
+func NewUseCaseRefresh(repository Repository) UseCaseRefresh {
+	return UseCaseRefresh{
 		repository: repository,
 	}
 }
 
-func (s useCaseRefresh) Execute(ctx context.Context, refreshToken string) (JWT, error) {
+func (s UseCaseRefresh) Execute(ctx context.Context, refreshToken string) (JWT, error) {
 	return s.repository.RefreshToken(ctx, refreshToken)
 }

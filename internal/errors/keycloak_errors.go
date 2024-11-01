@@ -8,7 +8,7 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/config"
 )
 
-func handleGocloakError(err error, transactionID string) *CustomError {
+func handleGocloakError(err error, traceID string) *CustomError {
 	var gocloakApiError *gocloak.APIError
 	if !errors.As(err, &gocloakApiError) {
 		return nil
@@ -19,36 +19,44 @@ func handleGocloakError(err error, transactionID string) *CustomError {
 	if config.GetInstance().Api.Environment != string(config.Production) {
 		if len(messages) == 1 {
 			return &CustomError{
-				Status:        gocloakApiError.Code,
-				ErrorMessage:  strings.TrimSpace(messages[len(messages)-1]),
-				TransactionID: transactionID,
-				Debug: err,
+				Status:       gocloakApiError.Code,
+				ErrorMessage: strings.TrimSpace(messages[len(messages)-1]),
+				TraceID:      traceID,
+				Debug:        err,
 			}
 		}
 
 		if len(messages) == 2 {
 			return &CustomError{
-				Status:        gocloakApiError.Code,
-				ErrorMessage:  strings.TrimSpace(messages[len(messages)-1]),
-				TransactionID: transactionID,
-				Debug: err,
+				Status:       gocloakApiError.Code,
+				ErrorMessage: strings.TrimSpace(messages[len(messages)-1]),
+				TraceID:      traceID,
+				Debug:        err,
 			}
 		}
 
 		if len(messages) == 3 {
 			return &CustomError{
-				Status:        gocloakApiError.Code,
-				ErrorMessage:  strings.TrimSpace(messages[len(messages)-1]),
-				Details:       strings.TrimSpace(messages[len(messages)-2]),
-				TransactionID: transactionID,
-				Debug:         gocloakApiError,
+				Status:       gocloakApiError.Code,
+				ErrorMessage: strings.TrimSpace(messages[len(messages)-1]),
+				Details:      strings.TrimSpace(messages[len(messages)-2]),
+				TraceID:      traceID,
+				Debug:        gocloakApiError,
 			}
 		}
 	}
 
+	if gocloakApiError.Code == 401 && gocloakApiError.Type == "invalid_grant" {
+		return &CustomError{
+			Status:       gocloakApiError.Code,
+			ErrorMessage: "invalid email or password",
+			TraceID:      traceID,
+		}
+	}
+
 	return &CustomError{
-		Status:        gocloakApiError.Code,
-		ErrorMessage:  "An authentication error occurred while processing your request.",
-		TransactionID: transactionID,
+		Status:       gocloakApiError.Code,
+		ErrorMessage: "An authentication error occurred while processing your request.",
+		TraceID:      traceID,
 	}
 }

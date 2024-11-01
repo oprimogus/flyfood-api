@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-func handleJSONError(err error, transactionID string) *CustomError {
+func handleJSONError(err error, traceID string) *CustomError {
 	var unmarshalTypeError *json.UnmarshalTypeError
 	if errors.As(err, &unmarshalTypeError) {
 		return New(
-			transactionID,
+			traceID,
 			http.StatusBadRequest,
 			fmt.Sprintf(
 				"Invalid JSON: field %s is not valid for type %s",
@@ -25,7 +25,7 @@ func handleJSONError(err error, transactionID string) *CustomError {
 	var jsonSyntaxError *json.SyntaxError
 	if errors.As(err, &jsonSyntaxError) {
 		return New(
-			transactionID,
+			traceID,
 			http.StatusBadRequest,
 			fmt.Sprintf("Invalid JSON: %s", jsonSyntaxError),
 			jsonSyntaxError.Offset,

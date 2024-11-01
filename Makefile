@@ -61,7 +61,7 @@ test-all: clean test coverage
 
 dev:
 	make docs
-	air 
+	air
 
 run:
 	make docs

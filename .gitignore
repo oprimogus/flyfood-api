@@ -27,3 +27,6 @@ go.work
 # Air
 /tmp
 
+# IDE JetBrains
+.idea
+

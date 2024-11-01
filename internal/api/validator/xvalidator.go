@@ -1,6 +1,7 @@
 package xvalidator
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -8,8 +9,8 @@ import (
 	"github.com/go-playground/locales/pt"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
-	pt_translations "github.com/go-playground/validator/v10/translations/pt"
+	enTranslations "github.com/go-playground/validator/v10/translations/en"
+	ptTranslations "github.com/go-playground/validator/v10/translations/pt"
 
 	xerrors "github.com/oprimogus/cardapiogo/internal/errors"
 )
@@ -53,12 +54,12 @@ func NewValidator(locale string) (*Validator, error) {
 	}
 	switch locale {
 	case "en":
-		err := en_translations.RegisterDefaultTranslations(v, translator)
+		err := enTranslations.RegisterDefaultTranslations(v, translator)
 		if err != nil {
 			panic(fmt.Sprintf("Could not register locale %v translation: %v", locale, err))
 		}
 	case "pt":
-		err := pt_translations.RegisterDefaultTranslations(v, translator)
+		err := ptTranslations.RegisterDefaultTranslations(v, translator)
 		if err != nil {
 			panic(fmt.Sprintf("Could not register locale %v translation: %v", locale, err))
 		}
@@ -73,15 +74,16 @@ func NewValidator(locale string) (*Validator, error) {
 	}, nil
 }
 
-func (v *Validator) Validate(transactionID string, i interface{}) error {
+func (v *Validator) Validate(traceID string, i interface{}) error {
 	out := make(map[string]string)
 
 	err := v.Validator.Struct(i)
 	if err != nil {
-		errs, ok := err.(validator.ValidationErrors)
+		var errs validator.ValidationErrors
+		ok := errors.As(err, &errs)
 		if !ok {
 			out["error"] = "Unknown validation error"
-			return xerrors.New(transactionID, http.StatusBadRequest, out["error"])
+			return xerrors.New(traceID, http.StatusBadRequest, out["error"])
 		}
 
 		for _, e := range errs {
@@ -95,7 +97,7 @@ func (v *Validator) Validate(transactionID string, i interface{}) error {
 	}
 
 	if len(out) > 0 {
-		return xerrors.InvalidInput(transactionID, out)
+		return xerrors.InvalidInput(traceID, out)
 	}
 	return nil
 }

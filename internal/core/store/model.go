@@ -12,29 +12,29 @@ var ErrOpeningTimeAfterClosingTime = errors.New("openingTime cannot be after clo
 var ErrNotOwner = errors.New("only owner can do this action")
 
 const (
-	defaultStoreScore  = 500
+	DefaultScore       = 500
 	BusinessHourLayout = "15:04:05"
 )
 
 type ShopType string
 
 const (
-	StoreShopRestaurant  ShopType = "restaurant"
-	StoreShopPharmacy    ShopType = "pharmacy"
-	StoreShopTobbaco     ShopType = "tobbaco"
-	StoreShopMarket      ShopType = "market"
-	StoreShopConvenience ShopType = "convenience"
-	StoreShopPub         ShopType = "pub"
+	Restaurant  ShopType = "restaurant"
+	Pharmacy    ShopType = "pharmacy"
+	Tobbaco     ShopType = "tobbaco"
+	Market      ShopType = "market"
+	Convenience ShopType = "convenience"
+	Pub         ShopType = "pub"
 )
 
 func IsValidShopType(shopType string) bool {
 	switch ShopType(shopType) {
-	case StoreShopRestaurant,
-		StoreShopPharmacy,
-		StoreShopTobbaco,
-		StoreShopMarket,
-		StoreShopConvenience,
-		StoreShopPub:
+	case Restaurant,
+		Pharmacy,
+		Tobbaco,
+		Market,
+		Convenience,
+		Pub:
 		return true
 	default:
 		return false
@@ -99,16 +99,6 @@ func IsValidBusinessHourSlice(slice []BusinessHours) bool {
 	return true
 }
 
-type StoreFilter struct {
-	Range     int      `json:"range"`
-	Score     int      `json:"score"`
-	Name      string   `json:"name"`
-	City      string   `json:"city"`
-	Latitude  string   `json:"latitude"`
-	Longitude string   `json:"longitude"`
-	Type      ShopType `json:"type"`
-}
-
 type Store struct {
 	ID                 string          `json:"id" validate:"required,uuid"`
 	CpfCnpj            string          `json:"cpfCnpj" validate:"required,cpfCnpj"`
@@ -136,7 +126,7 @@ func NewStore(ownerID, name, cpfCnpj, phone string, address address.Address, sho
 		Phone:              phone,
 		Address:            address,
 		Type:               shopType,
-		Score:              defaultStoreScore,
+		Score:              DefaultScore,
 		BusinessHours:      []BusinessHours{},
 		PaymentMethodEnums: []PaymentMethod{},
 	}

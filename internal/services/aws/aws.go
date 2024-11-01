@@ -13,15 +13,15 @@ import (
 )
 
 var (
-	AwsService *AwsInstance
+	Service *Instance
 )
 
-type AwsInstance struct {
+type Instance struct {
 	conf aws.Config
 	S3   ClientS3
 }
 
-func newAwsInstance(ctx context.Context) (awsInstance *AwsInstance, err error) {
+func newAwsInstance(ctx context.Context) (awsInstance *Instance, err error) {
 	configInstance := config.GetInstance()
 	cfg, err := awsConf.LoadDefaultConfig(
 		ctx,
@@ -48,15 +48,15 @@ func newAwsInstance(ctx context.Context) (awsInstance *AwsInstance, err error) {
 		})
 	}
 
-	return &AwsInstance{
+	return &Instance{
 		conf: cfg,
 		S3:   NewClientS3(s3Client),
 	}, nil
 }
 
-func GetInstance(ctx context.Context) (awsInstance *AwsInstance, err error) {
-	if AwsService == nil {
+func GetInstance(ctx context.Context) (awsInstance *Instance, err error) {
+	if Service == nil {
 		return newAwsInstance(ctx)
 	}
-	return AwsService, nil
+	return Service, nil
 }

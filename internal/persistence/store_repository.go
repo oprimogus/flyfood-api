@@ -13,22 +13,23 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/core/store"
 	"github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/database/sqlc"
-	"github.com/oprimogus/cardapiogo/internal/services/aws"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter/storage"
 	"github.com/oprimogus/cardapiogo/pkg/converters"
 )
 
 type StoreRepository struct {
-	db      *postgres.PostgresDatabase
+	db      *postgres.Database
 	querier *sqlc.Queries
+	storage storage.Service
 }
 
-func NewStoreRepository(db *postgres.PostgresDatabase, querier *sqlc.Queries) *StoreRepository {
-	return &StoreRepository{db: db, querier: querier}
+func NewStoreRepository(db *postgres.Database, querier *sqlc.Queries, s storage.Service) *StoreRepository {
+	return &StoreRepository{db: db, querier: querier, storage: s}
 }
 
 func (s *StoreRepository) Create(ctx context.Context, params store.Store) (id string, err error) {
 
-	ownerIDUUID, err := converters.ConvertStringToUUID(params.OwnerID)
+	ownerIDUUID, err := converters.StringToUUID(params.OwnerID)
 	if err != nil {
 		return "", fmt.Errorf("fail in uuid convert: %w", err)
 	}
@@ -37,7 +38,7 @@ func (s *StoreRepository) Create(ctx context.Context, params store.Store) (id st
 	if err != nil {
 		return "", fmt.Errorf("fail in generate uuidv7: %w", err)
 	}
-	convertedStoreUUIDV7, err := converters.ConvertStringToUUID(storeID.String())
+	convertedStoreUUIDV7, err := converters.StringToUUID(storeID.String())
 	if err != nil {
 		return "", fmt.Errorf("fail in convert uuidv7: %w", err)
 	}
@@ -57,8 +58,8 @@ func (s *StoreRepository) Create(ctx context.Context, params store.Store) (id st
 		City:         params.Address.City,
 		State:        params.Address.State,
 		PostalCode:   params.Address.PostalCode,
-		Latitude:     converters.ConvertStringToText(params.Address.Latitude),
-		Longitude:    converters.ConvertStringToText(params.Address.Longitude),
+		Latitude:     converters.StringToText(params.Address.Latitude),
+		Longitude:    converters.StringToText(params.Address.Longitude),
 		Country:      params.Address.Country,
 	}
 	err = s.querier.CreateStore(ctx, args)
@@ -69,12 +70,12 @@ func (s *StoreRepository) Create(ctx context.Context, params store.Store) (id st
 }
 
 func (s *StoreRepository) Update(ctx context.Context, userID string, params store.Store) error {
-	convertedUserID, errUserID := converters.ConvertStringToUUID(userID)
+	convertedUserID, errUserID := converters.StringToUUID(userID)
 	if errUserID != nil {
 		return fmt.Errorf("fail in convert uuidv7: %w", errUserID)
 	}
 
-	convertedStoreID, errStoreId := converters.ConvertStringToUUID(params.ID)
+	convertedStoreID, errStoreId := converters.StringToUUID(params.ID)
 	if errStoreId != nil {
 		return fmt.Errorf("fail in convert uuidv7: %w", errStoreId)
 	}
@@ -100,7 +101,7 @@ func (s *StoreRepository) Update(ctx context.Context, userID string, params stor
 }
 
 func (s *StoreRepository) AddBusinessHour(ctx context.Context, storeID string, params []store.BusinessHours) error {
-	convertedStoreID, errStoreId := converters.ConvertStringToUUID(storeID)
+	convertedStoreID, errStoreId := converters.StringToUUID(storeID)
 	if errStoreId != nil {
 		return fmt.Errorf("fail in convert uuidv7: %w", errStoreId)
 	}
@@ -110,8 +111,8 @@ func (s *StoreRepository) AddBusinessHour(ctx context.Context, storeID string, p
 		argsSlice[i] = sqlc.AddBusinessHoursParams{
 			StoreID:     convertedStoreID,
 			WeekDay:     int32(v.WeekDay),
-			OpeningTime: converters.PgtypeTime(v.OpeningTime),
-			ClosingTime: converters.PgtypeTime(v.ClosingTime),
+			OpeningTime: converters.TimeToPgTime(v.OpeningTime),
+			ClosingTime: converters.TimeToPgTime(v.ClosingTime),
 			Timezone:    v.TimeZone,
 		}
 	}
@@ -126,7 +127,7 @@ func (s *StoreRepository) AddBusinessHour(ctx context.Context, storeID string, p
 }
 
 func (s *StoreRepository) DeleteBusinessHour(ctx context.Context, storeID string, params []store.BusinessHours) error {
-	convertedStoreID, errStoreId := converters.ConvertStringToUUID(storeID)
+	convertedStoreID, errStoreId := converters.StringToUUID(storeID)
 	if errStoreId != nil {
 		return fmt.Errorf("fail in convert uuidv7: %w", errStoreId)
 	}
@@ -136,8 +137,8 @@ func (s *StoreRepository) DeleteBusinessHour(ctx context.Context, storeID string
 		argsSlice[i] = sqlc.DeleteBusinessHoursParams{
 			StoreID:     convertedStoreID,
 			WeekDay:     int32(v.WeekDay),
-			OpeningTime: converters.PgtypeTime(v.OpeningTime),
-			ClosingTime: converters.PgtypeTime(v.ClosingTime),
+			OpeningTime: converters.TimeToPgTime(v.OpeningTime),
+			ClosingTime: converters.TimeToPgTime(v.ClosingTime),
 		}
 	}
 	batchDeleteBusinessHours := s.querier.DeleteBusinessHours(ctx, argsSlice)
@@ -146,7 +147,7 @@ func (s *StoreRepository) DeleteBusinessHour(ctx context.Context, storeID string
 }
 
 func (s *StoreRepository) FindByID(ctx context.Context, id string) (store.Store, error) {
-	convertedStoreID, errStoreId := converters.ConvertStringToUUID(id)
+	convertedStoreID, errStoreId := converters.StringToUUID(id)
 	if errStoreId != nil {
 		return store.Store{}, fmt.Errorf("fail in convert uuidv7: %w", errStoreId)
 	}
@@ -200,10 +201,10 @@ func (s *StoreRepository) FindByID(ctx context.Context, id string) (store.Store,
 	}, nil
 }
 
-func (s *StoreRepository) FindByFilter(ctx context.Context, params store.StoreFilter) (*[]store.Store, error) {
+func (s *StoreRepository) FindByFilter(ctx context.Context, params store.GetStoresFilterInput) (*[]store.Store, error) {
 
 	args := sqlc.GetStoreByFilterParams{
-		Column1: converters.ConvertStringToText(params.Name),
+		Column1: converters.StringToText(params.Name),
 		Column2: int32(params.Score),
 		Column3: params.Type,
 		Column4: params.City,
@@ -230,7 +231,7 @@ func (s *StoreRepository) FindByFilter(ctx context.Context, params store.StoreFi
 
 	stores := make([]store.Store, len(filteredStores))
 	for i, v := range filteredStores {
-		convertedID, errConvertUUID := converters.ConvertUUIDToString(v.ID)
+		convertedID, errConvertUUID := converters.UuidToString(v.ID)
 		if errConvertUUID != nil {
 			return nil, fmt.Errorf("fail on convert database UUID: %w", errConvertUUID)
 		}
@@ -279,12 +280,12 @@ func (s *StoreRepository) Enable(ctx context.Context, id string) error {
 }
 
 func (s *StoreRepository) IsOwner(ctx context.Context, id, userID string) (bool, error) {
-	convertedUserID, errUserID := converters.ConvertStringToUUID(userID)
+	convertedUserID, errUserID := converters.StringToUUID(userID)
 	if errUserID != nil {
 		return false, fmt.Errorf("fail in convert uuidv7: %w", errUserID)
 	}
 
-	convertedStoreID, errStoreId := converters.ConvertStringToUUID(id)
+	convertedStoreID, errStoreId := converters.StringToUUID(id)
 	if errStoreId != nil {
 		return false, fmt.Errorf("fail in convert uuidv7: %w", errStoreId)
 	}
@@ -296,11 +297,6 @@ func (s *StoreRepository) IsOwner(ctx context.Context, id, userID string) (bool,
 }
 
 func (s *StoreRepository) SetProfileImage(ctx context.Context, storeID string, image *multipart.FileHeader) (imageURL string, err error) {
-	awsInstance, err := aws.GetInstance(ctx)
-	if err != nil {
-		return "", err
-	}
-
 	objectName := fmt.Sprintf("%s-profile-image", storeID)
 
 	file, err := converters.FileHeaderToBytes(image)
@@ -308,13 +304,13 @@ func (s *StoreRepository) SetProfileImage(ctx context.Context, storeID string, i
 		return "", err
 	}
 
-	objectURL, errOnUpload := awsInstance.S3.UploadFile(ctx, aws.BucketProfileImage, objectName, file)
+	objectURL, errOnUpload := s.storage.UploadFile(ctx, storage.BucketProfileImage, objectName, file)
 	if errOnUpload != nil {
 		slog.ErrorContext(ctx, fmt.Sprintf("could not upload this file in S3 Bucket: %s", errOnUpload))
 		return "", errOnUpload
 	}
 
-	convertedStoreUUIDV7, err := converters.ConvertStringToUUID(storeID)
+	convertedStoreUUIDV7, err := converters.StringToUUID(storeID)
 	if err != nil {
 		return "", fmt.Errorf("fail in convert uuidv7: %w", err)
 	}
@@ -328,11 +324,6 @@ func (s *StoreRepository) SetProfileImage(ctx context.Context, storeID string, i
 }
 
 func (s *StoreRepository) SetHeaderImage(ctx context.Context, storeID string, image *multipart.FileHeader) (imageURL string, err error) {
-	awsInstance, err := aws.GetInstance(ctx)
-	if err != nil {
-		return "", err
-	}
-
 	objectName := fmt.Sprintf("%s-header-image", storeID)
 
 	file, err := converters.FileHeaderToBytes(image)
@@ -340,13 +331,13 @@ func (s *StoreRepository) SetHeaderImage(ctx context.Context, storeID string, im
 		return "", err
 	}
 
-	objectURL, errOnUpload := awsInstance.S3.UploadFile(ctx, aws.BucketHeaderImage, objectName, file)
+	objectURL, errOnUpload := s.storage.UploadFile(ctx, storage.BucketHeaderImage, objectName, file)
 	if errOnUpload != nil {
 		slog.ErrorContext(ctx, fmt.Sprintf("could not upload this file in S3 Bucket: %s", errOnUpload))
 		return "", errOnUpload
 	}
 
-	convertedStoreUUIDV7, err := converters.ConvertStringToUUID(storeID)
+	convertedStoreUUIDV7, err := converters.StringToUUID(storeID)
 	if err != nil {
 		return "", fmt.Errorf("fail in convert uuidv7: %w", err)
 	}

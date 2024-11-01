@@ -8,21 +8,27 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseDelete struct {
+type UseCaseDelete struct {
 	repository      Repository
 	storeRepository store.Repository
 }
 
-func NewUseCaseDelete(repository Repository, storeRepository store.Repository) *useCaseDelete {
-	return &useCaseDelete{repository: repository, storeRepository: storeRepository}
+func NewUseCaseDelete(repository Repository, storeRepository store.Repository) UseCaseDelete {
+	return UseCaseDelete{repository: repository, storeRepository: storeRepository}
 }
 
-func (u *useCaseDelete) Execute(ctx context.Context, storeID string, itemID int) error {
+func (u UseCaseDelete) Execute(ctx context.Context, id int) error {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return fmt.Errorf("invalid userID: '%s'", userID)
 	}
-	isOwner, err := u.storeRepository.IsOwner(ctx, storeID, userID)
+
+	item, err := u.repository.GetItemByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	isOwner, err := u.storeRepository.IsOwner(ctx, item.StoreID, userID)
 	if err != nil {
 		return err
 	}
@@ -31,5 +37,5 @@ func (u *useCaseDelete) Execute(ctx context.Context, storeID string, itemID int)
 		return store.ErrNotOwner
 	}
 
-	return u.repository.DeleteItem(ctx, itemID)
+	return u.repository.DeleteItem(ctx, id)
 }

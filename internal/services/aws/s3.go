@@ -13,13 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	"github.com/oprimogus/cardapiogo/internal/config"
-)
-
-type Bucket string
-
-const (
-	BucketProfileImage Bucket = "cardapiogo-profile-images"
-	BucketHeaderImage  Bucket = "cardapiogo-header-images"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter/storage"
 )
 
 type Region string
@@ -36,22 +30,22 @@ func NewClientS3(s3 *s3.Client) ClientS3 {
 	return ClientS3{s3: s3}
 }
 
-func (c *ClientS3) CreateBucket(ctx context.Context, bucketName Bucket, region Region) error {
+func (c *ClientS3) CreateBucket(ctx context.Context, bucketName storage.Bucket) error {
 	_, err := c.s3.CreateBucket(ctx, &s3.CreateBucketInput{
-		Bucket: aws.String((string(bucketName))),
+		Bucket: aws.String(string(bucketName)),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: types.BucketLocationConstraint(region),
+			LocationConstraint: types.BucketLocationConstraint(SouthEast1),
 		},
 	})
 	if err != nil {
 		slog.ErrorContext(ctx, fmt.Sprintf("Couldn't create bucket %v in Region %v. Here's why: %v\n",
-			bucketName, region, err))
+			bucketName, SouthEast1, err))
 		return err
 	}
 	return nil
 }
 
-func (c *ClientS3) BucketExists(ctx context.Context, bucketName Bucket) (bool, error) {
+func (c *ClientS3) BucketExists(ctx context.Context, bucketName storage.Bucket) (bool, error) {
 	_, err := c.s3.HeadBucket(ctx, &s3.HeadBucketInput{
 		Bucket: aws.String(string(bucketName)),
 	})
@@ -59,8 +53,9 @@ func (c *ClientS3) BucketExists(ctx context.Context, bucketName Bucket) (bool, e
 	if err != nil {
 		var apiError smithy.APIError
 		if errors.As(err, &apiError) {
-			switch apiError.(type) {
-			case *types.NotFound:
+			var notFound *types.NotFound
+			switch {
+			case errors.As(apiError, &notFound):
 				exists = false
 				err = nil
 			default:
@@ -73,7 +68,7 @@ func (c *ClientS3) BucketExists(ctx context.Context, bucketName Bucket) (bool, e
 	return exists, err
 }
 
-func (c *ClientS3) getPublicObjectUrl(bucketName Bucket, region Region, objectKey string) string {
+func (c *ClientS3) getPublicObjectUrl(bucketName storage.Bucket, region Region, objectKey string) string {
 	configInstance := config.GetInstance()
 	if configInstance.Api.Environment == string(config.Production) {
 		return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, objectKey)
@@ -83,7 +78,7 @@ func (c *ClientS3) getPublicObjectUrl(bucketName Bucket, region Region, objectKe
 
 func (c *ClientS3) UploadFile(
 	ctx context.Context,
-	bucketName Bucket,
+	bucketName storage.Bucket,
 	objectKey string,
 	file []byte) (objectURL string, err error) {
 

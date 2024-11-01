@@ -12,11 +12,12 @@ import (
 	validatorutils "github.com/oprimogus/cardapiogo/internal/api/validator"
 	"github.com/oprimogus/cardapiogo/internal/config"
 	"github.com/oprimogus/cardapiogo/internal/core"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter"
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
 // Initialize API
-func Initialize(factory core.RepositoryFactory) {
+func Initialize(repositoryFactory core.RepositoryFactory, serviceFactory adapter.Factory) {
 	validator, err := validatorutils.NewValidator("pt")
 	if err != nil && validator == nil {
 		panic(err)
@@ -24,7 +25,7 @@ func Initialize(factory core.RepositoryFactory) {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(logger.LoggerMiddleware())
+	router.Use(logger.GinMiddleware())
 	router.Use(middleware.CorsMiddleware())
 
 	metrics := middleware.NewPrometheusMetrics()
@@ -34,12 +35,12 @@ func Initialize(factory core.RepositoryFactory) {
 
 	routes.DefaultRoutes(router, metrics.Registry)
 	routes.SwaggerRoutes(router)
-	routes.AuthRoutes(router, validator, factory)
-	routes.UserRoutes(router, validator, factory)
-	routes.StoreRoutes(router, validator, factory)
-	routes.ItemRoutes(router, validator, factory)
-	config := config.GetInstance().Api
-	port := config.Port()
+	routes.AuthRoutes(router, validator, serviceFactory)
+	routes.UserRoutes(router, validator, serviceFactory)
+	routes.StoreRoutes(router, validator, repositoryFactory)
+	routes.ItemRoutes(router, validator, repositoryFactory)
+	configInstance := config.GetInstance().Api
+	port := configInstance.Port()
 	if port == "" {
 		port = "3000"
 	}

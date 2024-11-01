@@ -20,17 +20,17 @@ import (
 
 func MakePostgres(ctx context.Context) (*Container, error) {
 	_ = utils.SetWorkingDirToProjectRoot()
-	config := config.GetInstance().Database
-	config.Host = "localhost"
-	config.User = "cardapiogo"
-	config.Name = "postgres"
-	config.Password = "cardapiogo"
+	configInstance := config.GetInstance().Database
+	configInstance.Host = "localhost"
+	configInstance.User = "cardapiogo"
+	configInstance.Name = "postgres"
+	configInstance.Password = "cardapiogo"
 	postgresContainer, err := postgres.Run(ctx,
 		"docker.io/postgres:16-alpine",
 		postgres.WithInitScripts(filepath.Join("test", "integration", "testdata", "postgres-init.sh")),
-		postgres.WithDatabase(config.Name),
-		postgres.WithUsername(config.User),
-		postgres.WithPassword(config.Password),
+		postgres.WithDatabase(configInstance.Name),
+		postgres.WithUsername(configInstance.User),
+		postgres.WithPassword(configInstance.Password),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
@@ -46,7 +46,7 @@ func MakePostgres(ctx context.Context) (*Container, error) {
 		slog.ErrorContext(ctx, fmt.Sprintf("failed to get mapped port: %s", err))
 		return nil, err
 	}
-	config.Port = strings.Replace(string(hostPort), "/tcp", "", -1)
+	configInstance.Port = strings.Replace(string(hostPort), "/tcp", "", -1)
 
 	errOnMigration := postgresDB.GetInstance().Migrate()
 	if errOnMigration != nil {

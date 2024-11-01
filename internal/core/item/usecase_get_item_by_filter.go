@@ -4,14 +4,14 @@ import (
 	"context"
 )
 
-type useCaseGetByFilter struct {
+type UseCaseGetByFilter struct {
 	repository Repository
 }
 
-func newUseCaseGetByFilter(repository Repository) useCaseGetByFilter {
-	return useCaseGetByFilter{repository: repository}
+func NewUseCaseGetByFilter(repository Repository) UseCaseGetByFilter {
+	return UseCaseGetByFilter{repository: repository}
 }
 
-func (u useCaseGetByFilter) Execute(ctx context.Context, filter GetItemFilterInput) (*[]GetItemFilterOutput, error) {
+func (u UseCaseGetByFilter) Execute(ctx context.Context, filter GetItemFilterInput) (*[]GetItemFilterOutput, error) {
 	return u.repository.GetItemsByFilter(ctx, filter)
 }

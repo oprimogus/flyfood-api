@@ -12,17 +12,17 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/config"
 )
 
-func handleDatabaseError(err error, transactionID string) *CustomError {
+func handleDatabaseError(err error, traceID string) *CustomError {
 	if !isDatabaseError(err) {
 		return nil
 	}
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return New(transactionID, http.StatusNotFound, NOT_FOUND_RECORD)
+		return New(traceID, http.StatusNotFound, NotFoundRecord)
 	}
 
 	if errors.Is(err, pgx.ErrTooManyRows) {
-		return New(transactionID, http.StatusInternalServerError, TOO_MANY_VALUES)
+		return New(traceID, http.StatusInternalServerError, TooManyValues)
 	}
 
 	var pgErr *pgconn.PgError
@@ -30,14 +30,14 @@ func handleDatabaseError(err error, transactionID string) *CustomError {
 		slog.Error(pgErr.Error())
 		switch pgErr.Code {
 		case "23505":
-			return handleUniqueViolation(transactionID, pgErr)
+			return handleUniqueViolation(traceID, pgErr)
 		case "23502", "22001", "22P02":
-			return handleColumnViolation(transactionID, pgErr)
+			return handleColumnViolation(traceID, pgErr)
 		default:
 			if config.GetInstance().Api.Environment != string(config.Production) {
-				return New(transactionID, http.StatusInternalServerError, UNKNOWN_ERROR, pgErr)
+				return New(traceID, http.StatusInternalServerError, UnknownError, pgErr)
 			}
-			return New(transactionID, http.StatusInternalServerError, UNKNOWN_ERROR)
+			return New(traceID, http.StatusInternalServerError, UnknownError)
 		}
 	}
 
@@ -61,7 +61,7 @@ func snakeToCamelCase(s string) string {
 	return strings.Join(words, "")
 }
 
-func handleUniqueViolation(transactionID string, pgErr *pgconn.PgError) *CustomError {
+func handleUniqueViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
 	startField := strings.Index(pgErr.Detail, "(") + 1
 	endField := strings.Index(pgErr.Detail, ")=")
 	field := snakeToCamelCase(pgErr.Detail[startField:endField])
@@ -80,10 +80,10 @@ func handleUniqueViolation(transactionID string, pgErr *pgconn.PgError) *CustomE
 		fieldErr.Debug = pgErr
 	}
 
-	return New(transactionID, http.StatusConflict, DUPLICATED_RECORD, fieldErr)
+	return New(traceID, http.StatusConflict, DuplicatedRecord, fieldErr)
 }
 
-func handleColumnViolation(transactionID string, pgErr *pgconn.PgError) *CustomError {
+func handleColumnViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
 	fieldErr := FieldError{
 		Field:   "",
 		Input:   "",
@@ -94,5 +94,5 @@ func handleColumnViolation(transactionID string, pgErr *pgconn.PgError) *CustomE
 		fieldErr.Debug = pgErr
 	}
 
-	return New(transactionID, http.StatusBadRequest, INVALID_VALUES, fieldErr)
+	return New(traceID, http.StatusBadRequest, InvalidValues, fieldErr)
 }

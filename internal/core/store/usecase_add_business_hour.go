@@ -8,15 +8,15 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseAddBusinessHour struct {
+type UseCaseAddBusinessHour struct {
 	repository Repository
 }
 
-func newUseCaseAddBusinessHour(repository Repository) useCaseAddBusinessHour {
-	return useCaseAddBusinessHour{repository: repository}
+func NewUseCaseAddBusinessHour(repository Repository) UseCaseAddBusinessHour {
+	return UseCaseAddBusinessHour{repository: repository}
 }
 
-func (a useCaseAddBusinessHour) Execute(ctx context.Context, params StoreBusinessHoursParams) error {
+func (a UseCaseAddBusinessHour) Execute(ctx context.Context, params StoreBusinessHoursParams) error {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return fmt.Errorf("invalid userID: '%s'", userID)
@@ -51,7 +51,7 @@ func (a useCaseAddBusinessHour) Execute(ctx context.Context, params StoreBusines
 		closingTime := time.Date(1970, time.January, 1, closingTimeParsed.Hour(), closingTimeParsed.Minute(), closingTimeParsed.Second(), 0, zone)
 
 		businessHours[i] = BusinessHours{
-			WeekDay:     int(v.WeekDay),
+			WeekDay:     v.WeekDay,
 			OpeningTime: openingTime,
 			ClosingTime: closingTime,
 			TimeZone:    params.TimeZone,

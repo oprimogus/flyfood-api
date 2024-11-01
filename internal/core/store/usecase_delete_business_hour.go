@@ -7,15 +7,15 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseDeleteBusinessHour struct {
+type UseCaseDeleteBusinessHour struct {
 	repository Repository
 }
 
-func newUseCaseDeleteBusinessHour(repository Repository) useCaseDeleteBusinessHour {
-	return useCaseDeleteBusinessHour{repository: repository}
+func NewUseCaseDeleteBusinessHour(repository Repository) UseCaseDeleteBusinessHour {
+	return UseCaseDeleteBusinessHour{repository: repository}
 }
 
-func (d useCaseDeleteBusinessHour) Execute(ctx context.Context, params StoreBusinessHoursParams) error {
+func (d UseCaseDeleteBusinessHour) Execute(ctx context.Context, params StoreBusinessHoursParams) error {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return fmt.Errorf("invalid userID: '%s'", userID)

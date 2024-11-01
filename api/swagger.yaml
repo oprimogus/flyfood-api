@@ -116,7 +116,7 @@ definitions:
         type: string
       type:
         allOf:
-        - $ref: '#/definitions/item.ItemType'
+        - $ref: '#/definitions/item.Type'
         enum:
         - FOOD
         - ' WATERGALLON'
@@ -165,9 +165,12 @@ definitions:
       score:
         example: 475
         type: integer
+      storeID:
+        example: 3279gbf23gb-fb23-6f239
+        type: string
       type:
         allOf:
-        - $ref: '#/definitions/item.ItemType'
+        - $ref: '#/definitions/item.Type'
         enum:
         - FOOD
         - ' WATERGALLON'
@@ -180,44 +183,60 @@ definitions:
     - name
     - price
     - score
+    - storeID
     - type
     type: object
-  item.GetItemFilterInput:
-    properties:
-      city:
-        example: Guarujá
-        type: string
-      maxPrice:
-        example: 4990
-        type: integer
-      name:
-        example: Burguer
-        maxLength: 25
-        type: string
-      score:
-        example: 419
-        type: integer
-      type:
-        allOf:
-        - $ref: '#/definitions/item.ItemType'
-        enum:
-        - FOOD
-        - ' WATERGALLON'
-    required:
-    - city
-    - maxPrice
-    - name
-    - score
-    - type
-    type: object
-  item.ItemType:
+  item.Type:
     enum:
     - FOOD
     - WATERGALLON
     type: string
     x-enum-varnames:
-    - FoodItemType
-    - WaterGallonItemType
+    - Food
+    - WaterGallon
+  item.UpdateItemInput:
+    properties:
+      active:
+        type: boolean
+      description:
+        maxLength: 50
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      discountActive:
+        type: boolean
+      discountPrice:
+        minimum: 0
+        type: integer
+      id:
+        example: 246643
+        type: integer
+      name:
+        maxLength: 25
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      storeID:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/item.Type'
+        enum:
+        - FOOD
+        - ' WATERGALLON'
+    required:
+    - active
+    - description
+    - discountActive
+    - discountPrice
+    - id
+    - name
+    - price
+    - storeID
+    - type
+    type: object
   store.AddressOutput:
     properties:
       addressLine1:
@@ -345,12 +364,12 @@ definitions:
     - pub
     type: string
     x-enum-varnames:
-    - StoreShopRestaurant
-    - StoreShopPharmacy
-    - StoreShopTobbaco
-    - StoreShopMarket
-    - StoreShopConvenience
-    - StoreShopPub
+    - Restaurant
+    - Pharmacy
+    - Tobbaco
+    - Market
+    - Convenience
+    - Pub
   store.StoreBusinessHoursParams:
     properties:
       businessHours:
@@ -483,7 +502,7 @@ definitions:
       details: {}
       error:
         type: string
-      transactionID:
+      traceID:
         type: string
     type: object
 host: localhost:3000
@@ -554,6 +573,10 @@ paths:
           description: Bad request due to validation errors or malformed input.
           schema:
             $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
           description: Internal server error, something went wrong while processing
             the request.
@@ -601,34 +624,35 @@ paths:
     get:
       consumes:
       - application/json
-      description: Fetches stores based on a set of filters such as range, score,
-        name, city, or type.
+      description: |-
+        Returns a list of stores based on various filter criteria including location, rating, and type.
+        Supports geographic search with radius filtering when latitude and longitude are provided.
       parameters:
-      - description: Specify max range
+      - description: Maximum distance range in kilometers for geographical search
         in: query
         name: range
         type: integer
-      - description: Specify in score
+      - description: Minimum rating score (1-5)
         in: query
         name: score
         type: integer
-      - description: Specify name like
+      - description: Store name for partial matching
         in: query
         name: name
         type: string
-      - description: Specify city
+      - description: Filter by city name
         in: query
         name: city
         type: string
-      - description: latitude of address selected
+      - description: Latitude for geographical search (requires longitude)
         in: query
         name: latitude
         type: string
-      - description: longitude of address selected
+      - description: Longitude for geographical search (requires latitude)
         in: query
         name: longitude
         type: string
-      - description: Specify store type
+      - description: Store type category (e.g., restaurant, cafe, bar)
         in: query
         name: type
         type: string
@@ -636,32 +660,39 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: List of stores matching the filter criteria
           schema:
             items:
               $ref: '#/definitions/store.GetStoreByIdOutput'
             type: array
+        "400":
+          description: Invalid filter parameters
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
         "404":
-          description: Not Found
+          description: No stores found
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-      summary: Any user can view filtered stores.
+      summary: Search and filter stores
       tags:
       - Store
     post:
       consumes:
       - application/json
-      description: Allows an owner to create a new store.
+      description: |-
+        Allows authenticated users to register a new store in the system.
+        The store owner must provide essential information including name, location, and contact details.
       parameters:
-      - description: Parameters for creating a store
+      - description: Store creation parameters including name, address, contact info,
+          and type
         in: body
         name: Params
         required: true
@@ -671,44 +702,46 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Returns the created store ID
           schema:
             $ref: '#/definitions/store.CreatedStore'
         "400":
-          description: Bad Request
+          description: Invalid input parameters
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - Bearer token missing or invalid
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - User lacks permission
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "409":
-          description: Conflict
+          description: Conflict - Store already exists
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      summary: Owner can create stores.
+      summary: Create a new store
       tags:
       - Store
     put:
       consumes:
       - application/json
-      description: Allows an owner to update the details of their store.
+      description: |-
+        Allows store owners to modify their store's details and settings.
+        All provided fields will be updated while maintaining existing data for omitted fields.
       parameters:
-      - description: Parameters for updating a store
+      - description: Updated store information including modifiable fields
         in: body
         name: Params
         required: true
@@ -718,43 +751,50 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Store successfully updated
         "400":
-          description: Bad Request
+          description: Invalid input parameters
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - Bearer token missing or invalid
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - User is not the store owner
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Store not found
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "409":
-          description: Conflict
+          description: Conflict with existing data
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      summary: Owner can update stores.
+      summary: Update store information
       tags:
       - Store
   /v1/store/{id}:
     get:
       consumes:
       - application/json
-      description: Fetches details of a store based on its ID.
+      description: |-
+        Returns detailed information about a store by its ID.
+        This endpoint is publicly accessible and provides store details including business hours,
+        contact information, location, and current status.
       parameters:
-      - description: Store ID
+      - description: Store ID - Unique identifier of the store
         in: path
         name: id
         required: true
@@ -763,36 +803,39 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Store details including name, description, business hours,
+            and contact info
           schema:
             $ref: '#/definitions/store.GetStoreByIdOutput'
         "404":
-          description: Not Found
+          description: Store not found
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-      summary: Any user can view a store.
+      summary: Retrieve a specific store
       tags:
       - Store
   /v1/store/{id}/header-image:
     post:
       consumes:
       - multipart/form-data
-      description: Allows an owner to update the header image of their store.
+      description: |-
+        Allows store owners to upload or update their store's header/banner image.
+        Supports JPEG and PNG formats. Image will be processed and optimized for display.
       parameters:
       - description: Store ID
         in: path
         name: id
         required: true
         type: string
-      - description: jpeg/png image
+      - description: 'Header image file (JPEG/PNG only, max size: 5MB)'
         in: formData
         name: file
         required: true
@@ -801,50 +844,52 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Returns URL of the uploaded image
           schema:
             $ref: '#/definitions/controller.setFileOutput'
         "400":
-          description: Bad Request
+          description: Invalid file format or size
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - Bearer token missing or invalid
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - User is not the store owner
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-        "409":
-          description: Conflict
+        "413":
+          description: File size exceeds limit
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      summary: Owner can update store header image.
+      summary: Upload store header image
       tags:
       - Store
   /v1/store/{id}/profile-image:
     post:
       consumes:
       - multipart/form-data
-      description: Allows an owner to update the profile image of their store.
+      description: |-
+        Allows store owners to upload or update their store's profile image.
+        Supports JPEG and PNG formats. Image will be processed and optimized for display.
       parameters:
       - description: Store ID
         in: path
         name: id
         required: true
         type: string
-      - description: jpeg/png image
+      - description: 'Profile image file (JPEG/PNG only, max size: 5MB)'
         in: formData
         name: file
         required: true
@@ -853,45 +898,47 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Returns URL of the uploaded image
           schema:
             $ref: '#/definitions/controller.setFileOutput'
         "400":
-          description: Bad Request
+          description: Invalid file format or size
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - Bearer token missing or invalid
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - User is not the store owner
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-        "409":
-          description: Conflict
+        "413":
+          description: File size exceeds limit
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      summary: Owner can update store profile image.
+      summary: Upload store profile image
       tags:
       - Store
   /v1/store/business-hours:
     delete:
       consumes:
       - application/json
-      description: Allows an owner to delete business hours of their store.
+      description: |-
+        Allows store owners to delete specific business hours or operating schedules.
+        Can be used to remove regular hours or special holiday schedules.
       parameters:
-      - description: Parameters for deleting business hours
+      - description: Business hours to be removed
         in: body
         name: Params
         required: true
@@ -901,42 +948,45 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Business hours successfully deleted
         "400":
-          description: Bad Request
+          description: Invalid parameters
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - Bearer token missing or invalid
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - User is not the store owner
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-        "409":
-          description: Conflict
+        "404":
+          description: Business hours not found
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      summary: Owner can delete business hours.
+      summary: Remove store business hours
       tags:
       - Store
     put:
       consumes:
       - application/json
-      description: Allows an owner to update the business hours of their store.
+      description: |-
+        Allows store owners to set or update their store's operating hours.
+        Supports setting different hours for each day of the week and special holiday schedules.
       parameters:
-      - description: Parameters for updating business hours
+      - description: Business hours configuration including days, opening and closing
+          times
         in: body
         name: Params
         required: true
@@ -946,78 +996,101 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Business hours successfully updated
         "400":
-          description: Bad Request
+          description: Invalid time format or parameters
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - Bearer token missing or invalid
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - User is not the store owner
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "409":
-          description: Conflict
+          description: Conflict with existing business hours
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      summary: Owner can update business hours.
+      summary: Add store business hours
       tags:
       - Store
   /v1/store/item:
     get:
       consumes:
       - application/json
-      description: Any user can view store items.
+      description: |-
+        Returns a list of store items based on the provided filter criteria.
+        Supports filtering by type, name, city, score, and maximum price.
       parameters:
-      - description: Item Filter
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/item.GetItemFilterInput'
+      - description: Filter by item type
+        in: query
+        name: type
+        type: string
+      - description: Filter by item name (partial match)
+        in: query
+        name: name
+        type: string
+      - description: Filter by store city
+        in: query
+        name: city
+        type: string
+      - description: Filter by minimum score
+        in: query
+        name: score
+        type: integer
+      - description: Filter by maximum price
+        in: query
+        name: maxPrice
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: List of items matching the filter criteria
           schema:
             items:
               $ref: '#/definitions/item.GetItemByIDOutput'
             type: array
+        "400":
+          description: Invalid filter parameters
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
         "404":
-          description: Not Found
+          description: No items found
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-      summary: Any user can view store items.
+      summary: Search and filter store items
       tags:
       - Item
     post:
       consumes:
       - application/json
-      description: Owner can create store items.
+      description: |-
+        Creates a new item in the store. Only authenticated store owners can perform this operation.
+        The item will be associated with the owner's store and available in the catalog.
       parameters:
-      - description: Params to create a store item
+      - description: Item creation parameters including name, description, price,
+          and type
         in: body
         name: Params
         required: true
@@ -1027,45 +1100,99 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Returns the created item ID
           schema:
             $ref: '#/definitions/item.CreatedItem'
         "400":
-          description: Bad Request
+          description: Invalid input parameters
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - Bearer token missing or invalid
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - User is not the store owner
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "409":
-          description: Conflict
+          description: Conflict - Item already exists
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      summary: Owner can create store items.
+      summary: Create a new store item
+      tags:
+      - Item
+    put:
+      consumes:
+      - application/json
+      description: |-
+        Modifies the details of an existing store item. Only authenticated store owners can update their own items.
+        All fields in the update request will replace the existing values.
+      parameters:
+      - description: Updated item details including name, description, price, and
+          availability
+        in: body
+        name: Params
+        required: true
+        schema:
+          $ref: '#/definitions/item.UpdateItemInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Item successfully updated
+        "400":
+          description: Invalid input parameters
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - Bearer token missing or invalid
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden - User is not the store owner
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Item not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict with existing data
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: Bad gateway
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerToken: []
+      summary: Update an existing store item
       tags:
       - Item
   /v1/store/item/{id}:
-    get:
+    delete:
       consumes:
       - application/json
-      description: Any user can view store item
+      description: |-
+        Removes an item from the store catalog. Only authenticated store owners can delete their own items.
+        This operation is irreversible. All associated data will be permanently removed.
       parameters:
-      - description: Item ID
+      - description: Item ID to be deleted
         in: path
         name: id
         required: true
@@ -1074,22 +1201,68 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Item successfully deleted
+        "400":
+          description: Invalid item ID
           schema:
-            $ref: '#/definitions/item.GetItemByIDOutput'
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - Bearer token missing or invalid
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden - User is not the store owner
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
         "404":
-          description: Not Found
+          description: Item not found
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: Bad gateway
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-      summary: Any user can view store item
+      security:
+      - BearerToken: []
+      summary: Delete a store item
+      tags:
+      - Item
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Returns detailed information about a specific store item by its ID.
+        This endpoint is publicly accessible and does not require authentication.
+      parameters:
+      - description: Item ID - Unique identifier of the item
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Item details including name, description, price, and availability
+          schema:
+            $ref: '#/definitions/item.GetItemByIDOutput'
+        "404":
+          description: Item not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: Bad gateway
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      summary: Retrieve a specific store item
       tags:
       - Item
   /v1/user:

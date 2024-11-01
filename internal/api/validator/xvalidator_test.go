@@ -28,7 +28,7 @@ func (s *ServiceSuite) SetupTest() {
 }
 
 func (s *ServiceSuite) TestIsValidCpf() {
-	transactionID := "transactionTest"
+	traceID := "transactionTest"
 	cases := []struct {
 		Cpf      string `validate:"cpf"`
 		expected bool
@@ -41,7 +41,7 @@ func (s *ServiceSuite) TestIsValidCpf() {
 		{"11111111111", false},
 	}
 	for _, test := range cases {
-		err := s.validator.Validate(transactionID, test)
+		err := s.validator.Validate(traceID, test)
 		if test.expected {
 			assert.Nil(s.T(), err, fmt.Sprintf("Expect nil and got %s for cpf %s", err, test.Cpf))
 		} else {
@@ -51,7 +51,7 @@ func (s *ServiceSuite) TestIsValidCpf() {
 }
 
 func (s *ServiceSuite) TestIsValidCnpj() {
-	transactionID := "transactionTest"
+	traceID := "transactionTest"
 	cases := []struct {
 		Cnpj     string `validate:"cnpj"`
 		Expected bool
@@ -65,7 +65,7 @@ func (s *ServiceSuite) TestIsValidCnpj() {
 	}
 
 	for _, test := range cases {
-		err := s.validator.Validate(transactionID, test)
+		err := s.validator.Validate(traceID, test)
 		if test.Expected {
 			assert.Nil(s.T(), err, fmt.Sprintf("Expect nil and got %s for CNPJ %s", err, test.Cnpj))
 		} else {
@@ -75,7 +75,7 @@ func (s *ServiceSuite) TestIsValidCnpj() {
 }
 
 func (s *ServiceSuite) TestIsValidPhone() {
-	transactionID := "transactionTest"
+	traceID := "transactionTest"
 	cases := []struct {
 		Phone    string `validate:"required,phone"`
 		expected bool
@@ -87,7 +87,7 @@ func (s *ServiceSuite) TestIsValidPhone() {
 		{"1234567890", false},
 	}
 	for _, test := range cases {
-		err := s.validator.Validate(transactionID, test)
+		err := s.validator.Validate(traceID, test)
 		if test.expected {
 			assert.Nil(s.T(), err, fmt.Sprintf("Expect nil and got %s for phone %s", err, test.Phone))
 		} else {

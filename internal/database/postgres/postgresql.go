@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -18,23 +19,23 @@ import (
 )
 
 var (
-	instance *PostgresDatabase
+	instance *Database
 )
 
-type PostgresDatabase struct {
+type Database struct {
 	pool  *pgxpool.Pool
 	sqlDB *sql.DB
 }
 
-func GetInstance() *PostgresDatabase {
+func GetInstance() *Database {
 	if instance == nil {
 		instance = createInstance()
 	}
 	return instance
 }
 
-func createInstance() *PostgresDatabase {
-	database := &PostgresDatabase{}
+func createInstance() *Database {
+	database := &Database{}
 	strConnection := database.createStringConn()
 
 	var err error
@@ -52,19 +53,19 @@ func createInstance() *PostgresDatabase {
 	return database
 }
 
-func (d PostgresDatabase) createStringConn() string {
-	config := config.GetInstance()
+func (d Database) createStringConn() string {
+	configInstance := config.GetInstance()
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable search_path=public",
-		config.Database.Host,
-		config.Database.Port,
-		config.Database.User,
-		config.Database.Password,
-		config.Database.Name,
+		configInstance.Database.Host,
+		configInstance.Database.Port,
+		configInstance.Database.User,
+		configInstance.Database.Password,
+		configInstance.Database.Name,
 	)
 }
 
-func (d PostgresDatabase) getPgxConnection(connStr string) (*pgxpool.Pool, error) {
+func (d Database) getPgxConnection(connStr string) (*pgxpool.Pool, error) {
 	pool, err := pgxpool.New(context.Background(), connStr)
 	if err != nil {
 		return nil, fmt.Errorf("database: could not open pgx connection: %w", err)
@@ -72,7 +73,7 @@ func (d PostgresDatabase) getPgxConnection(connStr string) (*pgxpool.Pool, error
 	return pool, nil
 }
 
-func (d PostgresDatabase) getSQLDBConnection(connStr string) (*sql.DB, error) {
+func (d Database) getSQLDBConnection(connStr string) (*sql.DB, error) {
 	sqlDB, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("database: could not open sql connection: %w", err)
@@ -80,18 +81,15 @@ func (d PostgresDatabase) getSQLDBConnection(connStr string) (*sql.DB, error) {
 	return sqlDB, nil
 }
 
-func (d PostgresDatabase) GetDB() *pgxpool.Pool {
+func (d Database) GetDB() *pgxpool.Pool {
 	return d.pool
 }
 
-func (d PostgresDatabase) Close() {
+func (d Database) Close() {
 	d.pool.Close()
-	if d.sqlDB != nil {
-		d.sqlDB.Close()
-	}
 }
 
-func (d PostgresDatabase) Migrate() error {
+func (d Database) Migrate() error {
 	sourceURL := "file://internal/database/migrations"
 	dbName := os.Getenv("DB_NAME")
 	slog.Info("starting migration execution")
@@ -100,14 +98,14 @@ func (d PostgresDatabase) Migrate() error {
 		return fmt.Errorf("database: could not create migration driver: %w", err)
 	}
 	migrator, err := migrate.NewWithDatabaseInstance(sourceURL, dbName, driver)
-	if err != nil && err != migrate.ErrNoChange {
+	if err != nil {
 		return fmt.Errorf("database: Could not create migrator: %w", err)
 	}
 	err = migrator.Up()
-	if err != nil && err != migrate.ErrNoChange {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("database: Could not apply migrations: %w", err)
 	}
-	if err == migrate.ErrNoChange {
+	if errors.Is(err, migrate.ErrNoChange) {
 		slog.Info("No migrations to run.")
 	} else {
 		slog.Info("Migrations applied successfully.")

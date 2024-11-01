@@ -4,16 +4,16 @@ import (
 	"context"
 )
 
-type useCaseSignIn struct {
+type UseCaseSignIn struct {
 	repository Repository
 }
 
-func newUseCaseSignIn(repository Repository) useCaseSignIn {
-	return useCaseSignIn{
+func NewUseCaseSignIn(repository Repository) UseCaseSignIn {
+	return UseCaseSignIn{
 		repository: repository,
 	}
 }
 
-func (s useCaseSignIn) Execute(ctx context.Context, email, password string) (JWT, error) {
+func (s UseCaseSignIn) Execute(ctx context.Context, email, password string) (JWT, error) {
 	return s.repository.SignIn(ctx, email, password)
 }

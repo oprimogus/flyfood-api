@@ -11,17 +11,17 @@ import (
 	"github.com/oprimogus/cardapiogo/pkg/converters"
 )
 
-type itemRepository struct {
-	db      *postgres.PostgresDatabase
+type ItemRepository struct {
+	db      *postgres.Database
 	querier *sqlc.Queries
 }
 
-func NewItemRepository(db *postgres.PostgresDatabase, querier *sqlc.Queries) *itemRepository {
-	return &itemRepository{db: db, querier: querier}
+func NewItemRepository(db *postgres.Database, querier *sqlc.Queries) *ItemRepository {
+	return &ItemRepository{db: db, querier: querier}
 }
 
-func (i *itemRepository) CreateItem(ctx context.Context, params item.CreateItemInput, score int) (id int, err error) {
-	storeIDConverted, err := converters.ConvertStringToUUID(params.StoreID)
+func (i *ItemRepository) CreateItem(ctx context.Context, params item.CreateItemInput, score int) (id int, err error) {
+	storeIDConverted, err := converters.StringToUUID(params.StoreID)
 	if err != nil {
 		return 0, err
 	}
@@ -46,25 +46,47 @@ func (i *itemRepository) CreateItem(ctx context.Context, params item.CreateItemI
 	return int(value), nil
 }
 
-func (i *itemRepository) GetItemByID(ctx context.Context, id int) (item.GetItemByIDOutput, error) {
+func (i *ItemRepository) GetItemByID(ctx context.Context, id int) (item.Item, error) {
 
 	itemRow, err := i.querier.GetItemByID(ctx, int64(id))
 	if err != nil {
-		return item.GetItemByIDOutput{}, err
+		return item.Item{}, err
 	}
 
 	var details map[string]interface{}
 	if itemRow.Detail != nil {
 		errUnmarshal := json.Unmarshal(itemRow.Detail, &details)
 		if errUnmarshal != nil {
-			return item.GetItemByIDOutput{}, fmt.Errorf("fail on convert details column to map: %w", errUnmarshal)
+			return item.Item{}, fmt.Errorf("fail on convert details column to map: %w", errUnmarshal)
 		}
 	} else {
 		details = nil
 	}
 
-	return item.GetItemByIDOutput{
-		Type:           item.ItemType(itemRow.Type),
+	storeIDConverted, err := converters.UuidToString(itemRow.StoreID)
+	if err != nil {
+		return item.Item{}, err
+	}
+
+	createdAt, err := converters.TimestampToTime(itemRow.CreatedAt)
+	if err != nil {
+		return item.Item{}, err
+	}
+
+	updatedAt, err := converters.TimestampToTime(itemRow.UpdatedAt)
+	if err != nil {
+		return item.Item{}, err
+	}
+
+	deletedAt, err := converters.TimestampToTime(itemRow.DeletedAt)
+	if err != nil {
+		return item.Item{}, err
+	}
+
+	return item.Item{
+		ID:             int(itemRow.ID),
+		StoreID:        *storeIDConverted,
+		Type:           item.Type(itemRow.Type),
 		Name:           itemRow.Name,
 		Description:    itemRow.Description,
 		Score:          int(itemRow.Score),
@@ -74,10 +96,13 @@ func (i *itemRepository) GetItemByID(ctx context.Context, id int) (item.GetItemB
 		Price:          int(itemRow.Price),
 		DiscountPrice:  int(itemRow.DiscountPrice),
 		Details:        details,
+		CreatedAt:      *createdAt,
+		UpdatedAt:      *updatedAt,
+		DeletedAt:      deletedAt,
 	}, nil
 }
 
-func (i *itemRepository) GetItemsByFilter(ctx context.Context, filter item.GetItemFilterInput) (*[]item.GetItemFilterOutput, error) {
+func (i *ItemRepository) GetItemsByFilter(ctx context.Context, filter item.GetItemFilterInput) (*[]item.GetItemFilterOutput, error) {
 	args := sqlc.GetItemByFilterParams{
 		City:     filter.City,
 		Name:     filter.Name,
@@ -93,14 +118,14 @@ func (i *itemRepository) GetItemsByFilter(ctx context.Context, filter item.GetIt
 
 	itemsConverted := make([]item.GetItemFilterOutput, len(items))
 	for i, v := range items {
-		convertedStoreID, err := converters.ConvertUUIDToString(v.StoreID)
+		convertedStoreID, err := converters.UuidToString(v.StoreID)
 		if err != nil {
 			return nil, err
 		}
 		itemsConverted[i] = item.GetItemFilterOutput{
 			ID:             int(v.ID),
 			StoreID:        *convertedStoreID,
-			Type:           item.ItemType(v.Type),
+			Type:           item.Type(v.Type),
 			Name:           v.Name,
 			Score:          int(v.Score),
 			DiscountActive: v.DiscountActive,
@@ -112,7 +137,7 @@ func (i *itemRepository) GetItemsByFilter(ctx context.Context, filter item.GetIt
 	return &itemsConverted, nil
 }
 
-func (i *itemRepository) UpdateItem(ctx context.Context, params item.UpdateItemInput) error {
+func (i *ItemRepository) UpdateItem(ctx context.Context, params item.UpdateItemInput) error {
 	args := sqlc.UpdateItemParams{
 		ID:             int64(params.ID),
 		Type:           sqlc.ItemType(params.Type),
@@ -127,6 +152,6 @@ func (i *itemRepository) UpdateItem(ctx context.Context, params item.UpdateItemI
 	return err
 }
 
-func (i *itemRepository) DeleteItem(ctx context.Context, id int) error {
+func (i *ItemRepository) DeleteItem(ctx context.Context, id int) error {
 	return i.querier.DeleteItem(ctx, int64(id))
 }

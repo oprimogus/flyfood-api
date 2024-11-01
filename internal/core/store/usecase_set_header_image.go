@@ -8,17 +8,17 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseSetHeaderImage struct {
+type UseCaseSetHeaderImage struct {
 	repository Repository
 }
 
-func newUseCaseSetHeaderImage(repository Repository) useCaseSetHeaderImage {
-	return useCaseSetHeaderImage{
+func NewUseCaseSetHeaderImage(repository Repository) UseCaseSetHeaderImage {
+	return UseCaseSetHeaderImage{
 		repository: repository,
 	}
 }
 
-func (c useCaseSetHeaderImage) Execute(ctx context.Context, storeID string, image *multipart.FileHeader) (objectURL string, err error) {
+func (c UseCaseSetHeaderImage) Execute(ctx context.Context, storeID string, image *multipart.FileHeader) (objectURL string, err error) {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return "", fmt.Errorf("invalid userID: '%s'", userID)

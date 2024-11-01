@@ -14,12 +14,12 @@ import (
 
 func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		transactionID := c.GetString(string(logger.TransactionIDKey))
+		traceID := c.GetString(string(logger.TraceIDKey))
 		token := c.GetHeader("Authorization")
 		if token == "" {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.Unauthorized(transactionID, ""))
+				xerrors.Unauthorized(traceID, ""))
 			return
 		}
 		token = strings.Replace(token, "Bearer ", "", -1)
@@ -27,14 +27,14 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if err != nil {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.Unauthorized(transactionID, err.Error()))
+				xerrors.Unauthorized(traceID, err.Error()))
 			return
 		}
 
 		if !isValidToken {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.Unauthorized(transactionID, "Invalid access token"))
+				xerrors.Unauthorized(traceID, "Invalid access token"))
 			return
 		}
 
@@ -42,7 +42,7 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if err != nil {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.New(transactionID, http.StatusUnauthorized, err.Error()))
+				xerrors.New(traceID, http.StatusUnauthorized, err.Error()))
 			return
 		}
 
@@ -50,7 +50,7 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if !ok {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.New(transactionID, http.StatusUnauthorized, "Invalid token"))
+				xerrors.New(traceID, http.StatusUnauthorized, "Invalid token"))
 			return
 		}
 
@@ -58,11 +58,11 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 		if !ok {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,
-				xerrors.New(transactionID, http.StatusUnauthorized, "Invalid token"))
+				xerrors.New(traceID, http.StatusUnauthorized, "Invalid token"))
 			return
 		}
 
-		userRoles := []user.Role{}
+		var userRoles []user.Role
 		for _, role := range roles {
 			if roleStr, ok := role.(string); ok {
 				if user.IsValidRole(roleStr) {
@@ -72,7 +72,7 @@ func AuthenticationMiddleware(repository authentication.Repository) gin.HandlerF
 			}
 		}
 		c.Set("user_id", claims["sub"])
-		c.Set("userRoles", userRoles)
+		c.Set("user_roles", userRoles)
 		c.Next()
 	}
 }

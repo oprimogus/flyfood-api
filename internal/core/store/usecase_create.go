@@ -7,17 +7,17 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseCreate struct {
+type UseCaseCreate struct {
 	repository Repository
 }
 
-func newUseCaseCreate(repository Repository) useCaseCreate {
-	return useCaseCreate{
+func NewUseCaseCreate(repository Repository) UseCaseCreate {
+	return UseCaseCreate{
 		repository: repository,
 	}
 }
 
-func (c useCaseCreate) Execute(ctx context.Context, params CreateParams) (id string, err error) {
+func (c UseCaseCreate) Execute(ctx context.Context, params CreateParams) (id string, err error) {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return "", fmt.Errorf("invalid userID: '%s'", userID)

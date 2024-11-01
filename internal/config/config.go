@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	conf *config
+	conf *Config
 )
 
 type dbConfig struct {
@@ -19,6 +19,16 @@ type dbConfig struct {
 	Name     string
 	User     string
 	Password string
+}
+
+func (d *dbConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("Host", "redacted"),
+		slog.String("Port", "redacted"),
+		slog.String("Name", "redacted"),
+		slog.String("User", "redacted"),
+		slog.String("Password", "redacted"),
+	)
 }
 
 type apiConfig struct {
@@ -30,23 +40,19 @@ type apiConfig struct {
 	Consts      map[string]string
 }
 
-func (a apiConfig) BasePath() string {
+func (a *apiConfig) BasePath() string {
 	return a.basePath
 }
 
-func (a apiConfig) Port() string {
+func (a *apiConfig) Port() string {
 	return a.port
 }
 
-func (a apiConfig) GinMode() string {
+func (a *apiConfig) GinMode() string {
 	return a.ginMode
 }
 
-// func (a apiConfig) Environment() string {
-// 	return a.environment
-// }
-
-func (a apiConfig) SQLCDebug() string {
+func (a *apiConfig) SQLCDebug() string {
 	return a.sqlcDebug
 }
 
@@ -57,11 +63,20 @@ type keycloakConfig struct {
 	ClientSecret string
 }
 
+func (d *keycloakConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("BaseURL", d.BaseURL),
+		slog.String("Realm", d.Realm),
+		slog.String("ClientID", "redacted"),
+		slog.String("ClientSecret", "redacted"),
+	)
+}
+
 type resendConfig struct {
 	apiKey string
 }
 
-func (r resendConfig) APIKey() string {
+func (r *resendConfig) APIKey() string {
 	return r.apiKey
 }
 
@@ -72,23 +87,31 @@ type aws struct {
 	sessionKey      string
 }
 
-func (a aws) Region() string {
+func (a *aws) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("accessKeyID", "redacted"),
+		slog.String("secretAccessKey", "redacted"),
+		slog.String("sessionKey", "redacted"),
+	)
+}
+
+func (a *aws) Region() string {
 	return a.region
 }
 
-func (a aws) AccessKeyID() string {
+func (a *aws) AccessKeyID() string {
 	return a.accessKeyID
 }
 
-func (a aws) SecretAccessKey() string {
+func (a *aws) SecretAccessKey() string {
 	return a.secretAccessKey
 }
 
-func (a aws) SessionKey() string {
+func (a *aws) SessionKey() string {
 	return a.sessionKey
 }
 
-type config struct {
+type Config struct {
 	Database *dbConfig
 	Api      *apiConfig
 	Keycloak *keycloakConfig
@@ -96,17 +119,17 @@ type config struct {
 	Aws      *aws
 }
 
-func newConfig() *config {
+func newConfig() *Config {
 	err := utils.SetWorkingDirToProjectRoot()
 	if err != nil {
 		panic("fail on set project root as workdir")
 	}
 	err = gotenv.Load(".env")
 	if err != nil {
-		slog.Error("fail on load env vars: %s", err)
+		slog.Error("fail on load env vars: %s", "err", err)
 		panic("fail on load env vars")
 	}
-	return &config{
+	return &Config{
 		Database: &dbConfig{
 			Host:     os.Getenv("DB_HOST"),
 			Port:     os.Getenv("DB_PORT"),
@@ -138,7 +161,7 @@ func newConfig() *config {
 	}
 }
 
-func GetInstance() *config {
+func GetInstance() *Config {
 	if conf == nil {
 		conf = newConfig()
 	}

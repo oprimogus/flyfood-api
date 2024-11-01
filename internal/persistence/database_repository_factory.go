@@ -8,15 +8,17 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 	"github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/database/sqlc"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter"
 )
 
 type DatabaseRepositoryFactory struct {
-	db      *postgres.PostgresDatabase
-	querier *sqlc.Queries
+	db             *postgres.Database
+	querier        *sqlc.Queries
+	serviceFactory adapter.Factory
 }
 
-func NewDataBaseRepositoryFactory(db *postgres.PostgresDatabase) core.RepositoryFactory {
-	return &DatabaseRepositoryFactory{db: db, querier: sqlc.New(db.GetDB())}
+func NewDataBaseRepositoryFactory(db *postgres.Database, adapter adapter.Factory) core.RepositoryFactory {
+	return &DatabaseRepositoryFactory{db: db, querier: sqlc.New(db.GetDB()), serviceFactory: adapter}
 }
 
 func (d *DatabaseRepositoryFactory) NewUserRepository() user.Repository {
@@ -28,7 +30,7 @@ func (d *DatabaseRepositoryFactory) NewAuthenticationRepository() authentication
 }
 
 func (d *DatabaseRepositoryFactory) NewStoreRepository() store.Repository {
-	return NewStoreRepository(d.db, d.querier)
+	return NewStoreRepository(d.db, d.querier, d.serviceFactory.NewStorageService())
 }
 
 func (d *DatabaseRepositoryFactory) NewItemRepository() item.Repository {

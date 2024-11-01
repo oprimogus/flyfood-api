@@ -33,6 +33,9 @@ func IsValidCpfOrCnpj(fl validator.FieldLevel) bool {
 
 func IsValidPhone(fl validator.FieldLevel) bool {
 	phone := fl.Field().String()
+	if phone == "" {
+		return true
+	}
 	regex := `^\+(\d{2})(\d{2})(\d{9})$`
 	re := regexp.MustCompile(regex)
 
@@ -41,21 +44,33 @@ func IsValidPhone(fl validator.FieldLevel) bool {
 
 func IsValidShopType(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
+	if value == "" {
+		return true
+	}
 	return store.IsValidShopType(value)
 }
 
 func IsValidItemType(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
+	if value == "" {
+		return true
+	}
 	return item.IsValidItemType(value)
 }
 
 func IsValidPaymentMethod(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
+	if value == "" {
+		return true
+	}
 	return store.IsValidPaymentMethod(value)
 }
 
 func IsValidBusinessHour(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
+	if value == "" {
+		return true
+	}
 	return store.IsBusinessHourString(value)
 }
 

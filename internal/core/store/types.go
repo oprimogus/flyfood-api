@@ -103,3 +103,13 @@ type AddressOutput struct {
 func (c CreateParams) Entity(userID string) Store {
 	return NewStore(userID, c.Name, c.CpfCnpj, c.Phone, c.Address, c.Type)
 }
+
+type GetStoresFilterInput struct {
+	Range     int      `json:"range"`
+	Score     int      `json:"score"`
+	Name      string   `json:"name"`
+	City      string   `json:"city"`
+	Latitude  string   `json:"latitude"`
+	Longitude string   `json:"longitude"`
+	Type      ShopType `json:"type"`
+}

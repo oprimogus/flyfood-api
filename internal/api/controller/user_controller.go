@@ -12,14 +12,18 @@ import (
 )
 
 type UserController struct {
-	validator  *validatorutils.Validator
-	userModule user.UserModule
+	validator       *validatorutils.Validator
+	useCaseCreate   user.UseCaseCreate
+	useCaseUpdate   user.UseCaseUpdate
+	useCaseAddRoles user.UseCaseAddRoles
 }
 
 func NewUserController(validator *validatorutils.Validator, userRepository user.Repository) *UserController {
 	return &UserController{
-		validator:  validator,
-		userModule: user.NewUserModule(userRepository),
+		validator:       validator,
+		useCaseCreate:   user.NewUseCaseCreate(userRepository),
+		useCaseUpdate:   user.NewUseCaseUpdate(userRepository),
+		useCaseAddRoles: user.NewUseCaseAddRoles(userRepository),
 	}
 }
 
@@ -37,25 +41,25 @@ func NewUserController(validator *validatorutils.Validator, userRepository user.
 //	@Failure		502	{object}	xerrors.CustomError
 //	@Router			/v1/auth/sign-up [post]
 func (c *UserController) CreateUser(ctx *gin.Context) {
-	transactionID := ctx.GetString(string(logger.TransactionIDKey))
+	traceID := ctx.GetString(string(logger.TraceIDKey))
 	var params user.CreateParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
-	err = c.validator.Validate(transactionID, params)
+	err = c.validator.Validate(traceID, params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
-	err = c.userModule.Create.Execute(ctx.Request.Context(), params)
+	err = c.useCaseCreate.Execute(ctx.Request.Context(), params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -80,32 +84,32 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 //	@Security		Bearer Token
 //	@Router			/v1/user [put]
 func (c *UserController) UpdateUser(ctx *gin.Context) {
-	transactionID := ctx.GetString(string(logger.TransactionIDKey))
+	traceID := ctx.GetString(string(logger.TraceIDKey))
 	var params user.UpdateProfileParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
-	err = c.validator.Validate(transactionID, params)
+	err = c.validator.Validate(traceID, params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
-	err = c.userModule.Update.Execute(ctx, params)
+	err = c.useCaseUpdate.Execute(ctx, params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 	ctx.Status(http.StatusOK)
 }
 
-// SetRoleInUser godoc
+// AddRolesToUser godoc
 //
 //	@Summary		Add a new role for user
 //	@Description	Add a new role for user
@@ -123,25 +127,25 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 //	@Security		Bearer Token
 //	@Router			/v1/user/roles [post]
 func (c *UserController) AddRolesToUser(ctx *gin.Context) {
-	transactionID := ctx.GetString(string(logger.TransactionIDKey))
+	traceID := ctx.GetString(string(logger.TraceIDKey))
 	var params user.AddRolesParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
-	err = c.validator.Validate(transactionID, params)
+	err = c.validator.Validate(traceID, params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
 
-	err = c.userModule.AddRoles.Execute(ctx, params.Roles)
+	err = c.useCaseAddRoles.Execute(ctx, params.Roles)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}

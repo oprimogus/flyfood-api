@@ -13,10 +13,10 @@ import (
 )
 
 var (
-	keycloakInstance *KeycloakService
+	service *Service
 )
 
-type KeycloakService struct {
+type Service struct {
 	Client       *gocloak.GoCloak
 	Token        *gocloak.JWT
 	Realm        string
@@ -25,32 +25,32 @@ type KeycloakService struct {
 	mu           sync.Mutex
 }
 
-func GetInstance() (k *KeycloakService, err error) {
-	if keycloakInstance == nil {
-		keycloakInstance, err = newKeycloakService(context.TODO())
+func GetInstance() (k *Service, err error) {
+	if service == nil {
+		service, err = newService(context.Background())
 		if err != nil {
-			return keycloakInstance, err
+			return service, err
 		}
 	}
-	return keycloakInstance, nil
+	return service, nil
 }
 
-func newKeycloakService(ctx context.Context) (k *KeycloakService, err error) {
+func newService(ctx context.Context) (k *Service, err error) {
 
-	config := config.GetInstance().Keycloak
+	configInstance := config.GetInstance().Keycloak
 
-	client := gocloak.NewClient(config.BaseURL)
-	token, err := client.LoginClient(ctx, config.ClientID, config.ClientSecret, config.Realm)
+	client := gocloak.NewClient(configInstance.BaseURL)
+	token, err := client.LoginClient(ctx, configInstance.ClientID, configInstance.ClientSecret, configInstance.Realm)
 	if err != nil {
 		slog.ErrorContext(ctx, fmt.Sprintf("fail on get keycloak client: %s", err))
 		return nil, fmt.Errorf("fail on get keycloak client: %w", err)
 	}
-	service := &KeycloakService{
+	service := &Service{
 		Client:       client,
 		Token:        token,
-		Realm:        config.Realm,
-		ClientID:     config.ClientID,
-		ClientSecret: config.ClientSecret,
+		Realm:        configInstance.Realm,
+		ClientID:     configInstance.ClientID,
+		ClientSecret: configInstance.ClientSecret,
 	}
 
 	go service.startTokenRenewer(ctx)
@@ -62,7 +62,7 @@ func shouldRefreshToken(expirationTime time.Time) bool {
 	return time.Now().After(expirationTime)
 }
 
-func (k *KeycloakService) startTokenRenewer(ctx context.Context) {
+func (k *Service) startTokenRenewer(ctx context.Context) {
 	slog.InfoContext(ctx, "Starting renew service...", "service", "keycloak")
 
 	refreshBefore := time.Second * 60 // 1 min
@@ -86,16 +86,16 @@ func (k *KeycloakService) startTokenRenewer(ctx context.Context) {
 	}
 }
 
-func (k *KeycloakService) startTicker(ctx context.Context, name string, renewBefore time.Duration, tokenExpiresIn int) (ticker *time.Ticker, willExpireIn time.Time) {
+func (k *Service) startTicker(ctx context.Context, name string, renewBefore time.Duration, tokenExpiresIn int) (ticker *time.Ticker, willExpireIn time.Time) {
 	actualTime := time.Now()
 	tokenExpireIn := time.Second * time.Duration(tokenExpiresIn)
-	willExpireIn = actualTime.Add(time.Duration(tokenExpireIn) - renewBefore)
+	willExpireIn = actualTime.Add(tokenExpireIn - renewBefore)
 	slog.InfoContext(ctx, fmt.Sprintf("token %s will expire in: %s", name, willExpireIn), "service", "keycloak")
 
-	return time.NewTicker(time.Duration(tokenExpireIn) - renewBefore), willExpireIn
+	return time.NewTicker(tokenExpireIn - renewBefore), willExpireIn
 }
 
-func (k *KeycloakService) handleTokenRenewal(ctx context.Context, tokenExpireIn time.Time, isRefreshToken bool) {
+func (k *Service) handleTokenRenewal(ctx context.Context, tokenExpireIn time.Time, isRefreshToken bool) {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 

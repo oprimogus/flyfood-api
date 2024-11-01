@@ -106,6 +106,12 @@
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error, something went wrong while processing the request.",
                         "schema": {
@@ -171,7 +177,7 @@
         },
         "/v1/store": {
             "get": {
-                "description": "Fetches stores based on a set of filters such as range, score, name, city, or type.",
+                "description": "Returns a list of stores based on various filter criteria including location, rating, and type.\nSupports geographic search with radius filtering when latitude and longitude are provided.",
                 "consumes": [
                     "application/json"
                 ],
@@ -181,54 +187,54 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Any user can view filtered stores.",
+                "summary": "Search and filter stores",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Specify max range",
+                        "description": "Maximum distance range in kilometers for geographical search",
                         "name": "range",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Specify in score",
+                        "description": "Minimum rating score (1-5)",
                         "name": "score",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specify name like",
+                        "description": "Store name for partial matching",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specify city",
+                        "description": "Filter by city name",
                         "name": "city",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "latitude of address selected",
+                        "description": "Latitude for geographical search (requires longitude)",
                         "name": "latitude",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "longitude of address selected",
+                        "description": "Longitude for geographical search (requires latitude)",
                         "name": "longitude",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specify store type",
+                        "description": "Store type category (e.g., restaurant, cafe, bar)",
                         "name": "type",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of stores matching the filter criteria",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -236,20 +242,26 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Invalid filter parameters",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
                     "404": {
-                        "description": "Not Found",
+                        "description": "No stores found",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -262,7 +274,7 @@
                         "BearerToken": []
                     }
                 ],
-                "description": "Allows an owner to update the details of their store.",
+                "description": "Allows store owners to modify their store's details and settings.\nAll provided fields will be updated while maintaining existing data for omitted fields.",
                 "consumes": [
                     "application/json"
                 ],
@@ -272,10 +284,10 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update stores.",
+                "summary": "Update store information",
                 "parameters": [
                     {
-                        "description": "Parameters for updating a store",
+                        "description": "Updated store information including modifiable fields",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -286,40 +298,46 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Store successfully updated"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input parameters",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - Bearer token missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - User is not the store owner",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Store not found",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "Conflict with existing data",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -332,7 +350,7 @@
                         "BearerToken": []
                     }
                 ],
-                "description": "Allows an owner to create a new store.",
+                "description": "Allows authenticated users to register a new store in the system.\nThe store owner must provide essential information including name, location, and contact details.",
                 "consumes": [
                     "application/json"
                 ],
@@ -342,10 +360,10 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can create stores.",
+                "summary": "Create a new store",
                 "parameters": [
                     {
-                        "description": "Parameters for creating a store",
+                        "description": "Store creation parameters including name, address, contact info, and type",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -356,43 +374,43 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Returns the created store ID",
                         "schema": {
                             "$ref": "#/definitions/store.CreatedStore"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input parameters",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - Bearer token missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - User lacks permission",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "Conflict - Store already exists",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -407,7 +425,7 @@
                         "BearerToken": []
                     }
                 ],
-                "description": "Allows an owner to update the business hours of their store.",
+                "description": "Allows store owners to set or update their store's operating hours.\nSupports setting different hours for each day of the week and special holiday schedules.",
                 "consumes": [
                     "application/json"
                 ],
@@ -417,10 +435,10 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update business hours.",
+                "summary": "Add store business hours",
                 "parameters": [
                     {
-                        "description": "Parameters for updating business hours",
+                        "description": "Business hours configuration including days, opening and closing times",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -431,40 +449,40 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Business hours successfully updated"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid time format or parameters",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - Bearer token missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - User is not the store owner",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "Conflict with existing business hours",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -477,7 +495,7 @@
                         "BearerToken": []
                     }
                 ],
-                "description": "Allows an owner to delete business hours of their store.",
+                "description": "Allows store owners to delete specific business hours or operating schedules.\nCan be used to remove regular hours or special holiday schedules.",
                 "consumes": [
                     "application/json"
                 ],
@@ -487,10 +505,10 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can delete business hours.",
+                "summary": "Remove store business hours",
                 "parameters": [
                     {
-                        "description": "Parameters for deleting business hours",
+                        "description": "Business hours to be removed",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -501,40 +519,40 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Business hours successfully deleted"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid parameters",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - Bearer token missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - User is not the store owner",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
-                    "409": {
-                        "description": "Conflict",
+                    "404": {
+                        "description": "Business hours not found",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -544,7 +562,7 @@
         },
         "/v1/store/item": {
             "get": {
-                "description": "Any user can view store items.",
+                "description": "Returns a list of store items based on the provided filter criteria.\nSupports filtering by type, name, city, score, and maximum price.",
                 "consumes": [
                     "application/json"
                 ],
@@ -554,21 +572,42 @@
                 "tags": [
                     "Item"
                 ],
-                "summary": "Any user can view store items.",
+                "summary": "Search and filter store items",
                 "parameters": [
                     {
-                        "description": "Item Filter",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/item.GetItemFilterInput"
-                        }
+                        "type": "string",
+                        "description": "Filter by item type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by item name (partial match)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by store city",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by minimum score",
+                        "name": "score",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by maximum price",
+                        "name": "maxPrice",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of items matching the filter criteria",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -576,20 +615,102 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Invalid filter parameters",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
                     "404": {
-                        "description": "Not Found",
+                        "description": "No items found",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Modifies the details of an existing store item. Only authenticated store owners can update their own items.\nAll fields in the update request will replace the existing values.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Update an existing store item",
+                "parameters": [
+                    {
+                        "description": "Updated item details including name, description, price, and availability",
+                        "name": "Params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/item.UpdateItemInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item successfully updated"
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Bearer token missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not the store owner",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Item not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict with existing data",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -602,7 +723,7 @@
                         "BearerToken": []
                     }
                 ],
-                "description": "Owner can create store items.",
+                "description": "Creates a new item in the store. Only authenticated store owners can perform this operation.\nThe item will be associated with the owner's store and available in the catalog.",
                 "consumes": [
                     "application/json"
                 ],
@@ -612,10 +733,10 @@
                 "tags": [
                     "Item"
                 ],
-                "summary": "Owner can create store items.",
+                "summary": "Create a new store item",
                 "parameters": [
                     {
-                        "description": "Params to create a store item",
+                        "description": "Item creation parameters including name, description, price, and type",
                         "name": "Params",
                         "in": "body",
                         "required": true,
@@ -626,43 +747,43 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Returns the created item ID",
                         "schema": {
                             "$ref": "#/definitions/item.CreatedItem"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input parameters",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - Bearer token missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - User is not the store owner",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "Conflict - Item already exists",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -672,7 +793,7 @@
         },
         "/v1/store/item/{id}": {
             "get": {
-                "description": "Any user can view store item",
+                "description": "Returns detailed information about a specific store item by its ID.\nThis endpoint is publicly accessible and does not require authentication.",
                 "consumes": [
                     "application/json"
                 ],
@@ -682,11 +803,11 @@
                 "tags": [
                     "Item"
                 ],
-                "summary": "Any user can view store item",
+                "summary": "Retrieve a specific store item",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Item ID",
+                        "description": "Item ID - Unique identifier of the item",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -694,25 +815,93 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Item details including name, description, price, and availability",
                         "schema": {
                             "$ref": "#/definitions/item.GetItemByIDOutput"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Item not found",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Removes an item from the store catalog. Only authenticated store owners can delete their own items.\nThis operation is irreversible. All associated data will be permanently removed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Delete a store item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID to be deleted",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid item ID",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Bearer token missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not the store owner",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Item not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -722,7 +911,7 @@
         },
         "/v1/store/{id}": {
             "get": {
-                "description": "Fetches details of a store based on its ID.",
+                "description": "Returns detailed information about a store by its ID.\nThis endpoint is publicly accessible and provides store details including business hours,\ncontact information, location, and current status.",
                 "consumes": [
                     "application/json"
                 ],
@@ -732,11 +921,11 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Any user can view a store.",
+                "summary": "Retrieve a specific store",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Store ID",
+                        "description": "Store ID - Unique identifier of the store",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -744,25 +933,25 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Store details including name, description, business hours, and contact info",
                         "schema": {
                             "$ref": "#/definitions/store.GetStoreByIdOutput"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Store not found",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -777,7 +966,7 @@
                         "BearerToken": []
                     }
                 ],
-                "description": "Allows an owner to update the header image of their store.",
+                "description": "Allows store owners to upload or update their store's header/banner image.\nSupports JPEG and PNG formats. Image will be processed and optimized for display.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -787,7 +976,7 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update store header image.",
+                "summary": "Upload store header image",
                 "parameters": [
                     {
                         "type": "string",
@@ -798,7 +987,7 @@
                     },
                     {
                         "type": "file",
-                        "description": "jpeg/png image",
+                        "description": "Header image file (JPEG/PNG only, max size: 5MB)",
                         "name": "file",
                         "in": "formData",
                         "required": true
@@ -806,43 +995,43 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Returns URL of the uploaded image",
                         "schema": {
                             "$ref": "#/definitions/controller.setFileOutput"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid file format or size",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - Bearer token missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - User is not the store owner",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
-                    "409": {
-                        "description": "Conflict",
+                    "413": {
+                        "description": "File size exceeds limit",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -857,7 +1046,7 @@
                         "BearerToken": []
                     }
                 ],
-                "description": "Allows an owner to update the profile image of their store.",
+                "description": "Allows store owners to upload or update their store's profile image.\nSupports JPEG and PNG formats. Image will be processed and optimized for display.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -867,7 +1056,7 @@
                 "tags": [
                     "Store"
                 ],
-                "summary": "Owner can update store profile image.",
+                "summary": "Upload store profile image",
                 "parameters": [
                     {
                         "type": "string",
@@ -878,7 +1067,7 @@
                     },
                     {
                         "type": "file",
-                        "description": "jpeg/png image",
+                        "description": "Profile image file (JPEG/PNG only, max size: 5MB)",
                         "name": "file",
                         "in": "formData",
                         "required": true
@@ -886,43 +1075,43 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Returns URL of the uploaded image",
                         "schema": {
                             "$ref": "#/definitions/controller.setFileOutput"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid file format or size",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - Bearer token missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - User is not the store owner",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
-                    "409": {
-                        "description": "Conflict",
+                    "413": {
+                        "description": "File size exceeds limit",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "Bad gateway",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -1211,7 +1400,7 @@
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/item.ItemType"
+                            "$ref": "#/definitions/item.Type"
                         }
                     ]
                 }
@@ -1236,6 +1425,7 @@
                 "name",
                 "price",
                 "score",
+                "storeID",
                 "type"
             ],
             "properties": {
@@ -1279,45 +1469,9 @@
                     "type": "integer",
                     "example": 475
                 },
-                "type": {
-                    "enum": [
-                        "FOOD",
-                        " WATERGALLON"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/item.ItemType"
-                        }
-                    ]
-                }
-            }
-        },
-        "item.GetItemFilterInput": {
-            "type": "object",
-            "required": [
-                "city",
-                "maxPrice",
-                "name",
-                "score",
-                "type"
-            ],
-            "properties": {
-                "city": {
+                "storeID": {
                     "type": "string",
-                    "example": "Guarujá"
-                },
-                "maxPrice": {
-                    "type": "integer",
-                    "example": 4990
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 25,
-                    "example": "Burguer"
-                },
-                "score": {
-                    "type": "integer",
-                    "example": 419
+                    "example": "3279gbf23gb-fb23-6f239"
                 },
                 "type": {
                     "enum": [
@@ -1326,22 +1480,82 @@
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/item.ItemType"
+                            "$ref": "#/definitions/item.Type"
                         }
                     ]
                 }
             }
         },
-        "item.ItemType": {
+        "item.Type": {
             "type": "string",
             "enum": [
                 "FOOD",
                 "WATERGALLON"
             ],
             "x-enum-varnames": [
-                "FoodItemType",
-                "WaterGallonItemType"
+                "Food",
+                "WaterGallon"
             ]
+        },
+        "item.UpdateItemInput": {
+            "type": "object",
+            "required": [
+                "active",
+                "description",
+                "discountActive",
+                "discountPrice",
+                "id",
+                "name",
+                "price",
+                "storeID",
+                "type"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "details": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "discountActive": {
+                    "type": "boolean"
+                },
+                "discountPrice": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 246643
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25
+                },
+                "price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "storeID": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "FOOD",
+                        " WATERGALLON"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/item.Type"
+                        }
+                    ]
+                }
+            }
         },
         "store.AddressOutput": {
             "type": "object",
@@ -1522,12 +1736,12 @@
                 "pub"
             ],
             "x-enum-varnames": [
-                "StoreShopRestaurant",
-                "StoreShopPharmacy",
-                "StoreShopTobbaco",
-                "StoreShopMarket",
-                "StoreShopConvenience",
-                "StoreShopPub"
+                "Restaurant",
+                "Pharmacy",
+                "Tobbaco",
+                "Market",
+                "Convenience",
+                "Pub"
             ]
         },
         "store.StoreBusinessHoursParams": {
@@ -1713,7 +1927,7 @@
                 "error": {
                     "type": "string"
                 },
-                "transactionID": {
+                "traceID": {
                     "type": "string"
                 }
             }

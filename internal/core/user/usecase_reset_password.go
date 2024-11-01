@@ -7,17 +7,17 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseResetPassword struct {
+type UseCaseResetPassword struct {
 	repository Repository
 }
 
-func newResetPassword(repository Repository) useCaseResetPassword {
-	return useCaseResetPassword{
+func newResetPassword(repository Repository) UseCaseResetPassword {
+	return UseCaseResetPassword{
 		repository: repository,
 	}
 }
 
-func (r useCaseResetPassword) Execute(ctx context.Context, id string) error {
+func (r UseCaseResetPassword) Execute(ctx context.Context, id string) error {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return fmt.Errorf("invalid userID: '%s'", userID)

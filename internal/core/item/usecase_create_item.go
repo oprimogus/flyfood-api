@@ -8,16 +8,16 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseCreate struct {
+type UseCaseCreate struct {
 	repository      Repository
 	storeRepository store.Repository
 }
 
-func newUseCaseCreate(repository Repository, storeRepository store.Repository) useCaseCreate {
-	return useCaseCreate{repository: repository, storeRepository: storeRepository}
+func NewUseCaseCreate(repository Repository, storeRepository store.Repository) UseCaseCreate {
+	return UseCaseCreate{repository: repository, storeRepository: storeRepository}
 }
 
-func (u useCaseCreate) Execute(ctx context.Context, params CreateItemInput) (id int, err error) {
+func (u UseCaseCreate) Execute(ctx context.Context, params CreateItemInput) (id int, err error) {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return 0, fmt.Errorf("invalid userID: '%s'", userID)

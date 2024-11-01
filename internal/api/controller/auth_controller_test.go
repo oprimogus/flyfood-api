@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,6 +17,7 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/persistence"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter"
 	"github.com/oprimogus/cardapiogo/test/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -28,12 +30,14 @@ const (
 
 type AuthControllerSuite struct {
 	suite.Suite
-	authController *controller.AuthController
-	userController *controller.UserController
-	router         *gin.Engine
+	ctx               context.Context
+	authController    *controller.AuthController
+	userController    *controller.UserController
+	pgContainer       *integration.Container
+	keycloakContainer *integration.Container
 }
 
-func (s *AuthControllerSuite) createUserMocked() {
+func createUserMocked(router *gin.Engine) error {
 	input := map[string]interface{}{
 		"email":    "johndoe@example.com",
 		"password": "teste123",
@@ -44,16 +48,44 @@ func (s *AuthControllerSuite) createUserMocked() {
 		},
 	}
 
-	requestBody, _ := json.Marshal(input)
+	requestBody, err := json.Marshal(input)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %v", err)
+	}
 
-	req, _ := http.NewRequest("POST", signUpEndpoint, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", signUpEndpoint, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
-	s.router.ServeHTTP(w, req)
+	router.ServeHTTP(w, req)
+
+	fmt.Println(w.Body.String())
+
+	if w.Code != http.StatusCreated && w.Code != http.StatusOK {
+		return fmt.Errorf("failed to create user, status code: %d, body: %s",
+			w.Code, w.Body.String())
+	}
+	return nil
 }
 
 func (s *AuthControllerSuite) SetupSuite() {
+	ctx := context.Background()
+	s.ctx = ctx
+	postgres, err := integration.MakePostgres(s.ctx)
+	if err != nil {
+		panic(err)
+	}
+	s.pgContainer = postgres
+
+	keycloak, err := integration.MakeKeycloak(s.ctx)
+	if err != nil {
+		panic(err)
+	}
+	s.keycloakContainer = keycloak
+
 	validator, err := validatorutils.NewValidator("pt")
 	if err != nil && validator == nil {
 		s.T().Fatal("fail on make validator: %w", err)
@@ -61,37 +93,22 @@ func (s *AuthControllerSuite) SetupSuite() {
 	db := postgresDB.GetInstance()
 	config.GetInstance().Api.Environment = string(config.Production)
 
-	factory := persistence.NewDataBaseRepositoryFactory(db)
+	serviceFactory := adapter.NewServiceFactory()
+	factory := persistence.NewDataBaseRepositoryFactory(db, serviceFactory)
 	s.authController = controller.NewAuthController(validator, factory.NewAuthenticationRepository())
 	s.userController = controller.NewUserController(validator, factory.NewUserRepository())
+}
 
-	s.router = gin.New()
-	s.router.Use(gin.Recovery())
-	s.router.POST(signInEndpoint, s.authController.SignIn)
-	s.router.POST(signUpEndpoint, s.userController.CreateUser)
-
-	s.createUserMocked()
+func (s *AuthControllerSuite) TearDownSuite() {
+	s.keycloakContainer.Kill(s.ctx)
+	s.pgContainer.Kill(s.ctx)
 }
 
 func TestIntegrationAuthControllerSuite(t *testing.T) {
-	ctx := context.Background()
-	postgres, err := integration.MakePostgres(ctx)
-	if err != nil {
-		panic(err)
-	}
-	defer postgres.Kill(ctx)
-
-	keycloak, err := integration.MakeKeycloak(ctx)
-	if err != nil {
-		panic(err)
-	}
-	defer keycloak.Kill(ctx)
-
 	suite.Run(t, new(AuthControllerSuite))
 }
 
 func (s *AuthControllerSuite) TestSignUp() {
-
 	tests := []struct {
 		name               string
 		requestBody        map[string]interface{}
@@ -125,8 +142,8 @@ func (s *AuthControllerSuite) TestSignUp() {
 			},
 			expectedStatusCode: 409,
 			expectedResponse: map[string]interface{}{
-				"error":         user.ErrExistUserWithEmail.Error(),
-				"transactionID": "",
+				"error":   user.ErrExistUserWithEmail.Error(),
+				"traceID": "",
 			},
 		},
 		{
@@ -142,20 +159,25 @@ func (s *AuthControllerSuite) TestSignUp() {
 			},
 			expectedStatusCode: 409,
 			expectedResponse: map[string]interface{}{
-				"error":         user.ErrExistUserWithPhone.Error(),
-				"transactionID": "",
+				"error":   user.ErrExistUserWithPhone.Error(),
+				"traceID": "",
 			},
 		},
 	}
 
 	for _, test := range tests {
+		router := gin.New()
+		gin.SetMode(gin.TestMode)
+		router.POST(signUpEndpoint, s.userController.CreateUser)
+		createUserMocked(router)
+
 		requestBody, _ := json.Marshal(test.requestBody)
 
 		req, _ := http.NewRequest("POST", signUpEndpoint, bytes.NewBuffer(requestBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
-		s.router.ServeHTTP(w, req)
+		router.ServeHTTP(w, req)
 
 		assert.Equal(s.T(), test.expectedStatusCode, w.Code, test.name)
 
@@ -171,7 +193,6 @@ func (s *AuthControllerSuite) TestSignUp() {
 }
 
 func (s *AuthControllerSuite) TestSignIn() {
-
 	tests := []struct {
 		name               string
 		requestBody        map[string]interface{}
@@ -180,7 +201,7 @@ func (s *AuthControllerSuite) TestSignIn() {
 	}{
 		{
 			name: "Should sign-in with success",
-			
+
 			requestBody: map[string]interface{}{
 				"email":    "johndoe@example.com",
 				"password": "teste123",
@@ -196,20 +217,27 @@ func (s *AuthControllerSuite) TestSignIn() {
 			},
 			expectedStatusCode: 401,
 			expectedResponse: map[string]interface{}{
-				"error":         "An authentication error occurred while processing your request.",
-				"transactionID": "",
+				"error":   "Invalid user credentials",
+				"details": "invalid_grant",
+				"traceID": "",
 			},
 		},
 	}
 
 	for _, test := range tests {
+		router := gin.New()
+		gin.SetMode(gin.TestMode)
+		router.POST(signUpEndpoint, s.userController.CreateUser)
+		router.POST(signInEndpoint, s.authController.SignIn)
+		createUserMocked(router)
+
 		requestBody, _ := json.Marshal(test.requestBody)
 
 		req, _ := http.NewRequest("POST", signInEndpoint, bytes.NewBuffer(requestBody))
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
-		s.router.ServeHTTP(w, req)
+		router.ServeHTTP(w, req)
 
 		assert.Equal(s.T(), test.expectedStatusCode, w.Code, test.name)
 

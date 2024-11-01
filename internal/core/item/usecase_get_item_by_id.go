@@ -4,14 +4,14 @@ import (
 	"context"
 )
 
-type useCaseGetByID struct {
+type UseCaseGetByID struct {
 	repository Repository
 }
 
-func newUseCaseGetByID(repository Repository) useCaseGetByID {
-	return useCaseGetByID{repository: repository}
+func NewUseCaseGetByID(repository Repository) UseCaseGetByID {
+	return UseCaseGetByID{repository: repository}
 }
 
-func (u useCaseGetByID) Execute(ctx context.Context, id int) (GetItemByIDOutput, error) {
+func (u UseCaseGetByID) Execute(ctx context.Context, id int) (Item, error) {
 	return u.repository.GetItemByID(ctx, id)
 }

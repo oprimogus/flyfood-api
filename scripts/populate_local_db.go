@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -22,7 +23,12 @@ func PopulateLocalDatabase() error {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			slog.Error("fail on close DB Connection")
+		}
+	}(db)
 
 	err = db.Ping()
 	if err != nil {
@@ -30,11 +36,6 @@ func PopulateLocalDatabase() error {
 	}
 	mocks := getMocks()
 	for _, v := range mocks {
-		exist := checkTestDataExists(db, v)
-		if exist {
-			log.Printf("Mocks para a tabela %v já existem, prosseguindo...", v)
-			continue
-		}
 		err := executeSQLFile(db, v)
 		if err != nil {
 			return err
@@ -78,18 +79,6 @@ func getMocks() []string {
 	}
 	log.Print(filesPath)
 	return filesPath
-}
-
-func checkTestDataExists(db *sql.DB, mock string) bool {
-	var exists bool
-	query := fmt.Sprintf(`SELECT EXISTS(SELECT 1 FROM %v LIMIT 1);`, mock)
-	err := db.QueryRow(query).Scan(&exists)
-	if err != nil {
-		log.Fatalf("Erro ao verificar a existência de dados de teste: %v", err)
-		exists = false
-		return exists
-	}
-	return exists
 }
 
 func executeSQLFile(db *sql.DB, mock string) error {

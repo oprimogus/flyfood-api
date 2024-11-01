@@ -31,12 +31,13 @@ func MakeKeycloak(ctx context.Context) (*Container, error) {
 		slog.ErrorContext(ctx, fmt.Sprintf("failed to get mapped port: %s", err))
 		return nil, err
 	}
-	config := config.GetInstance().Keycloak
+	configInstance := config.GetInstance().Keycloak
+	slog.Info("", "value", configInstance)
 	portFormatted := strings.Replace(string(hostPort), "/tcp", "", -1)
-	config.BaseURL = fmt.Sprintf("http://localhost:%s", portFormatted)
-	config.Realm = "cardapiogo"
-	config.ClientID = "cardapiogo"
-	config.ClientSecret = "**********"
+	configInstance.BaseURL = fmt.Sprintf("http://localhost:%s", portFormatted)
+	configInstance.Realm = "cardapiogo"
+	configInstance.ClientID = "cardapiogo"
+	configInstance.ClientSecret = "**********"
 
 	return &Container{name: "Keycloak", instance: keycloakContainer}, nil
 }

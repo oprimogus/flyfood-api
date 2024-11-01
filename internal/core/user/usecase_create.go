@@ -5,17 +5,17 @@ import (
 	"fmt"
 )
 
-type useCaseCreate struct {
+type UseCaseCreate struct {
 	repository Repository
 }
 
-func newUseCaseCreate(repository Repository) useCaseCreate {
-	return useCaseCreate{
+func NewUseCaseCreate(repository Repository) UseCaseCreate {
+	return UseCaseCreate{
 		repository: repository,
 	}
 }
 
-func (c useCaseCreate) Execute(ctx context.Context, input CreateParams) error {
+func (c UseCaseCreate) Execute(ctx context.Context, input CreateParams) error {
 	getUsersWithUniqueParams := GetUsersWithUniqueParams{
 		Email: input.Email,
 		Phone: input.Profile.Phone,

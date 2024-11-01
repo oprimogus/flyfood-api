@@ -4,16 +4,16 @@ import (
 	"context"
 )
 
-type useCaseFindByID struct {
+type UseCaseFindByID struct {
 	repository Repository
 }
 
-func newUseCaseFindByID(repository Repository) useCaseFindByID {
-	return useCaseFindByID{
+func NewUseCaseFindByID(repository Repository) UseCaseFindByID {
+	return UseCaseFindByID{
 		repository: repository,
 	}
 }
 
-func (c useCaseFindByID) Execute(ctx context.Context, email string) (User, error) {
+func (c UseCaseFindByID) Execute(ctx context.Context, email string) (User, error) {
 	return c.repository.FindByID(ctx, email)
 }

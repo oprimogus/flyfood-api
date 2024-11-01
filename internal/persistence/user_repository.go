@@ -83,9 +83,7 @@ func (u *UserRepository) Create(ctx context.Context, user user.User) error {
 		return err
 	}
 
-	enabled := true
-	emailVerified := false
-	keycloakUser := entityUserToKeycloakUser(user, enabled, emailVerified)
+	keycloakUser := entityUserToKeycloakUser(user, true, false)
 
 	id, err := k.Client.CreateUser(ctx, k.Token.AccessToken, k.Realm, *keycloakUser)
 	if err != nil {
@@ -237,10 +235,10 @@ func (u *UserRepository) GetUsersWithUniqueParams(ctx context.Context, params us
 		return nil, err
 	}
 	query := fmt.Sprintf("phone:%s", params.Phone)
-	max := 1
+	maxUsers := 1
 	exact := true
 	usersWithPhone, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
-		Max: &max,
+		Max: &maxUsers,
 		Q:   &query,
 	})
 	if err != nil {
@@ -248,7 +246,7 @@ func (u *UserRepository) GetUsersWithUniqueParams(ctx context.Context, params us
 	}
 
 	usersWithEmail, err := k.Client.GetUsers(ctx, k.Token.AccessToken, k.Realm, gocloak.GetUsersParams{
-		Max:   &max,
+		Max:   &maxUsers,
 		Email: &params.Email,
 		Exact: &exact,
 	})

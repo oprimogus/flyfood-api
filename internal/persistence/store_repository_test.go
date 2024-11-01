@@ -13,28 +13,45 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/database/sqlc"
 	"github.com/oprimogus/cardapiogo/internal/persistence"
+	"github.com/oprimogus/cardapiogo/internal/services/adapter"
 	"github.com/oprimogus/cardapiogo/test/integration"
 )
 
 type StoreRepositorySuite struct {
 	suite.Suite
-	repository *persistence.StoreRepository
+	ctx               context.Context
+	repository        *persistence.StoreRepository
+	pgContainer       *integration.Container
+	keycloakContainer *integration.Container
 }
 
 func (s *StoreRepositorySuite) SetupSuite() {
-	db := postgres.GetInstance()
-	querier := sqlc.New(db.GetDB())
-	s.repository = persistence.NewStoreRepository(db, querier)
-}
-
-func TestIntegrationStoreRepositorySuite(t *testing.T) {
 	ctx := context.Background()
-	mockPostgres, err := integration.MakePostgres(ctx)
+	s.ctx = ctx
+	mockPostgres, err := integration.MakePostgres(s.ctx)
 	if err != nil {
 		panic("fail on initialize postgres with testContainers")
 	}
-	defer mockPostgres.Kill(ctx)
+	s.pgContainer = mockPostgres
 
+	keycloak, err := integration.MakeKeycloak(s.ctx)
+	if err != nil {
+		panic(err)
+	}
+	s.keycloakContainer = keycloak
+
+	db := postgres.GetInstance()
+	querier := sqlc.New(db.GetDB())
+	serviceFactory := adapter.NewServiceFactory()
+	s.repository = persistence.NewStoreRepository(db, querier, serviceFactory.NewStorageService())
+}
+
+func (s *StoreRepositorySuite) TearDownSuite() {
+	s.keycloakContainer.Kill(s.ctx)
+	s.pgContainer.Kill(s.ctx)
+}
+
+func TestIntegrationStoreRepositorySuite(t *testing.T) {
 	suite.Run(t, new(StoreRepositorySuite))
 }
 
@@ -57,7 +74,7 @@ func (s *StoreRepositorySuite) TestCreate() {
 			PostalCode:   "1213818",
 			Country:      "Brasil",
 		},
-		Type: store.StoreShopMarket,
+		Type: store.Market,
 	}
 
 	id, err := s.repository.Create(ctx, input.Entity(fakeUserID.String()))
@@ -67,6 +84,6 @@ func (s *StoreRepositorySuite) TestCreate() {
 	if err != nil {
 		s.T().Fatalf("fail on verify data in database")
 	}
-	assert.Equal(s.T(), 500, storeTest.Score)
+	assert.Equal(s.T(), store.DefaultScore, storeTest.Score)
 
 }

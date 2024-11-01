@@ -8,7 +8,7 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/core/user"
 )
 
-func handleCoreError(err error, transactionID string) *CustomError {
+func handleCoreError(err error, traceID string) *CustomError {
 	type errorMapping struct {
 		err    error
 		status int
@@ -26,9 +26,9 @@ func handleCoreError(err error, transactionID string) *CustomError {
 	for _, mapping := range mappings {
 		if errors.Is(err, mapping.err) {
 			return &CustomError{
-				Status:        mapping.status,
-				ErrorMessage:  err.Error(),
-				TransactionID: transactionID,
+				Status:       mapping.status,
+				ErrorMessage: err.Error(),
+				TraceID:      traceID,
 			}
 		}
 	}

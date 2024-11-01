@@ -29,8 +29,8 @@ func SwaggerRoutes(router *gin.Engine) {
 			DarkMode: true,
 		})
 		if err != nil {
-			transactionID := c.GetString(string(logger.TransactionIDKey))
-			c.JSON(500, xerrors.InternalServerError(transactionID, err.Error()))
+			traceID := c.GetString(string(logger.TraceIDKey))
+			c.JSON(500, xerrors.InternalServer(traceID, err.Error()))
 			return
 		}
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlContent))

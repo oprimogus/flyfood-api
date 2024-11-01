@@ -12,14 +12,16 @@ import (
 )
 
 type AuthController struct {
-	validator            *validatorutils.Validator
-	authenticationModule authentication.AuthenticationModule
+	validator      *validatorutils.Validator
+	useCaseSignIn  authentication.UseCaseSignIn
+	useCaseRefresh authentication.UseCaseRefresh
 }
 
-func NewAuthController(validator *validatorutils.Validator, authRepository authentication.Repository) *AuthController {
+func NewAuthController(validator *validatorutils.Validator, repository authentication.Repository) *AuthController {
 	return &AuthController{
-		validator:            validator,
-		authenticationModule: authentication.NewAuthenticationModule(authRepository),
+		validator:      validator,
+		useCaseSignIn:  authentication.NewUseCaseSignIn(repository),
+		useCaseRefresh: authentication.NewUseCaseRefresh(repository),
 	}
 }
 
@@ -32,28 +34,29 @@ func NewAuthController(validator *validatorutils.Validator, authRepository authe
 //	@Produce		json
 //	@Param			request	body		authentication.SignInParams	false	"Request body containing email and password."
 //	@Success		200		{object}	authentication.JWT		"Returns the generated JWT upon successful authentication."
+//	@Failure		401		{object}	xerrors.CustomError	"Unauthorized"
 //	@Failure		400		{object}	xerrors.CustomError	"Bad request due to validation errors or malformed input."
 //	@Failure		500		{object}	xerrors.CustomError	"Internal server error, something went wrong while processing the request."
 //	@Failure		502		{object}	xerrors.CustomError	"Bad gateway, likely due to an external service failure."
 //	@Router			/v1/auth/sign-in [post]
 func (c *AuthController) SignIn(ctx *gin.Context) {
-	transactionID := ctx.GetString(string(logger.TransactionIDKey))
+	traceID := ctx.GetString(string(logger.TraceIDKey))
 	var params authentication.SignInParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	err = c.validator.Validate(transactionID, params)
+	err = c.validator.Validate(traceID, params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	jwt, err := c.authenticationModule.SignIn.Execute(ctx, params.Email, params.Password)
+	jwt, err := c.useCaseSignIn.Execute(ctx, params.Email, params.Password)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
@@ -75,23 +78,23 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 //	@Failure		502		{object}	xerrors.CustomError	"Bad gateway, likely due to an external service failure."
 //	@Router			/v1/auth/refresh [post]
 func (c *AuthController) RefreshUserToken(ctx *gin.Context) {
-	transactionID := ctx.GetString(string(logger.TransactionIDKey))
+	traceID := ctx.GetString(string(logger.TraceIDKey))
 	var params authentication.RefreshParams
 	err := ctx.BindJSON(&params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	err = c.validator.Validate(transactionID, params)
+	err = c.validator.Validate(traceID, params)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}
-	jwt, err := c.authenticationModule.Refresh.Execute(ctx, params.RefreshToken)
+	jwt, err := c.useCaseRefresh.Execute(ctx, params.RefreshToken)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
+		xerror := xerrors.HandleError(err, traceID)
 		ctx.JSON(xerror.Status, xerror)
 		return
 	}

@@ -7,15 +7,15 @@ import (
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
-type useCaseAddRoles struct {
+type UseCaseAddRoles struct {
 	repository Repository
 }
 
-func newUseCaseAddRoles(repository Repository) useCaseAddRoles {
-	return useCaseAddRoles{repository: repository}
+func NewUseCaseAddRoles(repository Repository) UseCaseAddRoles {
+	return UseCaseAddRoles{repository: repository}
 }
 
-func (a useCaseAddRoles) Execute(ctx context.Context, roles []Role) error {
+func (a UseCaseAddRoles) Execute(ctx context.Context, roles []Role) error {
 	userID, ok := ctx.Value(string(logger.UserIDKey)).(string)
 	if !ok {
 		return fmt.Errorf("invalid userID: '%s'", userID)
