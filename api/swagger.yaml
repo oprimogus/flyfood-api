@@ -593,31 +593,40 @@ paths:
     post:
       consumes:
       - application/json
-      description: Sign-Up with local credentials and data
+      description: Register a new user with provided credentials and profile information
       parameters:
-      - description: CreateUserParams
+      - description: User registration data
         in: body
         name: request
+        required: true
         schema:
           $ref: '#/definitions/user.CreateParams'
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: User successfully created
         "400":
-          description: Bad Request
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: External service error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-      summary: Sign-Up with local credentials and data
+      summary: Create a new user account
       tags:
       - Authentication
   /v1/store:
@@ -1269,68 +1278,96 @@ paths:
     put:
       consumes:
       - application/json
-      description: User can update your profile
+      description: Modify existing user profile information
       parameters:
-      - description: UpdateProfileParams
+      - description: Updated user profile data
         in: body
         name: request
+        required: true
         schema:
           $ref: '#/definitions/user.UpdateProfileParams'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Profile successfully updated
         "400":
-          description: Bad Request
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.CustomError'
-        "502":
-          description: Bad Gateway
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      - Bearer Token: []
-      summary: User can update your profile
+      summary: Update user profile
       tags:
       - User
   /v1/user/roles:
     post:
       consumes:
       - application/json
-      description: Add a new role for user
+      description: Add one or more roles to an existing user's permissions
       parameters:
-      - description: AddRolesParams
+      - description: Roles to be added
         in: body
         name: request
+        required: true
         schema:
           $ref: '#/definitions/user.AddRolesParams'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Roles successfully added
         "400":
-          description: Bad Request
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Role already assigned
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.CustomError'
-        "502":
-          description: Bad Gateway
+          description: Internal server error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerToken: []
-      - Bearer Token: []
-      summary: Add a new role for user
+      summary: Assign new roles to user
       tags:
       - User
 produces:

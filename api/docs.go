@@ -135,7 +135,7 @@ const docTemplate = `{
         },
         "/v1/auth/sign-up": {
             "post": {
-                "description": "Sign-Up with local credentials and data",
+                "description": "Register a new user with provided credentials and profile information",
                 "consumes": [
                     "application/json"
                 ],
@@ -145,12 +145,13 @@ const docTemplate = `{
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Sign-Up with local credentials and data",
+                "summary": "Create a new user account",
                 "parameters": [
                     {
-                        "description": "CreateUserParams",
+                        "description": "User registration data",
                         "name": "request",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/user.CreateParams"
                         }
@@ -158,22 +159,34 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "User successfully created"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "User already exists",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "External service error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -1130,12 +1143,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerToken": []
-                    },
-                    {
-                        "Bearer Token": []
                     }
                 ],
-                "description": "User can update your profile",
+                "description": "Modify existing user profile information",
                 "consumes": [
                     "application/json"
                 ],
@@ -1145,12 +1155,13 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "User can update your profile",
+                "summary": "Update user profile",
                 "parameters": [
                     {
-                        "description": "UpdateProfileParams",
+                        "description": "Updated user profile data",
                         "name": "request",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/user.UpdateProfileParams"
                         }
@@ -1158,22 +1169,40 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Profile successfully updated"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -1186,12 +1215,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerToken": []
-                    },
-                    {
-                        "Bearer Token": []
                     }
                 ],
-                "description": "Add a new role for user",
+                "description": "Add one or more roles to an existing user's permissions",
                 "consumes": [
                     "application/json"
                 ],
@@ -1201,12 +1227,13 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Add a new role for user",
+                "summary": "Assign new roles to user",
                 "parameters": [
                     {
-                        "description": "AddRolesParams",
+                        "description": "Roles to be added",
                         "name": "request",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/user.AddRolesParams"
                         }
@@ -1214,22 +1241,46 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Roles successfully added"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Role already assigned",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
