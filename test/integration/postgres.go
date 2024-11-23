@@ -3,6 +3,8 @@ package integration
 import (
 	"context"
 	"fmt"
+	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/utils"
 	"log/slog"
 	"path/filepath"
 	"strings"
@@ -14,8 +16,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 
 	"github.com/oprimogus/cardapiogo/internal/config"
-	postgresDB "github.com/oprimogus/cardapiogo/internal/database/postgres"
-	"github.com/oprimogus/cardapiogo/internal/utils"
 )
 
 func MakePostgres(ctx context.Context) (*Container, error) {
@@ -46,13 +46,13 @@ func MakePostgres(ctx context.Context) (*Container, error) {
 		slog.ErrorContext(ctx, fmt.Sprintf("failed to get mapped port: %s", err))
 		return nil, err
 	}
-	configInstance.Port = strings.Replace(string(hostPort), "/tcp", "", -1)
+	port := strings.Replace(string(hostPort), "/tcp", "", -1)
 
-	errOnMigration := postgresDB.GetInstance().Migrate()
+	errOnMigration := postgresDB.GetTestInstance(port).Migrate()
 	if errOnMigration != nil {
 		slog.ErrorContext(ctx, fmt.Sprintf("failed on do migrations: %s", errOnMigration))
 		return nil, errOnMigration
 	}
 
-	return &Container{name: "postgres", instance: postgresContainer}, nil
+	return &Container{name: "postgres", instance: postgresContainer, Port: port}, nil
 }

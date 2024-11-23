@@ -1,19 +1,18 @@
 package config
 
 import (
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/utils"
 	"log/slog"
 	"os"
 
 	"github.com/subosito/gotenv"
-
-	"github.com/oprimogus/cardapiogo/internal/utils"
 )
 
 var (
 	conf *Config
 )
 
-type dbConfig struct {
+type DBConf struct {
 	Host     string
 	Port     string
 	Name     string
@@ -21,7 +20,7 @@ type dbConfig struct {
 	Password string
 }
 
-func (d *dbConfig) LogValue() slog.Value {
+func (d *DBConf) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.String("Host", "redacted"),
 		slog.String("Port", "redacted"),
@@ -31,29 +30,13 @@ func (d *dbConfig) LogValue() slog.Value {
 	)
 }
 
-type apiConfig struct {
-	basePath    string
-	port        string
-	ginMode     string
+type APIConf struct {
+	BasePath    string
+	Port        string
+	GinMode     string
 	Environment string
 	sqlcDebug   string
 	Consts      map[string]string
-}
-
-func (a *apiConfig) BasePath() string {
-	return a.basePath
-}
-
-func (a *apiConfig) Port() string {
-	return a.port
-}
-
-func (a *apiConfig) GinMode() string {
-	return a.ginMode
-}
-
-func (a *apiConfig) SQLCDebug() string {
-	return a.sqlcDebug
 }
 
 type keycloakConfig struct {
@@ -61,6 +44,14 @@ type keycloakConfig struct {
 	Realm        string
 	ClientID     string
 	ClientSecret string
+}
+
+type zitadelConfig struct {
+	Issuer   string
+	Api      string
+	Domain   string
+	ClientID string
+	Key      string
 }
 
 func (d *keycloakConfig) LogValue() slog.Value {
@@ -112,9 +103,10 @@ func (a *aws) SessionKey() string {
 }
 
 type Config struct {
-	Database *dbConfig
-	Api      *apiConfig
+	Database *DBConf
+	Api      *APIConf
 	Keycloak *keycloakConfig
+	Zitadel  *zitadelConfig
 	Resend   *resendConfig
 	Aws      *aws
 }
@@ -130,17 +122,17 @@ func newConfig() *Config {
 		panic("fail on load env vars")
 	}
 	return &Config{
-		Database: &dbConfig{
+		Database: &DBConf{
 			Host:     os.Getenv("DB_HOST"),
 			Port:     os.Getenv("DB_PORT"),
 			Name:     os.Getenv("DB_NAME"),
 			User:     os.Getenv("DB_USERNAME"),
 			Password: os.Getenv("DB_PASSWORD"),
 		},
-		Api: &apiConfig{
-			basePath:    os.Getenv("API_BASE_PATH"),
-			port:        os.Getenv("API_PORT"),
-			ginMode:     os.Getenv("GIN_MODE"),
+		Api: &APIConf{
+			BasePath:    os.Getenv("API_BASE_PATH"),
+			Port:        os.Getenv("API_PORT"),
+			GinMode:     os.Getenv("GIN_MODE"),
 			Environment: os.Getenv("ENVIRONMENT"),
 			sqlcDebug:   os.Getenv("SQLCDEBUG"),
 		},
@@ -149,6 +141,13 @@ func newConfig() *Config {
 			Realm:        os.Getenv("KEYCLOAK_REALM"),
 			ClientID:     os.Getenv("KEYCLOAK_CLIENT_ID"),
 			ClientSecret: os.Getenv("KEYCLOAK_CLIENT_SECRET"),
+		},
+		Zitadel: &zitadelConfig{
+			Issuer:   os.Getenv("ZITADEL_ISSUER"),
+			Api:      os.Getenv("ZITADEL_API"),
+			Domain:   os.Getenv("ZITADEL_DOMAIN"),
+			ClientID: os.Getenv("ZITADEL_CLIENT_ID"),
+			Key:      os.Getenv("ZITADEL_KEY"),
 		},
 		Resend: &resendConfig{
 			apiKey: os.Getenv("RESEND_API_KEY"),

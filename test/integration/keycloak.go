@@ -3,11 +3,11 @@ package integration
 import (
 	"context"
 	"fmt"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/utils"
 	"log/slog"
 	"strings"
 
 	"github.com/oprimogus/cardapiogo/internal/config"
-	"github.com/oprimogus/cardapiogo/internal/utils"
 	keycloak "github.com/stillya/testcontainers-keycloak"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"

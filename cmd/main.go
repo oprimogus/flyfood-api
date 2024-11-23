@@ -1,14 +1,14 @@
 package main
 
 import (
+	"github.com/oprimogus/cardapiogo/internal/application/api"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/persistence"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
 	"log/slog"
 	"os"
 
-	"github.com/oprimogus/cardapiogo/internal/api/router"
 	"github.com/oprimogus/cardapiogo/internal/config"
-	"github.com/oprimogus/cardapiogo/internal/database/postgres"
-	"github.com/oprimogus/cardapiogo/internal/persistence"
-	"github.com/oprimogus/cardapiogo/internal/services/adapter"
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
 )
 
@@ -34,16 +34,16 @@ func main() {
 		logger.InitLogger(os.Stdout, slog.LevelDebug)
 	}
 
-	// database
+	// Init database connection
 	db := postgres.GetInstance()
 	defer db.Close()
 
-	// Service factory
+	// Init Service factory
 	serviceFactory := adapter.NewServiceFactory()
 
-	// Repository factory
-	repositoryFactory := persistence.NewDataBaseRepositoryFactory(db, serviceFactory)
+	// Init repositories
+	repoFactory := persistence.NewRepositoryFactory(db)
 
 	// Web server
-	router.Initialize(repositoryFactory, serviceFactory)
+	api.InitRouter(db, repoFactory, serviceFactory)
 }

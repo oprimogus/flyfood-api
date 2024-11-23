@@ -18,9 +18,89 @@
     "host": "localhost:3000",
     "basePath": "/api",
     "paths": {
-        "/v1/auth/refresh": {
-            "post": {
-                "description": "Refresh an expired access token by providing a valid refresh token. Returns a new JWT if the refresh is successful.",
+        "/health/liveness": {
+            "get": {
+                "description": "Liveness Prob",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Liveness Prob",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HealthResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health/metrics": {
+            "get": {
+                "description": "Prometheus Metrics",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Prometheus Metrics",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health/readiness": {
+            "get": {
+                "description": "Readiness Prob",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Readiness Prob",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HealthResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/customer": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Modify comprehensive customer account details with full profile update",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,1136 +108,24 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Customer Profile Management"
                 ],
-                "summary": "Refresh JWT using a refresh token",
+                "summary": "Update existing customer profile",
                 "parameters": [
                     {
-                        "description": "Request body containing the refresh token.",
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated customer profile information",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/authentication.RefreshParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns a new JWT upon successful token refresh.",
-                        "schema": {
-                            "$ref": "#/definitions/authentication.JWT"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request due to validation errors or malformed input.",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error, something went wrong while processing the request.",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway, likely due to an external service failure.",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/auth/sign-in": {
-            "post": {
-                "description": "Authenticate a user using their email and password. If successful, a JWT is returned which can be used for subsequent authenticated requests.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Sign-In with email and password",
-                "parameters": [
-                    {
-                        "description": "Request body containing email and password.",
-                        "name": "request",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/authentication.SignInParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns the generated JWT upon successful authentication.",
-                        "schema": {
-                            "$ref": "#/definitions/authentication.JWT"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request due to validation errors or malformed input.",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error, something went wrong while processing the request.",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway, likely due to an external service failure.",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/auth/sign-up": {
-            "post": {
-                "description": "Register a new user with provided credentials and profile information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Create a new user account",
-                "parameters": [
-                    {
-                        "description": "User registration data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user.CreateParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "User successfully created"
-                    },
-                    "400": {
-                        "description": "Invalid request data",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "409": {
-                        "description": "User already exists",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "External service error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store": {
-            "get": {
-                "description": "Returns a list of stores based on various filter criteria including location, rating, and type.\nSupports geographic search with radius filtering when latitude and longitude are provided.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Search and filter stores",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Maximum distance range in kilometers for geographical search",
-                        "name": "range",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Minimum rating score (1-5)",
-                        "name": "score",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Store name for partial matching",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by city name",
-                        "name": "city",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Latitude for geographical search (requires longitude)",
-                        "name": "latitude",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Longitude for geographical search (requires latitude)",
-                        "name": "longitude",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Store type category (e.g., restaurant, cafe, bar)",
-                        "name": "type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of stores matching the filter criteria",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/store.GetStoreByIdOutput"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid filter parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "No stores found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Allows store owners to modify their store's details and settings.\nAll provided fields will be updated while maintaining existing data for omitted fields.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Update store information",
-                "parameters": [
-                    {
-                        "description": "Updated store information including modifiable fields",
-                        "name": "Params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.UpdateParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Store successfully updated"
-                    },
-                    "400": {
-                        "description": "Invalid input parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "Store not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict with existing data",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Allows authenticated users to register a new store in the system.\nThe store owner must provide essential information including name, location, and contact details.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Create a new store",
-                "parameters": [
-                    {
-                        "description": "Store creation parameters including name, address, contact info, and type",
-                        "name": "Params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.CreateParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Returns the created store ID",
-                        "schema": {
-                            "$ref": "#/definitions/store.CreatedStore"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User lacks permission",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict - Store already exists",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/business-hours": {
-            "put": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Allows store owners to set or update their store's operating hours.\nSupports setting different hours for each day of the week and special holiday schedules.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Add store business hours",
-                "parameters": [
-                    {
-                        "description": "Business hours configuration including days, opening and closing times",
-                        "name": "Params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.StoreBusinessHoursParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Business hours successfully updated"
-                    },
-                    "400": {
-                        "description": "Invalid time format or parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict with existing business hours",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Allows store owners to delete specific business hours or operating schedules.\nCan be used to remove regular hours or special holiday schedules.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Remove store business hours",
-                "parameters": [
-                    {
-                        "description": "Business hours to be removed",
-                        "name": "Params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.StoreBusinessHoursParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Business hours successfully deleted"
-                    },
-                    "400": {
-                        "description": "Invalid parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "Business hours not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/item": {
-            "get": {
-                "description": "Returns a list of store items based on the provided filter criteria.\nSupports filtering by type, name, city, score, and maximum price.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Item"
-                ],
-                "summary": "Search and filter store items",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Filter by item type",
-                        "name": "type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by item name (partial match)",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by store city",
-                        "name": "city",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Filter by minimum score",
-                        "name": "score",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Filter by maximum price",
-                        "name": "maxPrice",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of items matching the filter criteria",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/item.GetItemByIDOutput"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid filter parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "No items found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Modifies the details of an existing store item. Only authenticated store owners can update their own items.\nAll fields in the update request will replace the existing values.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Item"
-                ],
-                "summary": "Update an existing store item",
-                "parameters": [
-                    {
-                        "description": "Updated item details including name, description, price, and availability",
-                        "name": "Params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/item.UpdateItemInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Item successfully updated"
-                    },
-                    "400": {
-                        "description": "Invalid input parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "Item not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict with existing data",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Creates a new item in the store. Only authenticated store owners can perform this operation.\nThe item will be associated with the owner's store and available in the catalog.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Item"
-                ],
-                "summary": "Create a new store item",
-                "parameters": [
-                    {
-                        "description": "Item creation parameters including name, description, price, and type",
-                        "name": "Params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/item.CreateItemInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Returns the created item ID",
-                        "schema": {
-                            "$ref": "#/definitions/item.CreatedItem"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input parameters",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict - Item already exists",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/item/{id}": {
-            "get": {
-                "description": "Returns detailed information about a specific store item by its ID.\nThis endpoint is publicly accessible and does not require authentication.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Item"
-                ],
-                "summary": "Retrieve a specific store item",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Item ID - Unique identifier of the item",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Item details including name, description, price, and availability",
-                        "schema": {
-                            "$ref": "#/definitions/item.GetItemByIDOutput"
-                        }
-                    },
-                    "404": {
-                        "description": "Item not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Removes an item from the store catalog. Only authenticated store owners can delete their own items.\nThis operation is irreversible. All associated data will be permanently removed.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Item"
-                ],
-                "summary": "Delete a store item",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Item ID to be deleted",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Item successfully deleted"
-                    },
-                    "400": {
-                        "description": "Invalid item ID",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "Item not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/{id}": {
-            "get": {
-                "description": "Returns detailed information about a store by its ID.\nThis endpoint is publicly accessible and provides store details including business hours,\ncontact information, location, and current status.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Retrieve a specific store",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Store ID - Unique identifier of the store",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Store details including name, description, business hours, and contact info",
-                        "schema": {
-                            "$ref": "#/definitions/store.GetStoreByIdOutput"
-                        }
-                    },
-                    "404": {
-                        "description": "Store not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/{id}/header-image": {
-            "post": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Allows store owners to upload or update their store's header/banner image.\nSupports JPEG and PNG formats. Image will be processed and optimized for display.",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Upload store header image",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Store ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "Header image file (JPEG/PNG only, max size: 5MB)",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns URL of the uploaded image",
-                        "schema": {
-                            "$ref": "#/definitions/controller.setFileOutput"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid file format or size",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "413": {
-                        "description": "File size exceeds limit",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/{id}/profile-image": {
-            "post": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Allows store owners to upload or update their store's profile image.\nSupports JPEG and PNG formats. Image will be processed and optimized for display.",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store"
-                ],
-                "summary": "Upload store profile image",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Store ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "Profile image file (JPEG/PNG only, max size: 5MB)",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns URL of the uploaded image",
-                        "schema": {
-                            "$ref": "#/definitions/controller.setFileOutput"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid file format or size",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Bearer token missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - User is not the store owner",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "413": {
-                        "description": "File size exceeds limit",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad gateway",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/user": {
-            "put": {
-                "security": [
-                    {
-                        "BearerToken": []
-                    }
-                ],
-                "description": "Modify existing user profile information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Update user profile",
-                "parameters": [
-                    {
-                        "description": "Updated user profile data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user.UpdateProfileParams"
+                            "$ref": "#/definitions/customer.UpdateProfileDTO"
                         }
                     }
                 ],
@@ -1166,31 +134,242 @@
                         "description": "Profile successfully updated"
                     },
                     "400": {
-                        "description": "Invalid request data",
+                        "description": "Invalid request data or malformed JSON",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized - authentication required",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - insufficient permissions",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "404": {
-                        "description": "User not found",
+                        "description": "Customer profile not found",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "422": {
-                        "description": "Validation error",
+                        "description": "Validation error - invalid profile details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Register a comprehensive customer profile with full registration details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer Profile Management"
+                ],
+                "summary": "Create a new customer account",
+                "parameters": [
+                    {
+                        "description": "Detailed customer registration information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/customer.CreateProfileDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Customer successfully created"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - customer may already exist",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid customer details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "External service communication error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a comprehensive store profile with all necessary details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Owner"
+                ],
+                "summary": "Create a new store for an owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Detailed store creation information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.CreateNewStoreDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Store successfully created"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - store may already exist",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid store details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "External service communication error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/store": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Modify comprehensive store details including contact, operational, and profile information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Update existing store profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated store information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.UpdateStoreDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store successfully updated"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Store not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid store details",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -1204,14 +383,14 @@
                 }
             }
         },
-        "/v1/user/roles": {
+        "/v1/store/active": {
             "post": {
                 "security": [
                     {
-                        "BearerToken": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Add one or more roles to an existing user's permissions",
+                "description": "Change store profile image",
                 "consumes": [
                     "application/json"
                 ],
@@ -1219,56 +398,376 @@
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Store Management"
                 ],
-                "summary": "Assign new roles to user",
+                "summary": "Change store profile image",
                 "parameters": [
                     {
-                        "description": "Roles to be added",
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Store activation status",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user.AddRolesParams"
+                            "$ref": "#/definitions/store.SetActiveDTO"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Roles successfully added"
+                        "description": "Store activation status updated successfully"
                     },
                     "400": {
-                        "description": "Invalid request data",
+                        "description": "Invalid request data or malformed JSON",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "409": {
-                        "description": "Role already assigned",
+                        "description": "Unauthorized - authentication required",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "422": {
-                        "description": "Validation error",
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/store/business-hour": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register specific business hours for a store's operational schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Add business operating hours for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Business hours details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeleteBusinessHourDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Business hours successfully added"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid business hours",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete specific business hours from store's operational schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Remove business operating hours for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Business hours to remove",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeleteBusinessHourDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Business hours successfully removed"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid business hours",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/store/open": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Toggle store's availability to accept or stop accepting new orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Change store's operational status for orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Store open/close status",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.SetOpenStateDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store operational status updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/store/payment-method": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a new payment method accepted by the store",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Add payment method for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment method details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeletePaymentMethodDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment method successfully added"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid payment method",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a previously added payment method from store's accepted methods",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Remove payment method for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment method to remove",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeletePaymentMethodDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment method successfully removed"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid payment method",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -1298,340 +797,171 @@
             "properties": {
                 "addressLine1": {
                     "type": "string",
-                    "maxLength": 40
+                    "maxLength": 40,
+                    "example": "123 Main Street"
                 },
                 "addressLine2": {
                     "type": "string",
-                    "maxLength": 20
+                    "maxLength": 20,
+                    "example": "Apt 4B"
                 },
                 "city": {
                     "type": "string",
-                    "maxLength": 25
+                    "maxLength": 25,
+                    "example": "New York"
                 },
                 "country": {
                     "type": "string",
-                    "maxLength": 15
+                    "maxLength": 15,
+                    "example": "United States"
                 },
                 "latitude": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "40.7128"
                 },
                 "longitude": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "-74.0060"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "example": "Home"
                 },
                 "neighborhood": {
                     "type": "string",
-                    "maxLength": 25
+                    "maxLength": 25,
+                    "example": "Downtown"
                 },
                 "postalCode": {
                     "type": "string",
-                    "maxLength": 15
+                    "maxLength": 15,
+                    "example": "10001"
                 },
                 "state": {
                     "type": "string",
-                    "maxLength": 15
+                    "maxLength": 15,
+                    "example": "NY"
                 }
             }
         },
-        "authentication.JWT": {
+        "controller.HealthResponse": {
             "type": "object",
             "properties": {
-                "accessToken": {
+                "status": {
                     "type": "string",
-                    "example": "eysjs9a..."
+                    "example": "UP"
                 },
-                "expiresIn": {
-                    "type": "integer",
-                    "example": 300
-                },
-                "idToken": {
+                "timestamp": {
                     "type": "string",
-                    "example": "eysjg54g3ba..."
-                },
-                "notBeforePolicy": {
-                    "type": "integer",
-                    "example": 150
-                },
-                "refreshExpiresIn": {
-                    "type": "integer",
-                    "example": 300
-                },
-                "refreshToken": {
-                    "type": "string",
-                    "example": "eynmiks.ewij..."
-                },
-                "scope": {
-                    "type": "string",
-                    "example": "email client user ..."
-                },
-                "sessionState": {
-                    "type": "string",
-                    "example": "634g43y3..."
-                },
-                "tokenType": {
-                    "type": "string",
-                    "example": "Bearer"
+                    "example": "2024-03-15T10:30:15Z"
                 }
             }
         },
-        "authentication.RefreshParams": {
-            "type": "object",
-            "required": [
-                "refreshToken"
-            ],
-            "properties": {
-                "refreshToken": {
-                    "type": "string",
-                    "example": "eyajbhhkd....."
-                }
-            }
-        },
-        "authentication.SignInParams": {
+        "customer.CreateProfileDTO": {
             "type": "object",
             "required": [
                 "email",
-                "password"
+                "last_name",
+                "name",
+                "phone"
             ],
             "properties": {
+                "cpf": {
+                    "type": "string",
+                    "example": "52024227090"
+                },
                 "email": {
                     "type": "string",
                     "example": "johndoe@example.com"
                 },
-                "password": {
+                "last_name": {
                     "type": "string",
-                    "example": "*********"
-                }
-            }
-        },
-        "controller.setFileOutput": {
-            "type": "object",
-            "properties": {
-                "objectURL": {
-                    "type": "string",
-                    "example": "URL of object on storage"
-                }
-            }
-        },
-        "item.CreateItemInput": {
-            "type": "object",
-            "required": [
-                "description",
-                "name",
-                "price",
-                "storeID",
-                "type"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "example": "The best burguer!"
-                },
-                "details": {
-                    "type": "object",
-                    "additionalProperties": true
+                    "maxLength": 60,
+                    "minLength": 3,
+                    "example": "Doe"
                 },
                 "name": {
                     "type": "string",
                     "maxLength": 25,
-                    "example": "Hamburguer"
+                    "minLength": 3,
+                    "example": "John"
                 },
-                "price": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "example": 2990
-                },
-                "storeID": {
+                "phone": {
                     "type": "string",
-                    "example": "3279gbf23gb-fb23-6f239"
-                },
-                "type": {
-                    "enum": [
-                        "FOOD",
-                        " WATERGALLON"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/item.Type"
-                        }
-                    ]
+                    "example": "+5513997590579"
                 }
             }
         },
-        "item.CreatedItem": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "item.GetItemByIDOutput": {
+        "customer.UpdateProfileDTO": {
             "type": "object",
             "required": [
-                "active",
-                "description",
-                "discountActive",
-                "discountPrice",
-                "image",
+                "last_name",
                 "name",
-                "price",
-                "score",
-                "storeID",
-                "type"
+                "phone"
             ],
             "properties": {
-                "active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "description": {
+                "last_name": {
                     "type": "string",
-                    "maxLength": 50,
-                    "example": "Com blend de 150g e molho especial."
-                },
-                "details": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "discountActive": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "discountPrice": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "example": 2499
-                },
-                "image": {
-                    "type": "string",
-                    "example": "https://cardapiogo.com.br/fgbjkgr7erg793bj3lk"
+                    "maxLength": 60,
+                    "minLength": 3,
+                    "example": "Doe"
                 },
                 "name": {
                     "type": "string",
                     "maxLength": 25,
-                    "example": "Hambúrguer Artesanal"
+                    "minLength": 3,
+                    "example": "John"
                 },
-                "price": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "example": 2990
-                },
-                "score": {
-                    "type": "integer",
-                    "example": 475
-                },
-                "storeID": {
+                "phone": {
                     "type": "string",
-                    "example": "3279gbf23gb-fb23-6f239"
-                },
-                "type": {
-                    "enum": [
-                        "FOOD",
-                        " WATERGALLON"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/item.Type"
-                        }
-                    ]
+                    "example": "+5513997590579"
                 }
             }
         },
-        "item.Type": {
-            "type": "string",
-            "enum": [
-                "FOOD",
-                "WATERGALLON"
-            ],
-            "x-enum-varnames": [
-                "Food",
-                "WaterGallon"
-            ]
-        },
-        "item.UpdateItemInput": {
+        "store.AddOrDeleteBusinessHourDTO": {
             "type": "object",
             "required": [
-                "active",
-                "description",
-                "discountActive",
-                "discountPrice",
+                "business_hour",
                 "id",
-                "name",
-                "price",
-                "storeID",
-                "type"
+                "owner_id"
             ],
             "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 50
-                },
-                "details": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "discountActive": {
-                    "type": "boolean"
-                },
-                "discountPrice": {
-                    "type": "integer",
-                    "minimum": 0
+                "business_hour": {
+                    "$ref": "#/definitions/store.BusinessHours"
                 },
                 "id": {
-                    "type": "integer",
-                    "example": 246643
-                },
-                "name": {
                     "type": "string",
-                    "maxLength": 25
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
-                "price": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "storeID": {
-                    "type": "string"
-                },
-                "type": {
-                    "enum": [
-                        "FOOD",
-                        " WATERGALLON"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/item.Type"
-                        }
-                    ]
+                "owner_id": {
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 }
             }
         },
-        "store.AddressOutput": {
+        "store.AddOrDeletePaymentMethodDTO": {
             "type": "object",
+            "required": [
+                "id",
+                "owner_id",
+                "payment_method"
+            ],
             "properties": {
-                "addressLine1": {
-                    "type": "string"
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
-                "addressLine2": {
-                    "type": "string"
+                "owner_id": {
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 },
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "neighborhood": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
+                "payment_method": {
+                    "$ref": "#/definitions/store.PaymentMethod"
                 }
             }
         },
-        "store.BusinessHoursParams": {
+        "store.BusinessHours": {
             "type": "object",
             "required": [
                 "closingTime",
@@ -1639,24 +969,29 @@
             ],
             "properties": {
                 "closingTime": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "15:00"
                 },
                 "openingTime": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "09:00"
                 },
                 "weekDay": {
                     "type": "integer",
                     "maximum": 6,
-                    "minimum": 0
+                    "minimum": 0,
+                    "example": 1
                 }
             }
         },
-        "store.CreateParams": {
+        "store.CreateNewStoreDTO": {
             "type": "object",
             "required": [
                 "address",
-                "cpfCnpj",
+                "cnpj",
+                "description",
                 "name",
+                "owner_id",
                 "phone",
                 "type"
             ],
@@ -1664,127 +999,107 @@
                 "address": {
                     "$ref": "#/definitions/address.Address"
                 },
-                "cpfCnpj": {
+                "cnpj": {
                     "type": "string",
-                    "example": "83193927805"
+                    "example": "12345678000190"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Best bakery in town with fresh pastries"
                 },
                 "name": {
                     "type": "string",
                     "maxLength": 25,
-                    "example": "John"
+                    "minLength": 3,
+                    "example": "Delicious Bakery"
+                },
+                "owner_id": {
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 },
                 "phone": {
                     "type": "string",
-                    "example": "13997590579"
+                    "example": "+5511997590670"
                 },
                 "type": {
-                    "enum": [
-                        "restaurant",
-                        " pharmacy",
-                        " tobbaco",
-                        " market",
-                        " convenience",
-                        " pub"
-                    ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/store.ShopType"
+                            "$ref": "#/definitions/store.Type"
                         }
-                    ]
-                }
-            }
-        },
-        "store.CreatedStore": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "store.GetStoreByIdOutput": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/store.AddressOutput"
-                },
-                "businessHours": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/store.BusinessHoursParams"
-                    }
-                },
-                "headerImage": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "paymentMethod": {
-                    "type": "array",
-                    "items": {
-                        "enum": [
-                            "credit",
-                            " debit",
-                            " pix",
-                            " cash"
-                        ],
-                        "$ref": "#/definitions/store.PaymentMethod"
-                    }
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "profileImage": {
-                    "type": "string"
-                },
-                "score": {
-                    "type": "integer"
-                },
-                "type": {
-                    "enum": [
-                        "restaurant",
-                        " pharmacy",
-                        " tobbaco",
-                        " market",
-                        " convenience",
-                        " pub"
                     ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/store.ShopType"
-                        }
-                    ]
+                    "example": "RESTAURANT"
                 }
             }
         },
         "store.PaymentMethod": {
             "type": "string",
             "enum": [
-                "credit",
-                "debit",
-                "pix",
-                "cash"
+                "CREDIT",
+                "DEBIT",
+                "CASH",
+                "PIX",
+                "BTC"
             ],
             "x-enum-varnames": [
                 "Credit",
                 "Debit",
                 "Pix",
-                "Cash"
+                "Cash",
+                "Bitcoin"
             ]
         },
-        "store.ShopType": {
+        "store.SetActiveDTO": {
+            "type": "object",
+            "required": [
+                "id",
+                "owner_id"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "owner_id": {
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                }
+            }
+        },
+        "store.SetOpenStateDTO": {
+            "type": "object",
+            "required": [
+                "id",
+                "owner_id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "is_open": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "owner_id": {
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                }
+            }
+        },
+        "store.Type": {
             "type": "string",
             "enum": [
-                "restaurant",
-                "pharmacy",
-                "tobbaco",
-                "market",
-                "convenience",
-                "pub"
+                "RESTAURANT",
+                "PHARMACY",
+                "TOBBACO",
+                "MARKET",
+                "CONVENIENCE",
+                "PUB"
             ],
             "x-enum-varnames": [
                 "Restaurant",
@@ -1795,33 +1110,14 @@
                 "Pub"
             ]
         },
-        "store.StoreBusinessHoursParams": {
-            "type": "object",
-            "required": [
-                "id",
-                "timeZone"
-            ],
-            "properties": {
-                "businessHours": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/store.BusinessHoursParams"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "timeZone": {
-                    "type": "string"
-                }
-            }
-        },
-        "store.UpdateParams": {
+        "store.UpdateStoreDTO": {
             "type": "object",
             "required": [
                 "address",
+                "description",
                 "id",
                 "name",
+                "owner_id",
                 "phone",
                 "type"
             ],
@@ -1829,144 +1125,36 @@
                 "address": {
                     "$ref": "#/definitions/address.Address"
                 },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Best bakery in town with fresh pastries"
+                },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 25
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Delicious Bakery"
                 },
-                "paymentMethod": {
-                    "type": "array",
-                    "items": {
-                        "enum": [
-                            "credit",
-                            " debit",
-                            " pix",
-                            " cash"
-                        ],
-                        "$ref": "#/definitions/store.PaymentMethod"
-                    }
+                "owner_id": {
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 },
                 "phone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+5511997590670"
                 },
                 "type": {
-                    "enum": [
-                        "restaurant",
-                        " pharmacy",
-                        " tobbaco",
-                        " market",
-                        " convenience",
-                        " pub"
-                    ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/store.ShopType"
+                            "$ref": "#/definitions/store.Type"
                         }
-                    ]
-                }
-            }
-        },
-        "user.AddRolesParams": {
-            "type": "object",
-            "required": [
-                "roles"
-            ],
-            "properties": {
-                "roles": {
-                    "type": "array",
-                    "items": {
-                        "enum": [
-                            "consumer",
-                            " delivery_man",
-                            " owner",
-                            " employee"
-                        ],
-                        "$ref": "#/definitions/user.Role"
-                    }
-                }
-            }
-        },
-        "user.CreateParams": {
-            "type": "object",
-            "required": [
-                "email",
-                "password",
-                "profile"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "johndoe@example.com"
-                },
-                "password": {
-                    "type": "string",
-                    "example": "*********"
-                },
-                "profile": {
-                    "$ref": "#/definitions/user.CreateProfileParams"
-                }
-            }
-        },
-        "user.CreateProfileParams": {
-            "type": "object",
-            "required": [
-                "lastName",
-                "name",
-                "phone"
-            ],
-            "properties": {
-                "lastName": {
-                    "type": "string",
-                    "example": "Doe"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "13997590579"
-                }
-            }
-        },
-        "user.Role": {
-            "type": "string",
-            "enum": [
-                "consumer",
-                "owner",
-                "employee",
-                "delivery_man",
-                "admin"
-            ],
-            "x-enum-varnames": [
-                "RoleConsumer",
-                "RoleOwner",
-                "RoleEmployee",
-                "RoleDeliveryMan",
-                "RoleAdmin"
-            ]
-        },
-        "user.UpdateProfileParams": {
-            "type": "object",
-            "required": [
-                "lastName",
-                "name",
-                "phone"
-            ],
-            "properties": {
-                "lastName": {
-                    "type": "string",
-                    "example": "Doe"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "13997590579"
+                    ],
+                    "example": "RESTAURANT"
                 }
             }
         },

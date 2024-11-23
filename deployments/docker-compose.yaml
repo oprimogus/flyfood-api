@@ -12,45 +12,74 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - observability
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "postgres", "-U", "cardapiogo" ]
+      interval: '10s'
+      timeout: '30s'
+      retries: 5
+      start_period: '20s'
 
-  create-keycloak-schema:
-    image: postgres
-    container_name: create-keycloak-schema
+#  create-keycloak-schema:
+#    image: postgres
+#    container_name: create-keycloak-schema
+#    depends_on:
+#      - postgres
+#    environment:
+#      POSTGRES_DB: postgres
+#      POSTGRES_USER: cardapiogo
+#      POSTGRES_PASSWORD: cardapiogo
+#    command: >
+#      sh -c "
+#      export PGPASSWORD=$$POSTGRES_PASSWORD;
+#      until pg_isready -h postgres -U cardapiogo; do
+#        sleep 1;
+#      done;
+#      psql -h postgres -U cardapiogo -d postgres -c 'CREATE SCHEMA IF NOT EXISTS keycloak;'
+#      "
+#    networks:
+#      - observability
+#
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:24.0.4
+#    container_name: cardapiogo-keycloak
+#    environment:
+#      KEYCLOAK_ADMIN: admin
+#      KEYCLOAK_ADMIN_PASSWORD: admin
+#      KC_DB_URL: jdbc:postgresql://postgres:5432/postgres
+#      KC_DB: postgres
+#      KC_DB_SCHEMA: keycloak
+#      KC_DB_USERNAME: cardapiogo
+#      KC_DB_PASSWORD: cardapiogo
+#    ports:
+#      - "8080:8080"
+#    command: ["start-dev", "--import-realm"]
+#    volumes:
+#      - ../test/integration/testdata/keycloak.json:/opt/keycloak/data/import/keycloak.json
+#    depends_on:
+#      - create-keycloak-schema
+#    networks:
+#      - observability
+
+  zitadel:
+    container_name: cardapiogo-zitadel
+    image: 'ghcr.io/zitadel/zitadel:latest'
+    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
+    environment:
+      ZITADEL_DATABASE_POSTGRES_HOST: postgres
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: postgres
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+      ZITADEL_EXTERNALSECURE: false
     depends_on:
-      - postgres
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: cardapiogo
-      POSTGRES_PASSWORD: cardapiogo
-    command: >
-      sh -c "
-      export PGPASSWORD=$$POSTGRES_PASSWORD;
-      until pg_isready -h postgres -U cardapiogo; do
-        sleep 1;
-      done;
-      psql -h postgres -U cardapiogo -d postgres -c 'CREATE SCHEMA IF NOT EXISTS keycloak;'
-      "
-    networks:
-      - observability
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0.4
-    container_name: cardapiogo-keycloak
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB_URL: jdbc:postgresql://postgres:5432/postgres
-      KC_DB: postgres
-      KC_DB_SCHEMA: keycloak
-      KC_DB_USERNAME: cardapiogo
-      KC_DB_PASSWORD: cardapiogo
+      postgres:
+        condition: 'service_healthy'
     ports:
-      - "8080:8080"
-    command: ["start-dev", "--import-realm"]
-    volumes:
-      - ../test/integration/testdata/keycloak.json:/opt/keycloak/data/import/keycloak.json
-    depends_on: 
-      - create-keycloak-schema
+      - '8080:8080'
     networks:
       - observability
   

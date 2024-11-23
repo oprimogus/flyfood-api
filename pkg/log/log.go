@@ -6,17 +6,13 @@ import (
 	"io"
 	"log/slog"
 	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type ContextKey string
 
 const (
-	TraceIDKey     ContextKey = "trace_id"
-	UserIDKey      ContextKey = "user_id"
-	RequestDataKey ContextKey = "request_data"
+	UserIDKey  ContextKey = "user_id"
+	RequestKey ContextKey = "request_data"
 )
 
 type RequestData struct {
@@ -51,12 +47,8 @@ func (h *ContextualHandler) Handle(ctx context.Context, r slog.Record) error {
 	m["level"] = r.Level.String()
 	m["message"] = r.Message
 
-	if reqData, ok := ctx.Value(RequestDataKey).(*RequestData); ok {
+	if reqData, ok := ctx.Value(string(RequestKey)).(*RequestData); ok {
 		m["request"] = reqData
-		// m["transaction_id"] = reqData.TraceID
-		// m["method"] = reqData.Method
-		// m["path"] = reqData.Path
-		// m["client_ip"] = reqData.ClientIP
 	}
 
 	attrs := make(map[string]interface{})
@@ -88,29 +80,6 @@ func (h *ContextualHandler) WithAttrs([]slog.Attr) slog.Handler {
 
 func (h *ContextualHandler) WithGroup(string) slog.Handler {
 	return h
-}
-
-func GinMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userID := c.GetString(string(UserIDKey))
-		traceID := uuid.New().String()
-		reqData := &RequestData{
-			UserID:   userID,
-			TraceID:  traceID,
-			Method:   c.Request.Method,
-			Path:     c.Request.URL.Path,
-			ClientIP: c.ClientIP(),
-		}
-		c.Set(string(TraceIDKey), traceID)
-		ctx := context.WithValue(c.Request.Context(), RequestDataKey, reqData)
-		c.Request = c.Request.WithContext(ctx)
-
-		c.Next()
-
-		slog.InfoContext(ctx, "request completed",
-			slog.Int("status", c.Writer.Status()),
-		)
-	}
 }
 
 func InitLogger(out io.Writer, level slog.Level) {

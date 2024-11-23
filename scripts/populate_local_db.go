@@ -69,7 +69,7 @@ func getSQLDBConnection(connStr string) (*sql.DB, error) {
 }
 
 func getMocks() []string {
-	files, err := os.ReadDir("internal/infra/database/sql/mocks")
+	files, err := os.ReadDir("internal/infrastructure/database/sql/mocks")
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +82,7 @@ func getMocks() []string {
 }
 
 func executeSQLFile(db *sql.DB, mock string) error {
-	query, err := os.ReadFile(fmt.Sprintf("internal/infra/database/sql/mocks/%v.sql", mock))
+	query, err := os.ReadFile(fmt.Sprintf("internal/infrastructure/database/sql/mocks/%v.sql", mock))
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("erro ao ler mock %v: %w", mock, err)

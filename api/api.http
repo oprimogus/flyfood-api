@@ -12,11 +12,16 @@ POST http://localhost:3000/api/v1/auth/sign-up
 Content-Type: application/json
 
 {
-  "email": "johndoe@example.com",
-  "password": "teste123",
-  "profile": {
-    "lastName": "Doe",
-    "name": "John",
-    "phone": "+5513995590867"
-  }
+  "name": "John",
+  "last_name": "Doe",
+  "cpf": "",
+  "phone": "+5513995590867",
+  "email": "johndoe@example.com"
 }
+
+###
+
+GET http://localhost:3000/api/v1/store?page=1&limit=10&type=market
+
+
+

@@ -11,6 +11,7 @@ import (
 type Container struct {
 	name     string
 	instance testcontainers.Container
+	Port     string
 }
 
 func (c *Container) Kill(ctx context.Context) {
