@@ -6,7 +6,6 @@ import (
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/utils"
 	"log/slog"
-	"path/filepath"
 	"strings"
 
 	"time"
@@ -27,7 +26,6 @@ func MakePostgres(ctx context.Context) (*Container, error) {
 	configInstance.Password = "cardapiogo"
 	postgresContainer, err := postgres.Run(ctx,
 		"docker.io/postgres:16-alpine",
-		postgres.WithInitScripts(filepath.Join("test", "integration", "testdata", "postgres-init.sh")),
 		postgres.WithDatabase(configInstance.Name),
 		postgres.WithUsername(configInstance.User),
 		postgres.WithPassword(configInstance.Password),
