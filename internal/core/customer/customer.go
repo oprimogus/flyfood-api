@@ -1,17 +1,14 @@
 package customer
 
 import (
-	"fmt"
-
-	"github.com/google/uuid"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/oprimogus/cardapiogo/internal/xvalidator"
 )
 
 type Customer struct {
-	ID        string            `json:"id" validate:"required,uuid" example:"01931631-ea94-7052-a98c-9723bc6c6056"`
+	ID        int               `json:"id" validate:"required,number" example:"295105940221919239"`
 	Name      string            `json:"name" validate:"required,alpha,gte=3,lte=25" example:"John"`
-	LastName  string            `json:"last_name" validate:"required,alpha,gte=3,lte=60" example:"Doe"`
+	LastName  string            `json:"last_name" validate:"required,gte=3,lte=60" example:"Doe"`
 	CPF       string            `json:"cpf" validate:"cpf" example:"52024227090"`
 	Email     string            `json:"email" validate:"required,email" example:"johndoe@example.com"`
 	Phone     string            `json:"phone" validate:"required,phone" example:"+5513997590579"`
@@ -23,13 +20,9 @@ func (c *Customer) Validate() error {
 	return xvalidator.GetPtInstance().Validate(c)
 }
 
-func NewCustomer(name, lastName, cpf, email, phone string) (*Customer, error) {
-	uuidV7, err := uuid.NewV7()
-	if err != nil {
-		return &Customer{}, fmt.Errorf("fail on create customer id: %w", err)
-	}
+func NewCustomer(id int, name, lastName, cpf, email, phone string) (*Customer, error) {
 	newCustomer := &Customer{
-		ID:        uuidV7.String(),
+		ID:        id,
 		Name:      name,
 		LastName:  lastName,
 		CPF:       cpf,

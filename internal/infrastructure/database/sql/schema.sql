@@ -1,6 +1,6 @@
 -- MIGRATION 2
 CREATE TABLE IF NOT EXISTS "customer" (
-                                          "id" uuid PRIMARY KEY,
+                                          "id" BIGSERIAL PRIMARY KEY,
                                           "name" varchar NOT NULL,
                                           "last_name" varchar NOT NULL,
                                           "cpf" varchar UNIQUE NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS "customer" (
 -- MIGRATION 3
 CREATE TABLE IF NOT EXISTS "address" (
                                          "id" BIGSERIAL PRIMARY KEY,
-                                         "customer_id" uuid,
+                                         "customer_id" BIGSERIAL NOT NULL,
                                          "name" varchar NOT NULL,
                                          "address_line_1" varchar NOT NULL,
                                          "address_line_2" varchar NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS "address" (
 ALTER TABLE "address" ADD FOREIGN KEY ("customer_id") REFERENCES "customer" ("id");
 -- MIGRATION 4
 CREATE TABLE IF NOT EXISTS "owner" (
-                                       "id" uuid PRIMARY KEY,
+                                       "id" BIGSERIAL PRIMARY KEY,
                                        "signature_active" bool NOT NULL,
                                        "created_at" timestamp NOT NULL,
                                        "updated_at" timestamp,
@@ -61,7 +61,7 @@ CREATE TYPE "PaymentMethod" AS ENUM (
 
 CREATE TABLE IF NOT EXISTS "store" (
                                        "id" uuid PRIMARY KEY,
-                                       "owner_id" uuid,
+                                       "owner_id" BIGSERIAL NOT NULL,
                                        "cnpj" varchar UNIQUE NOT NULL,
                                        "name" varchar UNIQUE NOT NULL,
                                        "description" varchar UNIQUE NOT NULL,
@@ -150,9 +150,9 @@ CREATE TYPE "OrderStatus" AS ENUM (
 
 CREATE TABLE IF NOT EXISTS "order" (
                                        "id" uuid PRIMARY KEY,
-                                       "store_id" uuid,
-                                       "customer_id" uuid,
-                                       "address_id" int,
+                                       "store_id" uuid NOT NULL,
+                                       "customer_id" BIGSERIAL NOT NULL,
+                                       "address_id" int NOT NULL,
                                        "status" "OrderStatus" NOT NULL,
                                        "shipping_amount" int NOT NULL,
                                        "created_at" timestamp NOT NULL,

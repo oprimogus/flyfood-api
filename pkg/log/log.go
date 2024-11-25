@@ -11,7 +11,6 @@ import (
 type ContextKey string
 
 const (
-	UserIDKey  ContextKey = "user_id"
 	RequestKey ContextKey = "request_data"
 )
 

@@ -49,7 +49,7 @@ func TestProductRepositorySuite(t *testing.T) {
 func (s *ProductRepositoryTestSuite) TestFindByIDAndSave() {
 	ctx := context.Background()
 	mockCustomer := customer.Customer{
-		ID:       "019322cc-de2d-7064-9516-46e2c1db90be",
+		ID:       2575475247247542254,
 		Name:     "John",
 		LastName: "Marston",
 		CPF:      "fake cpf",
@@ -73,11 +73,11 @@ func (s *ProductRepositoryTestSuite) TestFindByIDAndSave() {
 	err := s.customerRepository.Save(ctx, &mockCustomer)
 	assert.NoError(s.T(), err)
 
-	// become mock customer an owner
-	err = s.storeRepository.BecomeOwner(context.Background(), mockCustomer.ID)
-	assert.NoError(s.T(), err)
-
 	mockOwner := store.NewOwner(mockCustomer.ID)
+
+	// become mock customer an owner
+	err = s.storeRepository.SaveOwner(context.Background(), mockOwner)
+	assert.NoError(s.T(), err)
 
 	// store address
 	addr := address.Address{

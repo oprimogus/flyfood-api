@@ -25,13 +25,13 @@ func newHealthHandler(db *postgresDB.Database) healthController {
 
 // livenessProbe godoc
 //
-// @Summary     Liveness Prob
-// @Description Liveness Prob
-// @Tags        Health
-// @Produce     json
-// @Success     200    {object}  HealthResponse
-// @Failure     500    {object}  HealthResponse
-// @Router      /health/liveness [get]
+//	@Summary		Liveness Prob
+//	@Description	Liveness Prob
+//	@Tags			Health
+//	@Produce		json
+//	@Success		200	{object}	HealthResponse
+//	@Failure		500	{object}	HealthResponse
+//	@Router			/health/liveness [get]
 func (h *healthController) livenessProbe(w http.ResponseWriter, r *http.Request) {
 	response := HealthResponse{
 		Status:    "UP",
@@ -42,13 +42,13 @@ func (h *healthController) livenessProbe(w http.ResponseWriter, r *http.Request)
 
 // readinessProbe godoc
 //
-// @Summary     Readiness Prob
-// @Description Readiness Prob
-// @Tags        Health
-// @Produce     json
-// @Success     200    {object}  HealthResponse
-// @Failure     500    {object}  HealthResponse
-// @Router      /health/readiness [get]
+//	@Summary		Readiness Prob
+//	@Description	Readiness Prob
+//	@Tags			Health
+//	@Produce		json
+//	@Success		200	{object}	HealthResponse
+//	@Failure		500	{object}	HealthResponse
+//	@Router			/health/readiness [get]
 func (h *healthController) readinessProbe(w http.ResponseWriter, r *http.Request) {
 	if err := h.db.GetDB().Ping(r.Context()); err != nil {
 		response := HealthResponse{
@@ -68,13 +68,13 @@ func (h *healthController) readinessProbe(w http.ResponseWriter, r *http.Request
 
 // prometheusMetrics godoc
 //
-// @Summary     Prometheus Metrics
-// @Description Prometheus Metrics
-// @Tags        Health
-// @Produce     plain
-// @Success     200
-// @Failure     500    {object}  HealthResponse
-// @Router      /health/metrics [get]
+//	@Summary		Prometheus Metrics
+//	@Description	Prometheus Metrics
+//	@Tags			Health
+//	@Produce		plain
+//	@Success		200
+//	@Failure		500	{object}	HealthResponse
+//	@Router			/health/metrics [get]
 func (h *healthController) prometheusMetrics(w http.ResponseWriter, r *http.Request) {
 	metrics := middleware.NewPrometheusMetrics()
 	prometheusHandler := promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{})

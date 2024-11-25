@@ -18,7 +18,7 @@ CREATE TYPE "PaymentMethod" AS ENUM (
 
 CREATE TABLE IF NOT EXISTS "store" (
      "id" uuid PRIMARY KEY,
-     "owner_id" uuid,
+     "owner_id" BIGSERIAL NOT NULL,
      "cnpj" varchar UNIQUE NOT NULL,
      "name" varchar UNIQUE NOT NULL,
      "description" varchar UNIQUE NOT NULL,

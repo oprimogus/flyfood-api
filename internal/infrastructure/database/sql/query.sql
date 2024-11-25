@@ -14,6 +14,14 @@ ORDER BY a.created_at DESC;
 INSERT INTO owner (id, signature_active, created_at, updated_at, deleted_at)
 VALUES ($1, $2, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null);
 
+-- name: SaveOwner :exec
+INSERT INTO owner (id, signature_active, created_at, updated_at, deleted_at)
+VALUES ($1, $2, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null)
+ON CONFLICT (id) DO UPDATE
+SET
+    signature_active = excluded.signature_active,
+    updated_at = NOW() AT TIME ZONE 'UTC';
+
 -- name: RemoveOwner :exec
 DELETE FROM owner
 WHERE id = $1;
@@ -115,7 +123,7 @@ ON CONFLICT (id) DO UPDATE
         profile_image = excluded.profile_image,
         header_image = excluded.header_image,
         address_line_1 = excluded.address_line_1,
-        address_line_2 = excluded,
+        address_line_2 = excluded.address_line_2,
         neighborhood = excluded.neighborhood,
         city = excluded.city,
         state = excluded.state,

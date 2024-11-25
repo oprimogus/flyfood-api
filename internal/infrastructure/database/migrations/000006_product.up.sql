@@ -5,7 +5,7 @@ CREATE TYPE "ProductType" AS ENUM (
 
 CREATE TABLE "product" (
     "id" uuid PRIMARY KEY,
-    "store_id" uuid,
+    "store_id" uuid NOT NULL,
     "sku" varchar,
     "active_for_sale" bool NOT NULL,
     "promo_active" bool NOT NULL,

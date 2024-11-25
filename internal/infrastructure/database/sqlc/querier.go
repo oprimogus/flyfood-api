@@ -50,7 +50,7 @@ type Querier interface {
 	//  FROM address a
 	//  WHERE a.customer_id = $1
 	//  ORDER BY a.created_at DESC
-	FindAddressesByCustomerID(ctx context.Context, customerID pgtype.UUID) ([]FindAddressesByCustomerIDRow, error)
+	FindAddressesByCustomerID(ctx context.Context, customerID int64) ([]FindAddressesByCustomerIDRow, error)
 	//FindBusinessHourByStoreID
 	//
 	//  SELECT bh.weekday, bh.open_hour, bh.closing_hour
@@ -63,12 +63,12 @@ type Querier interface {
 	//  FROM customer c
 	//  WHERE c.id = $1
 	//  LIMIT 1
-	FindCustomerByID(ctx context.Context, id pgtype.UUID) (FindCustomerByIDRow, error)
+	FindCustomerByID(ctx context.Context, id int64) (FindCustomerByIDRow, error)
 	//FindOwnerByID
 	//
 	//  SELECT o.id, signature_active from owner o
 	//  WHERE o.id = $1
-	FindOwnerByID(ctx context.Context, id pgtype.UUID) (FindOwnerByIDRow, error)
+	FindOwnerByID(ctx context.Context, id int64) (FindOwnerByIDRow, error)
 	//FindPaymentMethodsByStoreID
 	//
 	//  SELECT pm.payment_method FROM store_payment_method pm
@@ -100,12 +100,12 @@ type Querier interface {
 	//IsOwner
 	//
 	//  SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
-	IsOwner(ctx context.Context, id pgtype.UUID) (bool, error)
+	IsOwner(ctx context.Context, id int64) (bool, error)
 	//RemoveOwner
 	//
 	//  DELETE FROM owner
 	//  WHERE id = $1
-	RemoveOwner(ctx context.Context, id pgtype.UUID) error
+	RemoveOwner(ctx context.Context, id int64) error
 	//SaveCustomer
 	//
 	//  INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
@@ -143,6 +143,15 @@ type Querier interface {
 	//    AND address.address_line_2 = $4
 	//    AND address.postal_code = $8
 	SaveCustomerAddress(ctx context.Context, arg SaveCustomerAddressParams) error
+	//SaveOwner
+	//
+	//  INSERT INTO owner (id, signature_active, created_at, updated_at, deleted_at)
+	//  VALUES ($1, $2, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null)
+	//  ON CONFLICT (id) DO UPDATE
+	//  SET
+	//      signature_active = excluded.signature_active,
+	//      updated_at = NOW() AT TIME ZONE 'UTC'
+	SaveOwner(ctx context.Context, arg SaveOwnerParams) error
 	//SaveProduct
 	//
 	//  INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, name, description,
@@ -190,7 +199,7 @@ type Querier interface {
 	//          profile_image = excluded.profile_image,
 	//          header_image = excluded.header_image,
 	//          address_line_1 = excluded.address_line_1,
-	//          address_line_2 = excluded,
+	//          address_line_2 = excluded.address_line_2,
 	//          neighborhood = excluded.neighborhood,
 	//          city = excluded.city,
 	//          state = excluded.state,

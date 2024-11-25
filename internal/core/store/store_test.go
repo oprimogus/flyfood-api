@@ -1,7 +1,6 @@
 package store
 
 import (
-	"github.com/google/uuid"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -76,10 +75,8 @@ func TestStore_AddNewBusinessHour(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		ownerID, err := uuid.NewV7()
-		assert.NoError(t, err)
 
-		mockOwner := NewOwner(ownerID.String())
+		mockOwner := NewOwner(8647877478)
 
 		addr := address.Address{
 			Name:         "Store name location",

@@ -14,20 +14,20 @@ func NewService(r customer.Repository) Service {
 	return Service{r}
 }
 
-func (s *Service) FindCustomer(ctx context.Context, id string) (*customer.Customer, error) {
+func (s *Service) FindCustomer(ctx context.Context, id int) (*customer.Customer, error) {
 	return s.r.FindByID(ctx, id)
 }
 
-func (s *Service) CreateCustomer(ctx context.Context, dto CreateProfileDTO) error {
-	c, err := customer.NewCustomer(dto.Name, dto.LastName, dto.CPF, dto.Email, dto.Phone)
+func (s *Service) CreateCustomer(ctx context.Context, dto CreateProfileDTO) (*customer.Customer, error) {
+	c, err := customer.NewCustomer(dto.ID, dto.Name, dto.LastName, dto.CPF, dto.Email, dto.Phone)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return s.r.Save(ctx, c)
+	return c, s.r.Save(ctx, c)
 }
 
-func (s *Service) UpdateCustomerProfile(ctx context.Context, id string, dto UpdateProfileDTO) error {
+func (s *Service) UpdateCustomerProfile(ctx context.Context, id int, dto UpdateProfileDTO) error {
 	c, err := s.r.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (s *Service) UpdateCustomerProfile(ctx context.Context, id string, dto Upda
 	return s.r.Save(ctx, c)
 }
 
-func (s *Service) AddAddress(ctx context.Context, id string, addr address.Address) error {
+func (s *Service) AddAddress(ctx context.Context, id int, addr address.Address) error {
 	c, err := s.r.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (s *Service) AddAddress(ctx context.Context, id string, addr address.Addres
 	return s.r.Save(ctx, c)
 }
 
-func (s *Service) RemoveAddress(ctx context.Context, id string, addr address.Address) error {
+func (s *Service) RemoveAddress(ctx context.Context, id int, addr address.Address) error {
 	c, err := s.r.FindByID(ctx, id)
 	if err != nil {
 		return err

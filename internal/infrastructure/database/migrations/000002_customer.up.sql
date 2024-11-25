@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS "customer" (
-    "id" uuid PRIMARY KEY,
+    "id" BIGSERIAL PRIMARY KEY,
     "name" varchar NOT NULL,
     "last_name" varchar NOT NULL,
     "cpf" varchar UNIQUE NOT NULL,

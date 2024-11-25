@@ -60,14 +60,21 @@ definitions:
         example: "2024-03-15T10:30:15Z"
         type: string
     type: object
-  customer.CreateProfileDTO:
+  customer.Customer:
     properties:
+      addresses:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
       cpf:
         example: "52024227090"
         type: string
       email:
         example: johndoe@example.com
         type: string
+      id:
+        example: 295105940221919239
+        type: integer
       last_name:
         example: Doe
         maxLength: 60
@@ -78,11 +85,17 @@ definitions:
         maxLength: 25
         minLength: 3
         type: string
+      orders_id:
+        items:
+          type: string
+        type: array
       phone:
         example: "+5513997590579"
         type: string
     required:
+    - addresses
     - email
+    - id
     - last_name
     - name
     - phone
@@ -114,45 +127,36 @@ definitions:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      owner_id:
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        type: string
     required:
-    - business_hour
     - id
-    - owner_id
     type: object
   store.AddOrDeletePaymentMethodDTO:
     properties:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      owner_id:
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        type: string
       payment_method:
         $ref: '#/definitions/store.PaymentMethod'
     required:
     - id
-    - owner_id
     - payment_method
     type: object
   store.BusinessHours:
     properties:
-      closingTime:
+      closing_time:
         example: "15:00"
         type: string
-      openingTime:
+      opening_time:
         example: "09:00"
         type: string
-      weekDay:
+      week_day:
         example: 1
         maximum: 6
         minimum: 0
         type: integer
     required:
-    - closingTime
-    - openingTime
+    - closing_time
+    - opening_time
     type: object
   store.CreateNewStoreDTO:
     properties:
@@ -170,9 +174,6 @@ definitions:
         maxLength: 25
         minLength: 3
         type: string
-      owner_id:
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        type: string
       phone:
         example: "+5511997590670"
         type: string
@@ -185,7 +186,6 @@ definitions:
     - cnpj
     - description
     - name
-    - owner_id
     - phone
     - type
     type: object
@@ -211,12 +211,8 @@ definitions:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      owner_id:
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        type: string
     required:
     - id
-    - owner_id
     type: object
   store.SetOpenStateDTO:
     properties:
@@ -226,12 +222,8 @@ definitions:
       is_open:
         example: true
         type: boolean
-      owner_id:
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        type: string
     required:
     - id
-    - owner_id
     type: object
   store.Type:
     enum:
@@ -265,9 +257,6 @@ definitions:
         maxLength: 25
         minLength: 3
         type: string
-      owner_id:
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        type: string
       phone:
         example: "+5511997590670"
         type: string
@@ -280,7 +269,6 @@ definitions:
     - description
     - id
     - name
-    - owner_id
     - phone
     - type
     type: object
@@ -323,7 +311,7 @@ paths:
     get:
       description: Prometheus Metrics
       produces:
-      - text/html
+      - text/plain
       responses:
         "200":
           description: OK
@@ -352,23 +340,22 @@ paths:
       tags:
       - Health
   /v1/customer:
-    post:
+    get:
       consumes:
       - application/json
       description: Register a comprehensive customer profile with full registration
         details
-      parameters:
-      - description: Detailed customer registration information
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/customer.CreateProfileDTO'
       produces:
       - application/json
       responses:
+        "200":
+          description: Customer
+          schema:
+            $ref: '#/definitions/customer.Customer'
         "201":
-          description: Customer successfully created
+          description: Customer
+          schema:
+            $ref: '#/definitions/customer.Customer'
         "400":
           description: Invalid request data or malformed JSON
           schema:
@@ -389,7 +376,7 @@ paths:
           description: External service communication error
           schema:
             $ref: '#/definitions/xerrors.CustomError'
-      summary: Create a new customer account
+      summary: Get a customer account
       tags:
       - Customer Profile Management
     put:
@@ -443,6 +430,51 @@ paths:
       summary: Update existing customer profile
       tags:
       - Customer Profile Management
+  /v1/owner:
+    post:
+      consumes:
+      - application/json
+      description: Register a customer as owner
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Store successfully created
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Create an owner
+      tags:
+      - Owner
   /v1/owner/store:
     post:
       consumes:
@@ -542,11 +574,106 @@ paths:
       summary: Update existing store profile
       tags:
       - Store Management
+  /v1/store/{id}/header-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change store profile image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store header image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Change store profile image
+      tags:
+      - Store Management
+  /v1/store/{id}/profile-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change store profile image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store profile image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Change store profile image
+      tags:
+      - Store Management
   /v1/store/active:
     post:
       consumes:
       - application/json
-      description: Change store profile image
+      description: Activate or deactivate store to control product visibility and
+        order processing
       parameters:
       - description: Bearer authentication token
         in: header
@@ -582,7 +709,7 @@ paths:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerAuth: []
-      summary: Change store profile image
+      summary: Change store's visibility and order acceptance status
       tags:
       - Store Management
   /v1/store/business-hour:

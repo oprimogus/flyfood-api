@@ -114,14 +114,9 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 		productsIDConverted[i] = *vConverted
 	}
 
-	ownerIDConverted, err := converters.UuidToString(foundedStore.OwnerID)
-	if err != nil {
-		return nil, err
-	}
-
 	return &store.Store{
 		ID:          id,
-		OwnerID:     *ownerIDConverted,
+		OwnerID:     int(foundedStore.OwnerID),
 		CNPJ:        foundedStore.Cnpj,
 		Name:        foundedStore.Name,
 		Description: foundedStore.Description,
@@ -147,37 +142,22 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 	}, nil
 }
 
-func (r StoreRepository) FindOwnerByID(ctx context.Context, id string) (*store.Owner, error) {
-	idPg, err := converters.StringToUUID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	owner, err := r.q.FindOwnerByID(ctx, idPg)
-	if err != nil {
-		return nil, err
-	}
-
-	ownerIDConverted, err := converters.UuidToString(owner.ID)
+func (r StoreRepository) FindOwnerByID(ctx context.Context, id int) (*store.Owner, error) {
+	owner, err := r.q.FindOwnerByID(ctx, int64(id))
 	if err != nil {
 		return nil, err
 	}
 
 	return &store.Owner{
-		ID:              *ownerIDConverted,
+		ID:              int(owner.ID),
 		SignatureActive: owner.SignatureActive,
 	}, nil
 }
 
-func (r StoreRepository) BecomeOwner(ctx context.Context, customerID string) error {
-	idPg, err := converters.StringToUUID(customerID)
-	if err != nil {
-		return err
-	}
-
-	err = r.q.SetOwner(ctx, sqlc.SetOwnerParams{
-		ID:              idPg,
-		SignatureActive: false,
+func (r StoreRepository) SaveOwner(ctx context.Context, ow store.Owner) error {
+	err := r.q.SaveOwner(ctx, sqlc.SaveOwnerParams{
+		ID:              int64(ow.ID),
+		SignatureActive: ow.SignatureActive,
 	})
 	if err != nil {
 		return err
@@ -186,14 +166,8 @@ func (r StoreRepository) BecomeOwner(ctx context.Context, customerID string) err
 	return nil
 }
 
-func (r StoreRepository) IsOwner(ctx context.Context, customerID string) (bool, error) {
-
-	ownerID, err := converters.StringToUUID(customerID)
-	if err != nil {
-		return false, err
-	}
-
-	isOwner, err := r.q.IsOwner(ctx, ownerID)
+func (r StoreRepository) IsOwner(ctx context.Context, customerID int) (bool, error) {
+	isOwner, err := r.q.IsOwner(ctx, int64(customerID))
 	if err != nil {
 		return false, err
 	}
@@ -204,11 +178,6 @@ func (r StoreRepository) IsOwner(ctx context.Context, customerID string) (bool, 
 func (r StoreRepository) Save(ctx context.Context, storeToSave *store.Store) error {
 
 	storeID, err := converters.StringToUUID(storeToSave.ID)
-	if err != nil {
-		return err
-	}
-
-	ownerID, err := converters.StringToUUID(storeToSave.OwnerID)
 	if err != nil {
 		return err
 	}
@@ -280,7 +249,7 @@ func (r StoreRepository) Save(ctx context.Context, storeToSave *store.Store) err
 
 	argsSaveStore := sqlc.SaveStoreParams{
 		ID:           storeID,
-		OwnerID:      ownerID,
+		OwnerID:      int64(storeToSave.OwnerID),
 		Cnpj:         storeToSave.CNPJ,
 		Name:         storeToSave.Name,
 		Description:  storeToSave.Description,

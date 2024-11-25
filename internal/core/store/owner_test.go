@@ -11,7 +11,7 @@ func TestOwner_NewStore(t *testing.T) {
 	ownerID, err := uuid.NewV7()
 	assert.NoError(t, err)
 
-	mockOwner := NewOwner(ownerID.String())
+	mockOwner := NewOwner(45678948674)
 
 	addr := address.Address{
 		Name:         "Store name location",

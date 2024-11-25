@@ -194,7 +194,7 @@ func (ns NullStoreType) Value() (driver.Value, error) {
 
 type Address struct {
 	ID           int64            `db:"id" json:"id"`
-	CustomerID   pgtype.UUID      `db:"customer_id" json:"customer_id"`
+	CustomerID   int64            `db:"customer_id" json:"customer_id"`
 	Name         string           `db:"name" json:"name"`
 	AddressLine1 string           `db:"address_line_1" json:"address_line_1"`
 	AddressLine2 string           `db:"address_line_2" json:"address_line_2"`
@@ -211,7 +211,7 @@ type Address struct {
 }
 
 type Customer struct {
-	ID        pgtype.UUID      `db:"id" json:"id"`
+	ID        int64            `db:"id" json:"id"`
 	Name      string           `db:"name" json:"name"`
 	LastName  string           `db:"last_name" json:"last_name"`
 	Cpf       string           `db:"cpf" json:"cpf"`
@@ -225,8 +225,8 @@ type Customer struct {
 type Order struct {
 	ID             pgtype.UUID      `db:"id" json:"id"`
 	StoreID        pgtype.UUID      `db:"store_id" json:"store_id"`
-	CustomerID     pgtype.UUID      `db:"customer_id" json:"customer_id"`
-	AddressID      pgtype.Int4      `db:"address_id" json:"address_id"`
+	CustomerID     int64            `db:"customer_id" json:"customer_id"`
+	AddressID      int32            `db:"address_id" json:"address_id"`
 	Status         OrderStatus      `db:"status" json:"status"`
 	ShippingAmount int32            `db:"shipping_amount" json:"shipping_amount"`
 	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
@@ -244,7 +244,7 @@ type OrderItem struct {
 }
 
 type Owner struct {
-	ID              pgtype.UUID      `db:"id" json:"id"`
+	ID              int64            `db:"id" json:"id"`
 	SignatureActive bool             `db:"signature_active" json:"signature_active"`
 	CreatedAt       pgtype.Timestamp `db:"created_at" json:"created_at"`
 	UpdatedAt       pgtype.Timestamp `db:"updated_at" json:"updated_at"`
@@ -273,7 +273,7 @@ type Product struct {
 
 type Store struct {
 	ID           pgtype.UUID      `db:"id" json:"id"`
-	OwnerID      pgtype.UUID      `db:"owner_id" json:"owner_id"`
+	OwnerID      int64            `db:"owner_id" json:"owner_id"`
 	Cnpj         string           `db:"cnpj" json:"cnpj"`
 	Name         string           `db:"name" json:"name"`
 	Description  string           `db:"description" json:"description"`

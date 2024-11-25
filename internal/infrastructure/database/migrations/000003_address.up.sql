@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "address" (
    "id" BIGSERIAL PRIMARY KEY,
-   "customer_id" uuid,
+   "customer_id" BIGSERIAL NOT NULL,
    "name" varchar NOT NULL,
    "address_line_1" varchar NOT NULL,
    "address_line_2" varchar NOT NULL,

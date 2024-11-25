@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/oprimogus/cardapiogo/internal/core/customer"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
-	"github.com/oprimogus/cardapiogo/pkg/converters"
 	"log/slog"
 	"sync"
 )
@@ -24,12 +22,7 @@ func NewCustomerRepository(db *postgresDB.Database) CustomerRepository {
 	return CustomerRepository{db: db.GetDB(), q: sqlc.New(db.GetDB())}
 }
 
-func (r CustomerRepository) FindByID(ctx context.Context, id string) (*customer.Customer, error) {
-	customerID, err := converters.StringToUUID(id)
-	if err != nil {
-		return nil, err
-	}
-
+func (r CustomerRepository) FindByID(ctx context.Context, id int) (*customer.Customer, error) {
 	var customerRepo sqlc.FindCustomerByIDRow
 	var customerErr error
 	var addressesRepo []sqlc.FindAddressesByCustomerIDRow
@@ -40,12 +33,12 @@ func (r CustomerRepository) FindByID(ctx context.Context, id string) (*customer.
 
 	go func() {
 		defer wg.Done()
-		customerRepo, customerErr = r.q.FindCustomerByID(ctx, customerID)
+		customerRepo, customerErr = r.q.FindCustomerByID(ctx, int64(id))
 	}()
 
 	go func() {
 		defer wg.Done()
-		addressesRepo, addressesErr = r.q.FindAddressesByCustomerID(ctx, customerID)
+		addressesRepo, addressesErr = r.q.FindAddressesByCustomerID(ctx, int64(id))
 	}()
 
 	wg.Wait()
@@ -105,13 +98,8 @@ func (r CustomerRepository) Save(ctx context.Context, c *customer.Customer) erro
 
 	qtx := sqlc.New(tx)
 
-	customerIDPostgres, err := converters.StringToUUID(c.ID)
-	if err != nil {
-		return err
-	}
-
 	if err := qtx.SaveCustomer(ctx, sqlc.SaveCustomerParams{
-		ID:       customerIDPostgres,
+		ID:       int64(c.ID),
 		Name:     c.Name,
 		LastName: c.LastName,
 		Cpf:      c.CPF,
@@ -121,7 +109,7 @@ func (r CustomerRepository) Save(ctx context.Context, c *customer.Customer) erro
 		return err
 	}
 
-	if err := r.syncAddresses(ctx, qtx, customerIDPostgres, c.Addresses); err != nil {
+	if err := r.syncAddresses(ctx, qtx, int64(c.ID), c.Addresses); err != nil {
 		return err
 	}
 
@@ -129,7 +117,7 @@ func (r CustomerRepository) Save(ctx context.Context, c *customer.Customer) erro
 }
 
 func (r CustomerRepository) syncAddresses(ctx context.Context,
-	qtx *sqlc.Queries, customerID pgtype.UUID, addresses []address.Address) error {
+	qtx *sqlc.Queries, customerID int64, addresses []address.Address) error {
 
 	addressesRepo, err := qtx.FindAddressesByCustomerID(ctx, customerID)
 	if err != nil {

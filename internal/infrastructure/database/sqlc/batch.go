@@ -31,7 +31,7 @@ type AddNewCustomerAddressesBatchResults struct {
 }
 
 type AddNewCustomerAddressesParams struct {
-	CustomerID   pgtype.UUID `db:"customer_id" json:"customer_id"`
+	CustomerID   int64       `db:"customer_id" json:"customer_id"`
 	Name         string      `db:"name" json:"name"`
 	AddressLine1 string      `db:"address_line_1" json:"address_line_1"`
 	AddressLine2 string      `db:"address_line_2" json:"address_line_2"`
@@ -113,15 +113,15 @@ type DeleteCustomerAddressesBatchResults struct {
 }
 
 type DeleteCustomerAddressesParams struct {
-	CustomerID   pgtype.UUID `db:"customer_id" json:"customer_id"`
-	Name         string      `db:"name" json:"name"`
-	AddressLine1 string      `db:"address_line_1" json:"address_line_1"`
-	AddressLine2 string      `db:"address_line_2" json:"address_line_2"`
-	Neighborhood string      `db:"neighborhood" json:"neighborhood"`
-	City         string      `db:"city" json:"city"`
-	State        string      `db:"state" json:"state"`
-	PostalCode   string      `db:"postal_code" json:"postal_code"`
-	Country      string      `db:"country" json:"country"`
+	CustomerID   int64  `db:"customer_id" json:"customer_id"`
+	Name         string `db:"name" json:"name"`
+	AddressLine1 string `db:"address_line_1" json:"address_line_1"`
+	AddressLine2 string `db:"address_line_2" json:"address_line_2"`
+	Neighborhood string `db:"neighborhood" json:"neighborhood"`
+	City         string `db:"city" json:"city"`
+	State        string `db:"state" json:"state"`
+	PostalCode   string `db:"postal_code" json:"postal_code"`
+	Country      string `db:"country" json:"country"`
 }
 
 // DeleteCustomerAddresses

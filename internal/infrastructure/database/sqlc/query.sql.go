@@ -38,7 +38,7 @@ type FindAddressesByCustomerIDRow struct {
 //	FROM address a
 //	WHERE a.customer_id = $1
 //	ORDER BY a.created_at DESC
-func (q *Queries) FindAddressesByCustomerID(ctx context.Context, customerID pgtype.UUID) ([]FindAddressesByCustomerIDRow, error) {
+func (q *Queries) FindAddressesByCustomerID(ctx context.Context, customerID int64) ([]FindAddressesByCustomerIDRow, error) {
 	rows, err := q.db.Query(ctx, findAddressesByCustomerID, customerID)
 	if err != nil {
 		return nil, err
@@ -115,12 +115,12 @@ LIMIT 1
 `
 
 type FindCustomerByIDRow struct {
-	ID       pgtype.UUID `db:"id" json:"id"`
-	Name     string      `db:"name" json:"name"`
-	LastName string      `db:"last_name" json:"last_name"`
-	Cpf      string      `db:"cpf" json:"cpf"`
-	Email    string      `db:"email" json:"email"`
-	Phone    string      `db:"phone" json:"phone"`
+	ID       int64  `db:"id" json:"id"`
+	Name     string `db:"name" json:"name"`
+	LastName string `db:"last_name" json:"last_name"`
+	Cpf      string `db:"cpf" json:"cpf"`
+	Email    string `db:"email" json:"email"`
+	Phone    string `db:"phone" json:"phone"`
 }
 
 // FindCustomerByID
@@ -129,7 +129,7 @@ type FindCustomerByIDRow struct {
 //	FROM customer c
 //	WHERE c.id = $1
 //	LIMIT 1
-func (q *Queries) FindCustomerByID(ctx context.Context, id pgtype.UUID) (FindCustomerByIDRow, error) {
+func (q *Queries) FindCustomerByID(ctx context.Context, id int64) (FindCustomerByIDRow, error) {
 	row := q.db.QueryRow(ctx, findCustomerByID, id)
 	var i FindCustomerByIDRow
 	err := row.Scan(
@@ -149,15 +149,15 @@ WHERE o.id = $1
 `
 
 type FindOwnerByIDRow struct {
-	ID              pgtype.UUID `db:"id" json:"id"`
-	SignatureActive bool        `db:"signature_active" json:"signature_active"`
+	ID              int64 `db:"id" json:"id"`
+	SignatureActive bool  `db:"signature_active" json:"signature_active"`
 }
 
 // FindOwnerByID
 //
 //	SELECT o.id, signature_active from owner o
 //	WHERE o.id = $1
-func (q *Queries) FindOwnerByID(ctx context.Context, id pgtype.UUID) (FindOwnerByIDRow, error) {
+func (q *Queries) FindOwnerByID(ctx context.Context, id int64) (FindOwnerByIDRow, error) {
 	row := q.db.QueryRow(ctx, findOwnerByID, id)
 	var i FindOwnerByIDRow
 	err := row.Scan(&i.ID, &i.SignatureActive)
@@ -285,7 +285,7 @@ WHERE s.id = $1
 `
 
 type FindStoreByIDRow struct {
-	OwnerID      pgtype.UUID      `db:"owner_id" json:"owner_id"`
+	OwnerID      int64            `db:"owner_id" json:"owner_id"`
 	Cnpj         string           `db:"cnpj" json:"cnpj"`
 	Name         string           `db:"name" json:"name"`
 	Description  string           `db:"description" json:"description"`
@@ -357,7 +357,7 @@ SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
 // IsOwner
 //
 //	SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
-func (q *Queries) IsOwner(ctx context.Context, id pgtype.UUID) (bool, error) {
+func (q *Queries) IsOwner(ctx context.Context, id int64) (bool, error) {
 	row := q.db.QueryRow(ctx, isOwner, id)
 	var exists bool
 	err := row.Scan(&exists)
@@ -373,7 +373,7 @@ WHERE id = $1
 //
 //	DELETE FROM owner
 //	WHERE id = $1
-func (q *Queries) RemoveOwner(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) RemoveOwner(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, removeOwner, id)
 	return err
 }
@@ -395,12 +395,12 @@ ON CONFLICT (id) DO UPDATE
 `
 
 type SaveCustomerParams struct {
-	ID       pgtype.UUID `db:"id" json:"id"`
-	Name     string      `db:"name" json:"name"`
-	LastName string      `db:"last_name" json:"last_name"`
-	Cpf      string      `db:"cpf" json:"cpf"`
-	Email    string      `db:"email" json:"email"`
-	Phone    string      `db:"phone" json:"phone"`
+	ID       int64  `db:"id" json:"id"`
+	Name     string `db:"name" json:"name"`
+	LastName string `db:"last_name" json:"last_name"`
+	Cpf      string `db:"cpf" json:"cpf"`
+	Email    string `db:"email" json:"email"`
+	Phone    string `db:"phone" json:"phone"`
 }
 
 // SaveCustomer
@@ -452,7 +452,7 @@ WHERE address.customer_id = $1
 `
 
 type SaveCustomerAddressParams struct {
-	CustomerID   pgtype.UUID `db:"customer_id" json:"customer_id"`
+	CustomerID   int64       `db:"customer_id" json:"customer_id"`
 	Name         string      `db:"name" json:"name"`
 	AddressLine1 string      `db:"address_line_1" json:"address_line_1"`
 	AddressLine2 string      `db:"address_line_2" json:"address_line_2"`
@@ -499,6 +499,33 @@ func (q *Queries) SaveCustomerAddress(ctx context.Context, arg SaveCustomerAddre
 		arg.Longitude,
 		arg.Country,
 	)
+	return err
+}
+
+const saveOwner = `-- name: SaveOwner :exec
+INSERT INTO owner (id, signature_active, created_at, updated_at, deleted_at)
+VALUES ($1, $2, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null)
+ON CONFLICT (id) DO UPDATE
+SET
+    signature_active = excluded.signature_active,
+    updated_at = NOW() AT TIME ZONE 'UTC'
+`
+
+type SaveOwnerParams struct {
+	ID              int64 `db:"id" json:"id"`
+	SignatureActive bool  `db:"signature_active" json:"signature_active"`
+}
+
+// SaveOwner
+//
+//	INSERT INTO owner (id, signature_active, created_at, updated_at, deleted_at)
+//	VALUES ($1, $2, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null)
+//	ON CONFLICT (id) DO UPDATE
+//	SET
+//	    signature_active = excluded.signature_active,
+//	    updated_at = NOW() AT TIME ZONE 'UTC'
+func (q *Queries) SaveOwner(ctx context.Context, arg SaveOwnerParams) error {
+	_, err := q.db.Exec(ctx, saveOwner, arg.ID, arg.SignatureActive)
 	return err
 }
 
@@ -608,7 +635,7 @@ ON CONFLICT (id) DO UPDATE
         profile_image = excluded.profile_image,
         header_image = excluded.header_image,
         address_line_1 = excluded.address_line_1,
-        address_line_2 = excluded,
+        address_line_2 = excluded.address_line_2,
         neighborhood = excluded.neighborhood,
         city = excluded.city,
         state = excluded.state,
@@ -622,7 +649,7 @@ WHERE store.id = excluded.id
 
 type SaveStoreParams struct {
 	ID           pgtype.UUID `db:"id" json:"id"`
-	OwnerID      pgtype.UUID `db:"owner_id" json:"owner_id"`
+	OwnerID      int64       `db:"owner_id" json:"owner_id"`
 	Cnpj         string      `db:"cnpj" json:"cnpj"`
 	Name         string      `db:"name" json:"name"`
 	Description  string      `db:"description" json:"description"`
@@ -667,7 +694,7 @@ type SaveStoreParams struct {
 //	        profile_image = excluded.profile_image,
 //	        header_image = excluded.header_image,
 //	        address_line_1 = excluded.address_line_1,
-//	        address_line_2 = excluded,
+//	        address_line_2 = excluded.address_line_2,
 //	        neighborhood = excluded.neighborhood,
 //	        city = excluded.city,
 //	        state = excluded.state,
@@ -710,8 +737,8 @@ VALUES ($1, $2, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null)
 `
 
 type SetOwnerParams struct {
-	ID              pgtype.UUID `db:"id" json:"id"`
-	SignatureActive bool        `db:"signature_active" json:"signature_active"`
+	ID              int64 `db:"id" json:"id"`
+	SignatureActive bool  `db:"signature_active" json:"signature_active"`
 }
 
 // SetOwner

@@ -19,7 +19,7 @@ func init() {
 
 type Store struct {
 	ID             string          `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OwnerID        string          `json:"owner_id" validate:"required,uuid" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
+	OwnerID        int             `json:"owner_id" validate:"required,number" example:"5692562784252"`
 	CNPJ           string          `json:"cnpj" validate:"required,cnpj" example:"12345678000190"`
 	Name           string          `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
 	Description    string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
@@ -92,9 +92,9 @@ func (s *Store) RemoveBusinessHour(hour BusinessHours) error {
 		return err
 	}
 
-	for _, v := range s.BusinessHours {
+	for i, v := range s.BusinessHours {
 		if hour == v {
-			s.BusinessHours = append(s.BusinessHours, hour)
+			s.BusinessHours = append(s.BusinessHours[:i], s.BusinessHours[i+1:]...)
 			return nil
 		}
 	}

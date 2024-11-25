@@ -54,7 +54,7 @@ const docTemplate = `{
             "get": {
                 "description": "Prometheus Metrics",
                 "produces": [
-                    "text/html"
+                    "text/plain"
                 ],
                 "tags": [
                     "Health"
@@ -100,6 +100,63 @@ const docTemplate = `{
             }
         },
         "/v1/customer": {
+            "get": {
+                "description": "Register a comprehensive customer profile with full registration details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer Profile Management"
+                ],
+                "summary": "Get a customer account",
+                "responses": {
+                    "200": {
+                        "description": "Customer",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    },
+                    "201": {
+                        "description": "Customer",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - customer may already exist",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid customer details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "External service communication error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -176,9 +233,16 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/v1/owner": {
             "post": {
-                "description": "Register a comprehensive customer profile with full registration details",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a customer as owner",
                 "consumes": [
                     "application/json"
                 ],
@@ -186,23 +250,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Customer Profile Management"
+                    "Owner"
                 ],
-                "summary": "Create a new customer account",
+                "summary": "Create an owner",
                 "parameters": [
                     {
-                        "description": "Detailed customer registration information",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/customer.CreateProfileDTO"
-                        }
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Customer successfully created"
+                        "description": "Store successfully created"
                     },
                     "400": {
                         "description": "Invalid request data or malformed JSON",
@@ -210,14 +272,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
                     "409": {
-                        "description": "Conflict - customer may already exist",
+                        "description": "Conflict - store may already exist",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
                     "422": {
-                        "description": "Validation error - invalid customer details",
+                        "description": "Validation error - invalid store details",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -396,7 +464,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Change store profile image",
+                "description": "Activate or deactivate store to control product visibility and order processing",
                 "consumes": [
                     "application/json"
                 ],
@@ -406,7 +474,7 @@ const docTemplate = `{
                 "tags": [
                     "Store Management"
                 ],
-                "summary": "Change store profile image",
+                "summary": "Change store's visibility and order acceptance status",
                 "parameters": [
                     {
                         "type": "string",
@@ -786,6 +854,150 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/store/{id}/header-image": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change store profile image",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Change store profile image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Store header image",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store activation status updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/store/{id}/profile-image": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change store profile image",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Change store profile image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Store profile image",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store activation status updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -864,15 +1076,23 @@ const docTemplate = `{
                 }
             }
         },
-        "customer.CreateProfileDTO": {
+        "customer.Customer": {
             "type": "object",
             "required": [
+                "addresses",
                 "email",
+                "id",
                 "last_name",
                 "name",
                 "phone"
             ],
             "properties": {
+                "addresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
                 "cpf": {
                     "type": "string",
                     "example": "52024227090"
@@ -880,6 +1100,10 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "johndoe@example.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 295105940221919239
                 },
                 "last_name": {
                     "type": "string",
@@ -892,6 +1116,12 @@ const docTemplate = `{
                     "maxLength": 25,
                     "minLength": 3,
                     "example": "John"
+                },
+                "orders_id": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "phone": {
                     "type": "string",
@@ -928,9 +1158,7 @@ const docTemplate = `{
         "store.AddOrDeleteBusinessHourDTO": {
             "type": "object",
             "required": [
-                "business_hour",
-                "id",
-                "owner_id"
+                "id"
             ],
             "properties": {
                 "business_hour": {
@@ -939,10 +1167,6 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "owner_id": {
-                    "type": "string",
-                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 }
             }
         },
@@ -950,17 +1174,12 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "id",
-                "owner_id",
                 "payment_method"
             ],
             "properties": {
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "owner_id": {
-                    "type": "string",
-                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 },
                 "payment_method": {
                     "$ref": "#/definitions/store.PaymentMethod"
@@ -970,19 +1189,19 @@ const docTemplate = `{
         "store.BusinessHours": {
             "type": "object",
             "required": [
-                "closingTime",
-                "openingTime"
+                "closing_time",
+                "opening_time"
             ],
             "properties": {
-                "closingTime": {
+                "closing_time": {
                     "type": "string",
                     "example": "15:00"
                 },
-                "openingTime": {
+                "opening_time": {
                     "type": "string",
                     "example": "09:00"
                 },
-                "weekDay": {
+                "week_day": {
                     "type": "integer",
                     "maximum": 6,
                     "minimum": 0,
@@ -997,7 +1216,6 @@ const docTemplate = `{
                 "cnpj",
                 "description",
                 "name",
-                "owner_id",
                 "phone",
                 "type"
             ],
@@ -1019,10 +1237,6 @@ const docTemplate = `{
                     "maxLength": 25,
                     "minLength": 3,
                     "example": "Delicious Bakery"
-                },
-                "owner_id": {
-                    "type": "string",
-                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 },
                 "phone": {
                     "type": "string",
@@ -1058,8 +1272,7 @@ const docTemplate = `{
         "store.SetActiveDTO": {
             "type": "object",
             "required": [
-                "id",
-                "owner_id"
+                "id"
             ],
             "properties": {
                 "active": {
@@ -1069,18 +1282,13 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "owner_id": {
-                    "type": "string",
-                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 }
             }
         },
         "store.SetOpenStateDTO": {
             "type": "object",
             "required": [
-                "id",
-                "owner_id"
+                "id"
             ],
             "properties": {
                 "id": {
@@ -1090,10 +1298,6 @@ const docTemplate = `{
                 "is_open": {
                     "type": "boolean",
                     "example": true
-                },
-                "owner_id": {
-                    "type": "string",
-                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 }
             }
         },
@@ -1123,7 +1327,6 @@ const docTemplate = `{
                 "description",
                 "id",
                 "name",
-                "owner_id",
                 "phone",
                 "type"
             ],
@@ -1145,10 +1348,6 @@ const docTemplate = `{
                     "maxLength": 25,
                     "minLength": 3,
                     "example": "Delicious Bakery"
-                },
-                "owner_id": {
-                    "type": "string",
-                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 },
                 "phone": {
                     "type": "string",

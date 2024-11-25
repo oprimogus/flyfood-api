@@ -1,7 +1,6 @@
 package customer
 
 import (
-	"github.com/google/uuid"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -20,10 +19,8 @@ func TestCustomer_SaveNewAddress(t *testing.T) {
 		Country:      "BR",
 	}
 
-	uuidV7, err := uuid.NewV7()
-	assert.NoError(t, err)
 	customer := &Customer{
-		ID:        uuidV7.String(),
+		ID:        34876876358756,
 		Name:      "John",
 		LastName:  "Doe",
 		CPF:       "",
@@ -101,10 +98,8 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 		Country:      "BR",
 	}
 
-	uuidV7, err := uuid.NewV7()
-	assert.NoError(t, err)
 	customerWithAddress := &Customer{
-		ID:       uuidV7.String(),
+		ID:       257547567254247245,
 		Name:     "John",
 		LastName: "Doe",
 		CPF:      "",
@@ -116,7 +111,7 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 	}
 
 	customerWithoutAddress := &Customer{
-		ID:        uuidV7.String(),
+		ID:        2547724254724575472,
 		Name:      "John",
 		LastName:  "Doe",
 		CPF:       "",

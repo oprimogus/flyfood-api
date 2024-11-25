@@ -13,12 +13,10 @@ const (
 )
 
 type RequestData struct {
-	UserID    string   `json:"user_id"`
-	UserRoles []string `json:"user_roles"`
-	TraceID   string   `json:"trace_id"`
-	Method    string   `json:"method"`
-	Path      string   `json:"path"`
-	ClientIP  string   `json:"client_ip"`
+	TraceID  string `json:"trace_id"`
+	Method   string `json:"method"`
+	Path     string `json:"path"`
+	ClientIP string `json:"client_ip"`
 }
 
 func GetRequestData(ctx context.Context) *RequestData {

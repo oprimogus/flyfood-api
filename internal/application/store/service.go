@@ -2,14 +2,18 @@ package store
 
 import (
 	"context"
+	"github.com/google/uuid"
+	"github.com/oprimogus/cardapiogo/internal/core/customer"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter/storage"
+	"strconv"
 )
 
 type Service struct {
-	r store.Repository
-	s storage.Service
+	r  store.Repository
+	cr customer.Repository
+	s  storage.Service
 }
 
 type Bucket string
@@ -19,17 +23,37 @@ const (
 	HeaderBucket  Bucket = "cardapiogo-store-header-image"
 )
 
-var buckets = map[string]string{
-	"profile": "cardapiogo-store-profile-image",
-	"header":  "cardapiogo-store-header-image",
+func NewService(r store.Repository, cr customer.Repository, f adapter.Factory) Service {
+	return Service{r: r, cr: cr, s: f.NewStorageService()}
 }
 
-func NewService(r store.Repository, f adapter.Factory) Service {
-	return Service{r: r, s: f.NewStorageService()}
+func (s *Service) NewOwner(ctx context.Context, customerID int) error {
+	_, err := s.cr.FindByID(ctx, customerID)
+	if err != nil {
+		return err
+	}
+
+	isOwner, err := s.r.IsOwner(ctx, customerID)
+	if err != nil {
+		return err
+	}
+	if !isOwner {
+		ow := store.NewOwner(customerID)
+		err = s.r.SaveOwner(ctx, ow)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (s *Service) CreateNewStore(ctx context.Context, params CreateNewStoreDTO) error {
-	owner, err := s.r.FindOwnerByID(ctx, params.OwnerID)
+func (s *Service) CreateNewStore(ctx context.Context, ownerID string, params CreateNewStoreDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
+	owner, err := s.r.FindOwnerByID(ctx, owID)
 	if err != nil {
 		return store.ErrNotOwner
 	}
@@ -42,13 +66,18 @@ func (s *Service) CreateNewStore(ctx context.Context, params CreateNewStoreDTO) 
 	return s.r.Save(ctx, &st)
 }
 
-func (s *Service) Update(ctx context.Context, params UpdateStoreDTO) error {
+func (s *Service) Update(ctx context.Context, ownerID string, params UpdateStoreDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
 	st, err := s.r.FindStoreByID(ctx, params.ID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
@@ -60,13 +89,18 @@ func (s *Service) Update(ctx context.Context, params UpdateStoreDTO) error {
 	return s.r.Save(ctx, st)
 }
 
-func (s *Service) AddBusinessHour(ctx context.Context, params AddOrDeleteBusinessHourDTO) error {
+func (s *Service) AddBusinessHour(ctx context.Context, ownerID string, params AddOrDeleteBusinessHourDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
@@ -78,13 +112,18 @@ func (s *Service) AddBusinessHour(ctx context.Context, params AddOrDeleteBusines
 	return s.r.Save(ctx, st)
 }
 
-func (s *Service) RemoveBusinessHour(ctx context.Context, params AddOrDeleteBusinessHourDTO) error {
+func (s *Service) RemoveBusinessHour(ctx context.Context, ownerID string, params AddOrDeleteBusinessHourDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
@@ -96,13 +135,18 @@ func (s *Service) RemoveBusinessHour(ctx context.Context, params AddOrDeleteBusi
 	return s.r.Save(ctx, st)
 }
 
-func (s *Service) AddPaymentMethod(ctx context.Context, params AddOrDeletePaymentMethodDTO) error {
+func (s *Service) AddPaymentMethod(ctx context.Context, ownerID string, params AddOrDeletePaymentMethodDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
@@ -114,13 +158,18 @@ func (s *Service) AddPaymentMethod(ctx context.Context, params AddOrDeletePaymen
 	return s.r.Save(ctx, st)
 }
 
-func (s *Service) RemovePaymentMethod(ctx context.Context, params AddOrDeletePaymentMethodDTO) error {
+func (s *Service) RemovePaymentMethod(ctx context.Context, ownerID string, params AddOrDeletePaymentMethodDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
@@ -132,13 +181,18 @@ func (s *Service) RemovePaymentMethod(ctx context.Context, params AddOrDeletePay
 	return s.r.Save(ctx, st)
 }
 
-func (s *Service) OpenOrCloseStore(ctx context.Context, params SetOpenStateDTO) error {
+func (s *Service) OpenOrCloseStore(ctx context.Context, ownerID string, params SetOpenStateDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
@@ -155,13 +209,18 @@ func (s *Service) OpenOrCloseStore(ctx context.Context, params SetOpenStateDTO) 
 	return nil
 }
 
-func (s *Service) ActiveOrDeactivateStore(ctx context.Context, params SetActiveDTO) error {
+func (s *Service) ActiveOrDeactivateStore(ctx context.Context, ownerID string, params SetActiveDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
@@ -178,18 +237,58 @@ func (s *Service) ActiveOrDeactivateStore(ctx context.Context, params SetActiveD
 	return nil
 }
 
-func (s *Service) ChangeProfileImage(ctx context.Context, params ChangeProfileImageDTO) error {
-
-	url, err := s.s.UploadFile(ctx)
+func (s *Service) ChangeProfileImage(ctx context.Context, ownerID string, params UploadStoreImageDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
 
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != params.OwnerID {
+	if st.OwnerID != owID {
 		return store.ErrNotOwner
 	}
 
-	return nil
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return err
+	}
+
+	objectKey := id.String() + params.Ext
+	url, err := s.s.UploadFile(ctx, string(ProfileBucket), objectKey, params.Image)
+
+	st.ProfileImage = url
+
+	return s.r.Save(ctx, st)
+}
+
+func (s *Service) ChangeHeaderImage(ctx context.Context, ownerID string, params UploadStoreImageDTO) error {
+	owID, err := strconv.Atoi(ownerID)
+	if err != nil {
+		return err
+	}
+
+	st, err := s.r.FindStoreByID(ctx, params.StoreID)
+	if err != nil {
+		return err
+	}
+
+	if st.OwnerID != owID {
+		return store.ErrNotOwner
+	}
+
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return err
+	}
+
+	objectKey := id.String() + params.Ext
+	url, err := s.s.UploadFile(ctx, string(HeaderBucket), objectKey, params.Image)
+
+	st.HeaderImage = url
+
+	return s.r.Save(ctx, st)
 }

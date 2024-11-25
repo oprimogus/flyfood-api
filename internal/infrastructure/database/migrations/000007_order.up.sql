@@ -12,9 +12,9 @@ CREATE TYPE "OrderStatus" AS ENUM (
 
 CREATE TABLE IF NOT EXISTS "order" (
     "id" uuid PRIMARY KEY,
-    "store_id" uuid,
-    "customer_id" uuid,
-    "address_id" int,
+    "store_id" uuid NOT NULL,
+    "customer_id" BIGSERIAL NOT NULL,
+    "address_id" int NOT NULL,
     "status" "OrderStatus" NOT NULL,
     "shipping_amount" int NOT NULL,
     "created_at" timestamp NOT NULL,

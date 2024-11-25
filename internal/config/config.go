@@ -47,11 +47,14 @@ type keycloakConfig struct {
 }
 
 type zitadelConfig struct {
-	Issuer   string
-	Api      string
-	Domain   string
-	ClientID string
-	Key      string
+	Issuer                string
+	Api                   string
+	Domain                string
+	Port                  string
+	ClientID              string
+	KeyPath               string
+	ServiceAccountKeyPath string
+	ProjectID             string
 }
 
 func (d *keycloakConfig) LogValue() slog.Value {
@@ -143,11 +146,14 @@ func newConfig() *Config {
 			ClientSecret: os.Getenv("KEYCLOAK_CLIENT_SECRET"),
 		},
 		Zitadel: &zitadelConfig{
-			Issuer:   os.Getenv("ZITADEL_ISSUER"),
-			Api:      os.Getenv("ZITADEL_API"),
-			Domain:   os.Getenv("ZITADEL_DOMAIN"),
-			ClientID: os.Getenv("ZITADEL_CLIENT_ID"),
-			Key:      os.Getenv("ZITADEL_KEY"),
+			Issuer:                os.Getenv("ZITADEL_ISSUER"),
+			Api:                   os.Getenv("ZITADEL_API"),
+			Domain:                os.Getenv("ZITADEL_DOMAIN"),
+			Port:                  os.Getenv("ZITADEL_PORT"),
+			ClientID:              os.Getenv("ZITADEL_CLIENT_ID"),
+			KeyPath:               os.Getenv("ZITADEL_KEY"),
+			ServiceAccountKeyPath: os.Getenv("ZITADEL_SERVICE_ACCOUNT_KEY"),
+			ProjectID:             os.Getenv("ZITADEL_PROJECT_ID"),
 		},
 		Resend: &resendConfig{
 			apiKey: os.Getenv("RESEND_API_KEY"),

@@ -1,27 +1,17 @@
-POST http://localhost:3000/api/v1/auth/sign-in
+GET http://localhost:3000/api/v1/customer/
 Content-Type: application/json
-
-{
-  "email": "johndoe@example.com",
-  "password": "teste123"
-}
+Authorization: Bearer yDcSC_FkF0eaH0aZVVBWemZl0wn8AZXIVXcvDTjursMGVUbSUeZDA3O9nb0MsFMy99eMn3A
 
 ###
 
-POST http://localhost:3000/api/v1/auth/sign-up
+POST http://localhost:3000/api/v1/store
 Content-Type: application/json
+Authorization: Bearer LEAGIYzWHzPQuKbRi9hRKn5ICxPuloItly83TIQUJnSNzNg5GDUh1T67qjWJixkvxZrfoF4
 
 {
-  "name": "John",
-  "last_name": "Doe",
-  "cpf": "",
-  "phone": "+5513995590867",
-  "email": "johndoe@example.com"
+
 }
 
-###
-
-GET http://localhost:3000/api/v1/store?page=1&limit=10&type=market
 
 
 

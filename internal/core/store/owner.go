@@ -8,12 +8,12 @@ import (
 )
 
 type Owner struct {
-	ID              string   `json:"id" validate:"required,uuid" example:"01931631-ea94-7052-a98c-9723bc6c6056"`
+	ID              int      `json:"id" validate:"required,number" example:"245727247525742"`
 	SignatureActive bool     `json:"signature_active" validate:"bool"`
 	StoresID        []string `json:"stores" validate:"required,uuid"`
 }
 
-func NewOwner(customerID string) Owner {
+func NewOwner(customerID int) Owner {
 	return Owner{
 		ID:              customerID,
 		SignatureActive: false,

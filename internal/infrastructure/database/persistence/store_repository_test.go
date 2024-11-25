@@ -4,8 +4,6 @@ package persistence
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/oprimogus/cardapiogo/internal/core/customer"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
@@ -48,7 +46,7 @@ func TestStoreRepositorySuite(t *testing.T) {
 func (s *StoreRepositoryTestSuite) TestFindOwnerByID() {
 	ctx := context.Background()
 	mockCustomer := customer.Customer{
-		ID:       "0193480f-9ad2-7dbc-bae0-ca1c9fae1246",
+		ID:       356278453827428,
 		Name:     "John",
 		LastName: "Marston",
 		CPF:      "fake cpf 345t643t",
@@ -68,10 +66,12 @@ func (s *StoreRepositoryTestSuite) TestFindOwnerByID() {
 		},
 	}
 
+	mockOwner := store.NewOwner(mockCustomer.ID)
+
 	err := s.customerRepo.Save(ctx, &mockCustomer)
 	assert.NoError(s.T(), err)
 
-	err = s.storeRepo.BecomeOwner(ctx, mockCustomer.ID)
+	err = s.storeRepo.SaveOwner(ctx, mockOwner)
 	assert.NoError(s.T(), err)
 
 	ow, err := s.storeRepo.FindOwnerByID(ctx, mockCustomer.ID)
@@ -92,7 +92,7 @@ func (s *StoreRepositoryTestSuite) TestIsOwner() {
 		{
 			name: "should return true",
 			customer: customer.Customer{
-				ID:       "019322cc-de2d-7064-9516-46e2c1db90be",
+				ID:       356278453827428,
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -118,7 +118,7 @@ func (s *StoreRepositoryTestSuite) TestIsOwner() {
 		{
 			name: "should return false",
 			customer: customer.Customer{
-				ID:       "019341e4-76b2-7a70-856c-4f7a7188c99f",
+				ID:       356278453827429,
 				Name:     "John",
 				LastName: "Marstones",
 				CPF:      "fake cpf a",
@@ -150,7 +150,8 @@ func (s *StoreRepositoryTestSuite) TestIsOwner() {
 		assert.NoError(s.T(), err)
 
 		if tt.isOwner {
-			err = s.storeRepo.BecomeOwner(ctx, tt.customer.ID)
+			mockOwner := store.NewOwner(tt.customer.ID)
+			err = s.storeRepo.SaveOwner(ctx, mockOwner)
 			assert.NoError(s.T(), err)
 		}
 
@@ -164,7 +165,7 @@ func (s *StoreRepositoryTestSuite) TestIsOwner() {
 func (s *StoreRepositoryTestSuite) TestSave() {
 	ctx := context.Background()
 	mockCustomer := customer.Customer{
-		ID:       "01934806-981e-7e9d-adab-2086e95ee82e",
+		ID:       356278453827428,
 		Name:     "John",
 		LastName: "Marston",
 		CPF:      "fake cpf 21313",
@@ -187,10 +188,10 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 	err := s.customerRepo.Save(ctx, &mockCustomer)
 	assert.NoError(s.T(), err)
 
-	err = s.storeRepo.BecomeOwner(ctx, mockCustomer.ID)
-	assert.NoError(s.T(), err)
-
 	mockOwner := store.NewOwner(mockCustomer.ID)
+
+	err = s.storeRepo.SaveOwner(ctx, mockOwner)
+	assert.NoError(s.T(), err)
 
 	addr := address.Address{
 		AddressLine1: "rua 1",
@@ -236,7 +237,8 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 		store.Restaurant)
 	assert.NoError(s.T(), err)
 
-	mockStoreWithPaymentMethods.AddPaymentMethod(store.Bitcoin)
+	err = mockStoreWithPaymentMethods.AddPaymentMethod(store.Bitcoin)
+	assert.NoError(s.T(), err)
 
 	tests := []struct {
 		name   string
@@ -267,7 +269,5 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 		savedStore, err := s.storeRepo.FindStoreByID(ctx, tt.store.ID)
 		assert.NoError(s.T(), err, tt.name)
 		assert.Equal(s.T(), tt.store, savedStore, tt.name)
-		itemJson, _ := json.Marshal(savedStore)
-		fmt.Println(string(itemJson))
 	}
 }
