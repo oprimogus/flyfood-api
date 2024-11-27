@@ -395,9 +395,9 @@ func (c storeController) activatedOrDeactivate(w http.ResponseWriter, r *http.Re
 //	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
 //	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid status"
 //	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
-//	@Router			/v1/store/{id}/profile-image [post]
+//	@Router			/v1/owner/store/{id}/profile-image [post]
 func (c storeController) changeProfileImage(w http.ResponseWriter, r *http.Request) {
-	file, _, err := GetFileFormData(w, r, int64(10), "image", []mimeType{JPEG, PNG})
+	file, _, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png", "image/jpg"})
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -451,7 +451,7 @@ func (c storeController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 //	@Router			/v1/store/{id}/header-image [post]
 func (c storeController) changeHeaderImage(w http.ResponseWriter, r *http.Request) {
 
-	file, _, err := GetFileFormData(w, r, int64(10), "image", []mimeType{JPEG, PNG})
+	file, _, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png"})
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -529,10 +529,10 @@ func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, ser
 				Post("/active", c.activatedOrDeactivate)
 			r.
 				With(middleware.Authorization("owner")).
-				Post("/:id/profile-image", c.changeProfileImage)
+				Post("/{id}/profile-image", c.changeProfileImage)
 			r.
 				With(middleware.Authorization("owner")).
-				Post("/:id/header-image", c.changeHeaderImage)
+				Post("/{id}/header-image", c.changeHeaderImage)
 		})
 	})
 

@@ -11,13 +11,6 @@ import (
 	"path/filepath"
 )
 
-type mimeType string
-
-const (
-	JPEG mimeType = "image/jpeg"
-	PNG  mimeType = "image/png"
-)
-
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	data := middleware.GetRequestData(r.Context())
 	xerror := xerrors.HandleError(err, data.TraceID)
@@ -30,19 +23,19 @@ func JSONResponse(w http.ResponseWriter, status int, response interface{}) {
 	_ = json.NewEncoder(w).Encode(response)
 }
 
-func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key string, types []mimeType) (file multipart.File, ext string, err error) {
+func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key string, types []string) (multipart.File, string, error) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxSize<<20)
 
 	if err := r.ParseMultipartForm(maxSize << 20); err != nil {
 		message := fmt.Sprintf("arquivo excede o tamanho máximo: %d MB", maxSize)
-		xerror := xerrors.BadRequest("", message)
-		return nil, "", xerror
+		err = xerrors.BadRequest("", message)
+		return nil, "", err
 	}
 
 	file, handler, err := r.FormFile(key)
 	if err != nil {
-		xerror := xerrors.BadRequest("", "falha ao recuperar o arquivo enviado")
-		return nil, "", xerror
+		err = xerrors.BadRequest("", "falha ao recuperar o arquivo enviado")
+		return nil, "", err
 	}
 	defer func() {
 		if cerr := file.Close(); cerr != nil {
@@ -50,33 +43,22 @@ func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key 
 		}
 	}()
 
-	// Validate file extension
-	ext = filepath.Ext(handler.Filename)
-	allowedExtensions := make(map[string]bool)
-	for _, t := range types {
-		allowedExtensions[string(t)] = true
-	}
-
-	if !allowedExtensions[ext] {
-		message := fmt.Sprintf("tipo de arquivo não suportado. Os tipos permitidos são: %v", types)
-		xerror := xerrors.BadRequest("", message)
-		return nil, "", xerror
-	}
+	ext := filepath.Ext(handler.Filename)
 
 	// Validate MIME type
 	buffer := make([]byte, 512)
 	_, err = file.Read(buffer)
 	if err != nil {
-		xerror := xerrors.InternalServer("", "falha ao ler o arquivo")
-		return nil, "", xerror
+		err = xerrors.InternalServer("", "falha ao ler o arquivo")
+		return nil, "", err
 	}
 
 	if _, err := file.Seek(0, 0); err != nil {
-		xerror := xerrors.InternalServer("", "falha ao reposicionar o cursor do arquivo")
-		return nil, "", xerror
+		err = xerrors.InternalServer("", "falha ao reposicionar o cursor do arquivo")
+		return nil, "", err
 	}
 
-	mimeTypeDetected := mimeType(http.DetectContentType(buffer))
+	mimeTypeDetected := http.DetectContentType(buffer)
 	mimeAllowed := false
 	for _, t := range types {
 		if t == mimeTypeDetected {
@@ -87,8 +69,8 @@ func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key 
 
 	if !mimeAllowed {
 		message := fmt.Sprintf("formato de arquivo inválido. O tipo %s não é permitido", mimeTypeDetected)
-		xerror := xerrors.BadRequest("", message)
-		return nil, "", xerror
+		err = xerrors.BadRequest("", message)
+		return nil, "", err
 	}
 
 	return file, ext, nil

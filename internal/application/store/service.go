@@ -259,6 +259,9 @@ func (s *Service) ChangeProfileImage(ctx context.Context, ownerID string, params
 
 	objectKey := id.String() + params.Ext
 	url, err := s.s.UploadFile(ctx, string(ProfileBucket), objectKey, params.Image)
+	if err != nil {
+		return err
+	}
 
 	st.ProfileImage = url
 
