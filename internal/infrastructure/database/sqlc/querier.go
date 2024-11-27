@@ -89,13 +89,40 @@ type Querier interface {
 	FindProductsIDByStoreID(ctx context.Context, storeID pgtype.UUID) ([]pgtype.UUID, error)
 	//FindStoreByID
 	//
-	//  SELECT s.owner_id, s.cnpj, s.name, s.description,
-	//  s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
-	//  s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
-	//  s.city, s.state, s.postal_code, s.latitude, s.longitude,
-	//  s.country, s.created_at, s.updated_at, s.deleted_at
+	//  WITH relevant_business_hours AS (
+	//      SELECT id, weekday, open_hour, closing_hour
+	//      FROM store_business_hour bh
+	//      WHERE id = $1
+	//  ),
+	//       relevant_payment_methods AS (
+	//           SELECT id, payment_method
+	//           FROM store_payment_method pm
+	//           WHERE id = $1
+	//       )
+	//  SELECT
+	//      s.owner_id, s.cnpj, s.name, s.description,
+	//      s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+	//      s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
+	//      s.city, s.state, s.postal_code, s.latitude, s.longitude,
+	//      s.country, s.created_at, s.updated_at, s.deleted_at,
+	//      COALESCE(
+	//          ARRAY_AGG(rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
+	//                      '{}'::text[]
+	//      )::text[] AS business_hours,
+	//      COALESCE(
+	//          ARRAY_AGG(rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
+	//                      '{}'::"PaymentMethod"[]
+	//      )::text[] AS payment_methods
 	//  FROM store s
+	//           LEFT JOIN relevant_business_hours rbh ON s.id = rbh.id
+	//           LEFT JOIN relevant_payment_methods rpm ON s.id = rpm.id
 	//  WHERE s.id = $1
+	//  GROUP BY
+	//      s.owner_id, s.cnpj, s.name, s.description,
+	//      s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+	//      s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
+	//      s.city, s.state, s.postal_code, s.latitude, s.longitude,
+	//      s.country, s.created_at, s.updated_at, s.deleted_at
 	FindStoreByID(ctx context.Context, id pgtype.UUID) (FindStoreByIDRow, error)
 	//IsOwner
 	//

@@ -78,15 +78,6 @@ func (r CustomerRepository) FindByID(ctx context.Context, id int) (*customer.Cus
 	return customerDomain, nil
 }
 
-//func (r CustomerRepository) ExistWith(ctx context.Context, email, phone, cpf string) (bool, error) {
-//	args := sqlc.FindCustomerByUniqueParamsParams{
-//		Email: email,
-//		Phone: phone,
-//		Cpf:   cpf,
-//	}
-//	return r.q.FindCustomerByUniqueParams(ctx, args)
-//}
-
 func (r CustomerRepository) Save(ctx context.Context, c *customer.Customer) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {

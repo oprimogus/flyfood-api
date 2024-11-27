@@ -228,6 +228,13 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 	})
 	assert.NoError(s.T(), err)
 
+	err = mockStoreWithBusinessHour.AddNewBusinessHour(store.BusinessHours{
+		WeekDay:     2,
+		OpeningTime: "12:00",
+		ClosingTime: "21:00",
+	})
+	assert.NoError(s.T(), err)
+
 	mockStoreWithPaymentMethods, err := mockOwner.NewStore(
 		"43544583000124",
 		"Store test 3",
@@ -238,6 +245,9 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 	assert.NoError(s.T(), err)
 
 	err = mockStoreWithPaymentMethods.AddPaymentMethod(store.Bitcoin)
+	assert.NoError(s.T(), err)
+
+	err = mockStoreWithPaymentMethods.AddPaymentMethod(store.Pix)
 	assert.NoError(s.T(), err)
 
 	tests := []struct {

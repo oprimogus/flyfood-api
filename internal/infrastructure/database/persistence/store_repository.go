@@ -10,6 +10,8 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
 	"github.com/oprimogus/cardapiogo/pkg/converters"
 	"log/slog"
+	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -28,118 +30,64 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 		return nil, err
 	}
 
-	var foundedStore sqlc.FindStoreByIDRow
-	var errFoundedStore error
-
-	var bhs []sqlc.FindBusinessHourByStoreIDRow
-	var errBhs error
-
-	var pms []sqlc.PaymentMethod
-	var errPms error
-
-	var productsID []pgtype.UUID
-	var errProductsID error
-
-	var wg sync.WaitGroup
-	wg.Add(4)
-
-	go func() {
-		defer wg.Done()
-		foundedStore, errFoundedStore = r.q.FindStoreByID(ctx, idPg)
-	}()
-
-	go func() {
-		defer wg.Done()
-		bhs, errBhs = r.q.FindBusinessHourByStoreID(ctx, idPg)
-	}()
-
-	go func() {
-		defer wg.Done()
-		pms, errPms = r.q.FindPaymentMethodsByStoreID(ctx, idPg)
-	}()
-
-	go func() {
-		defer wg.Done()
-		productsID, errProductsID = r.q.FindProductsIDByStoreID(ctx, idPg)
-	}()
-
-	wg.Wait()
-
-	if errFoundedStore != nil {
-		return nil, errFoundedStore
+	st, err := r.q.FindStoreByID(ctx, idPg)
+	if err != nil {
+		return nil, err
 	}
 
-	if errBhs != nil {
-		return nil, errBhs
-	}
-
-	if errPms != nil {
-		return nil, errPms
-	}
-
-	if errProductsID != nil {
-		return nil, errProductsID
-	}
-
-	if bhs == nil {
-		bhs = []sqlc.FindBusinessHourByStoreIDRow{}
-	}
-	if pms == nil {
-		pms = []sqlc.PaymentMethod{}
-	}
-	if productsID == nil {
-		productsID = []pgtype.UUID{}
-	}
-
-	bhsConverted := make([]store.BusinessHours, len(bhs))
-	for i, v := range bhs {
-		bhsConverted[i] = store.BusinessHours{
-			WeekDay:     int(v.Weekday),
-			OpeningTime: v.OpenHour,
-			ClosingTime: v.ClosingHour,
+	bhs := make([]store.BusinessHours, len(st.BusinessHours))
+	for i, bh := range st.BusinessHours {
+		arrayText := strings.Split(strings.Trim(bh, "{}"), " ")
+		if len(arrayText) == 0 {
+			continue
 		}
-	}
-
-	pmsConverted := make([]store.PaymentMethod, len(pms))
-	for i, v := range pms {
-		pmsConverted[i] = store.PaymentMethod(v)
-	}
-
-	productsIDConverted := make([]string, len(productsID))
-	for i, v := range productsID {
-		vConverted, err := converters.UuidToString(v)
+		weekDay, err := strconv.Atoi(arrayText[0])
 		if err != nil {
 			return nil, err
 		}
-		productsIDConverted[i] = *vConverted
+		bhs[i] = store.BusinessHours{
+			WeekDay:     weekDay,
+			OpeningTime: arrayText[1],
+			ClosingTime: arrayText[2],
+		}
+	}
+
+	pms := make([]store.PaymentMethod, len(st.PaymentMethods))
+	for i, pm := range st.PaymentMethods {
+		arrayText := strings.Trim(pm, "{}")
+		if arrayText == "" {
+			continue
+		}
+		pms[i] = store.PaymentMethod(arrayText)
 	}
 
 	return &store.Store{
 		ID:          id,
-		OwnerID:     int(foundedStore.OwnerID),
-		CNPJ:        foundedStore.Cnpj,
-		Name:        foundedStore.Name,
-		Description: foundedStore.Description,
-		Active:      foundedStore.Active,
-		IsOpen:      foundedStore.IsOpen,
-		Phone:       foundedStore.Phone,
-		Score:       int(foundedStore.Score),
-		Type:        store.Type(foundedStore.Type),
+		OwnerID:     int(st.OwnerID),
+		CNPJ:        st.Cnpj,
+		Name:        st.Name,
+		Description: st.Description,
+		Active:      st.Active,
+		IsOpen:      st.IsOpen,
+		Phone:       st.Phone,
+		Score:       int(st.Score),
+		Type:        store.Type(st.Type),
 		Address: address.Address{
-			AddressLine1: foundedStore.AddressLine1,
-			AddressLine2: foundedStore.AddressLine2,
-			Neighborhood: foundedStore.Neighborhood,
-			City:         foundedStore.City,
-			State:        foundedStore.State,
-			PostalCode:   foundedStore.PostalCode,
-			Country:      foundedStore.Country,
-			Latitude:     foundedStore.Latitude.String,
-			Longitude:    foundedStore.Longitude.String,
+			AddressLine1: st.AddressLine1,
+			AddressLine2: st.AddressLine2,
+			Neighborhood: st.Neighborhood,
+			City:         st.City,
+			State:        st.State,
+			PostalCode:   st.PostalCode,
+			Country:      st.Country,
+			Latitude:     st.Latitude.String,
+			Longitude:    st.Longitude.String,
 		},
-		BusinessHours:  bhsConverted,
-		PaymentMethods: pmsConverted,
-		Products:       productsIDConverted,
+		BusinessHours:  bhs,
+		PaymentMethods: pms,
+		Products:       []string{},
 	}, nil
+
 }
 
 func (r StoreRepository) FindOwnerByID(ctx context.Context, id int) (*store.Owner, error) {
@@ -175,9 +123,9 @@ func (r StoreRepository) IsOwner(ctx context.Context, customerID int) (bool, err
 	return isOwner, nil
 }
 
-func (r StoreRepository) Save(ctx context.Context, storeToSave *store.Store) error {
+func (r StoreRepository) Save(ctx context.Context, st *store.Store) error {
 
-	storeID, err := converters.StringToUUID(storeToSave.ID)
+	storeID, err := converters.StringToUUID(st.ID)
 	if err != nil {
 		return err
 	}
@@ -241,32 +189,32 @@ func (r StoreRepository) Save(ctx context.Context, storeToSave *store.Store) err
 
 	qtx := sqlc.New(tx)
 
-	profileImage := converters.StringToText(storeToSave.ProfileImage)
-	headerImage := converters.StringToText(storeToSave.HeaderImage)
+	profileImage := converters.StringToText(st.ProfileImage)
+	headerImage := converters.StringToText(st.HeaderImage)
 
-	latitude := converters.StringToText(storeToSave.Address.Latitude)
-	longitude := converters.StringToText(storeToSave.Address.Longitude)
+	latitude := converters.StringToText(st.Address.Latitude)
+	longitude := converters.StringToText(st.Address.Longitude)
 
 	argsSaveStore := sqlc.SaveStoreParams{
 		ID:           storeID,
-		OwnerID:      int64(storeToSave.OwnerID),
-		Cnpj:         storeToSave.CNPJ,
-		Name:         storeToSave.Name,
-		Description:  storeToSave.Description,
-		Active:       storeToSave.Active,
-		IsOpen:       storeToSave.IsOpen,
-		Phone:        storeToSave.Phone,
-		Score:        int32(storeToSave.Score),
-		Type:         sqlc.StoreType(storeToSave.Type),
+		OwnerID:      int64(st.OwnerID),
+		Cnpj:         st.CNPJ,
+		Name:         st.Name,
+		Description:  st.Description,
+		Active:       st.Active,
+		IsOpen:       st.IsOpen,
+		Phone:        st.Phone,
+		Score:        int32(st.Score),
+		Type:         sqlc.StoreType(st.Type),
 		ProfileImage: profileImage,
 		HeaderImage:  headerImage,
-		AddressLine1: storeToSave.Address.AddressLine1,
-		AddressLine2: storeToSave.Address.AddressLine2,
-		Neighborhood: storeToSave.Address.Neighborhood,
-		City:         storeToSave.Address.City,
-		State:        storeToSave.Address.State,
-		Country:      storeToSave.Address.Country,
-		PostalCode:   storeToSave.Address.PostalCode,
+		AddressLine1: st.Address.AddressLine1,
+		AddressLine2: st.Address.AddressLine2,
+		Neighborhood: st.Address.Neighborhood,
+		City:         st.Address.City,
+		State:        st.Address.State,
+		Country:      st.Address.Country,
+		PostalCode:   st.Address.PostalCode,
 		Latitude:     latitude,
 		Longitude:    longitude,
 	}
@@ -275,12 +223,12 @@ func (r StoreRepository) Save(ctx context.Context, storeToSave *store.Store) err
 		return err
 	}
 
-	if hasChange(bhSlice, storeToSave.BusinessHours) {
-		syncBusinessHour(ctx, qtx, storeID, businessHourRepo, storeToSave)
+	if hasChange(bhSlice, st.BusinessHours) {
+		syncBusinessHour(ctx, qtx, storeID, businessHourRepo, st)
 	}
 
-	if hasChange(pmSlice, storeToSave.PaymentMethods) {
-		syncPaymentMethods(ctx, qtx, storeID, paymentMethodRepo, storeToSave)
+	if hasChange(pmSlice, st.PaymentMethods) {
+		syncPaymentMethods(ctx, qtx, storeID, paymentMethodRepo, st)
 	}
 
 	return tx.Commit(ctx)

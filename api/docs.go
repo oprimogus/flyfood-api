@@ -384,6 +384,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/owner/store/{id}/profile-image": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change store profile image",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Change store profile image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Store profile image",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store activation status updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/store": {
             "put": {
                 "security": [
@@ -891,78 +963,6 @@ const docTemplate = `{
                     {
                         "type": "file",
                         "description": "Store header image",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Store activation status updated successfully"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid status",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/{id}/profile-image": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Change store profile image",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Change store profile image",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Store ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "Store profile image",
                         "name": "file",
                         "in": "formData",
                         "required": true

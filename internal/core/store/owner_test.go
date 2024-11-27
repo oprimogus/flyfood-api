@@ -1,15 +1,12 @@
 package store
 
 import (
-	"github.com/google/uuid"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestOwner_NewStore(t *testing.T) {
-	ownerID, err := uuid.NewV7()
-	assert.NoError(t, err)
 
 	mockOwner := NewOwner(45678948674)
 
@@ -34,7 +31,7 @@ func TestOwner_NewStore(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, store)
-	assert.Equal(t, ownerID.String(), store.OwnerID)
+	assert.Equal(t, 45678948674, store.OwnerID)
 	assert.Equal(t, DefaultScore, store.Score)
 	assert.Equal(t, false, store.Active)
 	assert.Equal(t, false, store.IsOpen)

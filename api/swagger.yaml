@@ -526,6 +526,53 @@ paths:
       summary: Create a new store for an owner
       tags:
       - Owner
+  /v1/owner/store/{id}/profile-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change store profile image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store profile image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Change store profile image
+      tags:
+      - Store Management
   /v1/store:
     put:
       consumes:
@@ -591,53 +638,6 @@ paths:
         required: true
         type: string
       - description: Store header image
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Store activation status updated successfully
-        "400":
-          description: Invalid request data or malformed JSON
-          schema:
-            $ref: '#/definitions/xerrors.CustomError'
-        "401":
-          description: Unauthorized - authentication required
-          schema:
-            $ref: '#/definitions/xerrors.CustomError'
-        "422":
-          description: Validation error - invalid status
-          schema:
-            $ref: '#/definitions/xerrors.CustomError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/xerrors.CustomError'
-      security:
-      - BearerAuth: []
-      summary: Change store profile image
-      tags:
-      - Store Management
-  /v1/store/{id}/profile-image:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Change store profile image
-      parameters:
-      - description: Bearer authentication token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: Store ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Store profile image
         in: formData
         name: file
         required: true

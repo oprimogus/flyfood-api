@@ -275,50 +275,106 @@ func (q *Queries) FindProductsIDByStoreID(ctx context.Context, storeID pgtype.UU
 }
 
 const findStoreByID = `-- name: FindStoreByID :one
-SELECT s.owner_id, s.cnpj, s.name, s.description,
-s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
-s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
-s.city, s.state, s.postal_code, s.latitude, s.longitude,
-s.country, s.created_at, s.updated_at, s.deleted_at
+WITH relevant_business_hours AS (
+    SELECT id, weekday, open_hour, closing_hour
+    FROM store_business_hour bh
+    WHERE id = $1
+),
+     relevant_payment_methods AS (
+         SELECT id, payment_method
+         FROM store_payment_method pm
+         WHERE id = $1
+     )
+SELECT
+    s.owner_id, s.cnpj, s.name, s.description,
+    s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+    s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
+    s.city, s.state, s.postal_code, s.latitude, s.longitude,
+    s.country, s.created_at, s.updated_at, s.deleted_at,
+    COALESCE(
+        ARRAY_AGG(rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
+                    '{}'::text[]
+    )::text[] AS business_hours,
+    COALESCE(
+        ARRAY_AGG(rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
+                    '{}'::"PaymentMethod"[]
+    )::text[] AS payment_methods
 FROM store s
+         LEFT JOIN relevant_business_hours rbh ON s.id = rbh.id
+         LEFT JOIN relevant_payment_methods rpm ON s.id = rpm.id
 WHERE s.id = $1
+GROUP BY
+    s.owner_id, s.cnpj, s.name, s.description,
+    s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+    s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
+    s.city, s.state, s.postal_code, s.latitude, s.longitude,
+    s.country, s.created_at, s.updated_at, s.deleted_at
 `
 
 type FindStoreByIDRow struct {
-	OwnerID      int64            `db:"owner_id" json:"owner_id"`
-	Cnpj         string           `db:"cnpj" json:"cnpj"`
-	Name         string           `db:"name" json:"name"`
-	Description  string           `db:"description" json:"description"`
-	Active       bool             `db:"active" json:"active"`
-	Phone        string           `db:"phone" json:"phone"`
-	Score        int32            `db:"score" json:"score"`
-	IsOpen       bool             `db:"is_open" json:"is_open"`
-	Type         StoreType        `db:"type" json:"type"`
-	ProfileImage pgtype.Text      `db:"profile_image" json:"profile_image"`
-	HeaderImage  pgtype.Text      `db:"header_image" json:"header_image"`
-	AddressLine1 string           `db:"address_line_1" json:"address_line_1"`
-	AddressLine2 string           `db:"address_line_2" json:"address_line_2"`
-	Neighborhood string           `db:"neighborhood" json:"neighborhood"`
-	City         string           `db:"city" json:"city"`
-	State        string           `db:"state" json:"state"`
-	PostalCode   string           `db:"postal_code" json:"postal_code"`
-	Latitude     pgtype.Text      `db:"latitude" json:"latitude"`
-	Longitude    pgtype.Text      `db:"longitude" json:"longitude"`
-	Country      string           `db:"country" json:"country"`
-	CreatedAt    pgtype.Timestamp `db:"created_at" json:"created_at"`
-	UpdatedAt    pgtype.Timestamp `db:"updated_at" json:"updated_at"`
-	DeletedAt    pgtype.Timestamp `db:"deleted_at" json:"deleted_at"`
+	OwnerID        int64            `db:"owner_id" json:"owner_id"`
+	Cnpj           string           `db:"cnpj" json:"cnpj"`
+	Name           string           `db:"name" json:"name"`
+	Description    string           `db:"description" json:"description"`
+	Active         bool             `db:"active" json:"active"`
+	Phone          string           `db:"phone" json:"phone"`
+	Score          int32            `db:"score" json:"score"`
+	IsOpen         bool             `db:"is_open" json:"is_open"`
+	Type           StoreType        `db:"type" json:"type"`
+	ProfileImage   pgtype.Text      `db:"profile_image" json:"profile_image"`
+	HeaderImage    pgtype.Text      `db:"header_image" json:"header_image"`
+	AddressLine1   string           `db:"address_line_1" json:"address_line_1"`
+	AddressLine2   string           `db:"address_line_2" json:"address_line_2"`
+	Neighborhood   string           `db:"neighborhood" json:"neighborhood"`
+	City           string           `db:"city" json:"city"`
+	State          string           `db:"state" json:"state"`
+	PostalCode     string           `db:"postal_code" json:"postal_code"`
+	Latitude       pgtype.Text      `db:"latitude" json:"latitude"`
+	Longitude      pgtype.Text      `db:"longitude" json:"longitude"`
+	Country        string           `db:"country" json:"country"`
+	CreatedAt      pgtype.Timestamp `db:"created_at" json:"created_at"`
+	UpdatedAt      pgtype.Timestamp `db:"updated_at" json:"updated_at"`
+	DeletedAt      pgtype.Timestamp `db:"deleted_at" json:"deleted_at"`
+	BusinessHours  []string         `db:"business_hours" json:"business_hours"`
+	PaymentMethods []string         `db:"payment_methods" json:"payment_methods"`
 }
 
 // FindStoreByID
 //
-//	SELECT s.owner_id, s.cnpj, s.name, s.description,
-//	s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
-//	s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
-//	s.city, s.state, s.postal_code, s.latitude, s.longitude,
-//	s.country, s.created_at, s.updated_at, s.deleted_at
+//	WITH relevant_business_hours AS (
+//	    SELECT id, weekday, open_hour, closing_hour
+//	    FROM store_business_hour bh
+//	    WHERE id = $1
+//	),
+//	     relevant_payment_methods AS (
+//	         SELECT id, payment_method
+//	         FROM store_payment_method pm
+//	         WHERE id = $1
+//	     )
+//	SELECT
+//	    s.owner_id, s.cnpj, s.name, s.description,
+//	    s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+//	    s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
+//	    s.city, s.state, s.postal_code, s.latitude, s.longitude,
+//	    s.country, s.created_at, s.updated_at, s.deleted_at,
+//	    COALESCE(
+//	        ARRAY_AGG(rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
+//	                    '{}'::text[]
+//	    )::text[] AS business_hours,
+//	    COALESCE(
+//	        ARRAY_AGG(rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
+//	                    '{}'::"PaymentMethod"[]
+//	    )::text[] AS payment_methods
 //	FROM store s
+//	         LEFT JOIN relevant_business_hours rbh ON s.id = rbh.id
+//	         LEFT JOIN relevant_payment_methods rpm ON s.id = rpm.id
 //	WHERE s.id = $1
+//	GROUP BY
+//	    s.owner_id, s.cnpj, s.name, s.description,
+//	    s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+//	    s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
+//	    s.city, s.state, s.postal_code, s.latitude, s.longitude,
+//	    s.country, s.created_at, s.updated_at, s.deleted_at
 func (q *Queries) FindStoreByID(ctx context.Context, id pgtype.UUID) (FindStoreByIDRow, error) {
 	row := q.db.QueryRow(ctx, findStoreByID, id)
 	var i FindStoreByIDRow
@@ -346,6 +402,8 @@ func (q *Queries) FindStoreByID(ctx context.Context, id pgtype.UUID) (FindStoreB
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.BusinessHours,
+		&i.PaymentMethods,
 	)
 	return i, err
 }

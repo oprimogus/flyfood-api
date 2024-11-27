@@ -15,3 +15,10 @@ sql:
         emit_exact_table_names: true
         json_tags_case_style: "snake"
         emit_sql_as_comment: true
+        overrides:
+          - db_type: "TEXT[]"
+            go_type:
+              type: "[]string"
+          - db_type: "anyarray"
+            go_type:
+              type: "[]string"
