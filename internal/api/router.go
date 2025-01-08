@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/application/api/controller"
-	"github.com/oprimogus/cardapiogo/internal/application/api/middleware"
+	"github.com/oprimogus/cardapiogo/internal/api/controller"
+	"github.com/oprimogus/cardapiogo/internal/api/middleware"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/persistence"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
@@ -33,7 +33,7 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 
 	controller.SetupHealthRoutes(r, db)
 	controller.SetupSwaggerRoutes(r)
-	controller.SetupCustomerRoutes(r, repoFactory, serviceFactory)
+	controller.SetupCustomerRoutes(r, repoFactory)
 	controller.SetupStoreRoutes(r, repoFactory, serviceFactory)
 
 	configInstance := config.GetInstance().Api
@@ -53,7 +53,6 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 		}
 
 		go func() {
-			// service connections
 			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 				log.Fatalf("listen: %s\n", err)
 			}
@@ -74,7 +73,6 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 		if err := srv.Shutdown(ctx); err != nil {
 			log.Fatal("Server Shutdown:", err)
 		}
-		// catching ctx.Done(). timeout of 5 seconds.
 		select {
 		case <-ctx.Done():
 			slog.Info("timeout of 5 seconds.")
@@ -82,10 +80,6 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 		slog.Info("Server exiting")
 
 	} else {
-		//err := router.Run(":" + port)
-		//if err != nil {
-		//	panic(err)
-		//}
 		log.Fatal(http.ListenAndServe(":"+port, r))
 	}
 }

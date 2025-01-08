@@ -7,9 +7,9 @@ import (
 const BusinessHourLayout = "15:04"
 
 type BusinessHours struct {
-	WeekDay     int    `json:"week_day" validate:"min=0,max=6" example:"1"`
-	OpeningTime string `json:"opening_time" validate:"businessHour,required" example:"09:00"`
-	ClosingTime string `json:"closing_time" validate:"businessHour,required" example:"15:00"`
+	WeekDay     int    `json:"weekDay" validate:"min=0,max=6" example:"1"`
+	OpeningTime string `json:"openingTime" validate:"businessHour,required" example:"09:00"`
+	ClosingTime string `json:"closingTime" validate:"businessHour,required" example:"15:00"`
 }
 
 func isValidHour(input string) bool {

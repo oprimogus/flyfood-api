@@ -1,3 +1,5 @@
+-- noinspection SqlResolveForFile
+
 -- name: FindCustomerByID :one
 SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 FROM customer c
@@ -97,11 +99,11 @@ SELECT
     s.city, s.state, s.postal_code, s.latitude, s.longitude,
     s.country, s.created_at, s.updated_at, s.deleted_at,
     COALESCE(
-        ARRAY_AGG(rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
+        ARRAY_AGG(DISTINCT rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
                     '{}'::text[]
     )::text[] AS business_hours,
     COALESCE(
-        ARRAY_AGG(rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
+        ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
                     '{}'::"PaymentMethod"[]
     )::text[] AS payment_methods
 FROM store s
@@ -189,17 +191,17 @@ DELETE FROM store_payment_method
 WHERE id = $1 AND payment_method = $2;
 
 -- name: FindProductByID :one
-SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.name,
+SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
        i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
 FROM product i
 WHERE i.id = $1
 LIMIT 1;
 
 -- name: SaveProduct :exec
-INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, name, description,
+INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, tag, name, description,
                      stock_quantity, score, image_url, details, price, promotional_price, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13, $14,
+        $8, $9, $10, $11, $12, $13, $14, $15,
         NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC')
 ON CONFLICT (id) DO UPDATE
 SET
@@ -207,6 +209,7 @@ SET
     active_for_sale = excluded.active_for_sale,
     promo_active = excluded.promo_active,
     type = excluded.type,
+    tag = excluded.tag,
     name = excluded.name,
     description = excluded.description,
     stock_quantity = excluded.stock_quantity,
@@ -312,16 +315,17 @@ WHERE product.id = $1 AND product.store_id = $2;
 -- WHERE store_id = $1
 -- ORDER BY week_day;
 --
--- -- name: GetStoreByFilter :many
--- SELECT s.id, s.name, s.score, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
--- FROM store s
--- WHERE 1 = 1
---   AND (COALESCE(NULLIF(@name::text, ''), s.name) IS NULL OR s.name LIKE '%' || COALESCE(NULLIF(@name::text, ''), s.name) || '%')
---   AND (COALESCE(@score::int, s.score) IS NULL OR s.score >= COALESCE(@score::int, s.score))
---   AND (COALESCE(NULLIF(@type, '')::"ShopType", s.type) IS NULL OR s.type = COALESCE(NULLIF(@type, '')::"ShopType", s.type))
---   AND (COALESCE(NULLIF(@city::text, ''), s.city) IS NULL OR s.city = COALESCE(NULLIF(@city::text, ''), s.city))
--- ORDER BY s.score DESC, s.type
--- OFFSET @total_items LIMIT @limit_items;
+
+-- name: FindStoresByFilter :many
+SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+FROM store s
+WHERE 1 = 1
+    AND (COALESCE(NULLIF(@name::text, ''), s.name) IS NULL OR s.name ILIKE '%' || @name::text || '%')
+    AND (NULLIF(@type::text, '') IS NULL OR s.type::text = @type::text)
+    AND (NULLIF(@city::text, '') IS NULL OR s.city::text = @city::text)
+    AND (sqlc.narg('is_open')::bool IS NULL OR s.is_open = @is_open::bool)
+ORDER BY s.score DESC, s.type
+OFFSET @offset_value LIMIT @limit_items;
 --
 -- -- name: AddBusinessHours :batchexec
 -- INSERT INTO business_hour(store_id, week_day, opening_time, closing_time, timezone)

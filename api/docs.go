@@ -235,6 +235,162 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/customer/address": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add new address to customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer Profile Management"
+                ],
+                "summary": "Add new address to customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Address Model",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/address.Address"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Address added to user"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Customer profile not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid profile details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove an address to customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer Profile Management"
+                ],
+                "summary": "Remove an address to customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Address Model",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/address.Address"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Address removed from user"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Customer profile not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid profile details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/owner": {
             "post": {
                 "security": [
@@ -306,6 +462,69 @@ const docTemplate = `{
             }
         },
         "/v1/owner/store": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a store by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management"
+                ],
+                "summary": "Get a store by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store model",
+                        "schema": {
+                            "$ref": "#/definitions/store.Store"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -457,6 +676,114 @@ const docTemplate = `{
             }
         },
         "/v1/store": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a stores by Filter",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store"
+                ],
+                "summary": "Get a stores by Filter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "IsOpen",
+                        "name": "isOpen",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Score",
+                        "name": "score",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store Type",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "City",
+                        "name": "city",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Items per page",
+                        "name": "maxItems",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Query Store model",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.QueryStoreList"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -516,6 +843,71 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Validation error - invalid store details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/store/:id": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a store by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store"
+                ],
+                "summary": "Get a store by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Query Store model",
+                        "schema": {
+                            "$ref": "#/definitions/store.QueryStore"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -934,7 +1326,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Change store profile image",
+                "description": "Change store header image",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -944,7 +1336,7 @@ const docTemplate = `{
                 "tags": [
                     "Store Management"
                 ],
-                "summary": "Change store profile image",
+                "summary": "Change store header image",
                 "parameters": [
                     {
                         "type": "string",
@@ -1079,10 +1471,9 @@ const docTemplate = `{
         "customer.Customer": {
             "type": "object",
             "required": [
-                "addresses",
                 "email",
                 "id",
-                "last_name",
+                "lastName",
                 "name",
                 "phone"
             ],
@@ -1105,7 +1496,7 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 295105940221919239
                 },
-                "last_name": {
+                "lastName": {
                     "type": "string",
                     "maxLength": 60,
                     "minLength": 3,
@@ -1117,7 +1508,7 @@ const docTemplate = `{
                     "minLength": 3,
                     "example": "John"
                 },
-                "orders_id": {
+                "ordersID": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1161,7 +1552,7 @@ const docTemplate = `{
                 "id"
             ],
             "properties": {
-                "business_hour": {
+                "businessHour": {
                     "$ref": "#/definitions/store.BusinessHours"
                 },
                 "id": {
@@ -1174,14 +1565,14 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "id",
-                "payment_method"
+                "paymentMethod"
             ],
             "properties": {
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
-                "payment_method": {
+                "paymentMethod": {
                     "$ref": "#/definitions/store.PaymentMethod"
                 }
             }
@@ -1189,19 +1580,19 @@ const docTemplate = `{
         "store.BusinessHours": {
             "type": "object",
             "required": [
-                "closing_time",
-                "opening_time"
+                "closingTime",
+                "openingTime"
             ],
             "properties": {
-                "closing_time": {
+                "closingTime": {
                     "type": "string",
                     "example": "15:00"
                 },
-                "opening_time": {
+                "openingTime": {
                     "type": "string",
                     "example": "09:00"
                 },
-                "week_day": {
+                "weekDay": {
                     "type": "integer",
                     "maximum": 6,
                     "minimum": 0,
@@ -1269,6 +1660,127 @@ const docTemplate = `{
                 "Bitcoin"
             ]
         },
+        "store.QueryStore": {
+            "type": "object",
+            "required": [
+                "address",
+                "businessHours",
+                "description",
+                "id",
+                "name",
+                "paymentMethods",
+                "phone",
+                "score",
+                "type"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/address.Address"
+                },
+                "businessHours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.BusinessHours"
+                    }
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Best bakery in town with fresh pastries"
+                },
+                "headerImage": {
+                    "type": "string",
+                    "example": "https://example.com/header.jpg"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOpen": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Delicious Bakery"
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.PaymentMethod"
+                    }
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+5511997590670"
+                },
+                "profileImage": {
+                    "type": "string",
+                    "example": "https://example.com/profile.jpg"
+                },
+                "score": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.Type"
+                        }
+                    ],
+                    "example": "RESTAURANT"
+                }
+            }
+        },
+        "store.QueryStoreList": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "neighborhood",
+                "score",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOpen": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Delicious Bakery"
+                },
+                "neighborhood": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "example": "Downtown"
+                },
+                "profileImage": {
+                    "type": "string",
+                    "example": "https://example.com/profile.jpg"
+                },
+                "score": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.Type"
+                        }
+                    ],
+                    "example": "RESTAURANT"
+                }
+            }
+        },
         "store.SetActiveDTO": {
             "type": "object",
             "required": [
@@ -1295,9 +1807,108 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
-                "is_open": {
+                "isOpen": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "store.Store": {
+            "type": "object",
+            "required": [
+                "address",
+                "businessHours",
+                "cnpj",
+                "description",
+                "id",
+                "name",
+                "ownerID",
+                "paymentMethods",
+                "phone",
+                "productsID",
+                "score",
+                "type"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "address": {
+                    "$ref": "#/definitions/address.Address"
+                },
+                "businessHours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.BusinessHours"
+                    }
+                },
+                "cnpj": {
+                    "type": "string",
+                    "example": "12345678000190"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Best bakery in town with fresh pastries"
+                },
+                "headerImage": {
+                    "type": "string",
+                    "example": "https://example.com/header.jpg"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOpen": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Delicious Bakery"
+                },
+                "ownerID": {
+                    "type": "integer",
+                    "example": 5692562784252
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.PaymentMethod"
+                    }
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+5511997590670"
+                },
+                "productsID": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['prod1'",
+                        " 'prod2']"
+                    ]
+                },
+                "profileImage": {
+                    "type": "string",
+                    "example": "https://example.com/profile.jpg"
+                },
+                "score": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.Type"
+                        }
+                    ],
+                    "example": "RESTAURANT"
                 }
             }
         },

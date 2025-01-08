@@ -78,7 +78,7 @@ func handleUniqueViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
 	endValue := strings.LastIndex(pgErr.Detail, ")")
 	value := pgErr.Detail[startValue:endValue]
 
-	fieldErr := ErrField{
+	fieldErr := FieldError{
 		Field:   field,
 		Input:   value,
 		Message: "Existe um registro com este valor",
@@ -92,7 +92,7 @@ func handleUniqueViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
 }
 
 func handleColumnViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
-	fieldErr := ErrField{
+	fieldErr := FieldError{
 		Field:   "",
 		Input:   "",
 		Message: pgErr.Message,

@@ -62,16 +62,18 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 	}
 
 	return &store.Store{
-		ID:          id,
-		OwnerID:     int(st.OwnerID),
-		CNPJ:        st.Cnpj,
-		Name:        st.Name,
-		Description: st.Description,
-		Active:      st.Active,
-		IsOpen:      st.IsOpen,
-		Phone:       st.Phone,
-		Score:       int(st.Score),
-		Type:        store.Type(st.Type),
+		ID:           id,
+		OwnerID:      int(st.OwnerID),
+		CNPJ:         st.Cnpj,
+		Name:         st.Name,
+		Description:  st.Description,
+		Active:       st.Active,
+		IsOpen:       st.IsOpen,
+		Phone:        st.Phone,
+		ProfileImage: st.ProfileImage.String,
+		HeaderImage:  st.HeaderImage.String,
+		Score:        int(st.Score),
+		Type:         store.Type(st.Type),
 		Address: address.Address{
 			AddressLine1: st.AddressLine1,
 			AddressLine2: st.AddressLine2,

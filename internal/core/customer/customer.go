@@ -8,12 +8,12 @@ import (
 type Customer struct {
 	ID        int               `json:"id" validate:"required,number" example:"295105940221919239"`
 	Name      string            `json:"name" validate:"required,alpha,gte=3,lte=25" example:"John"`
-	LastName  string            `json:"last_name" validate:"required,gte=3,lte=60" example:"Doe"`
+	LastName  string            `json:"lastName" validate:"required,gte=3,lte=60" example:"Doe"`
 	CPF       string            `json:"cpf" validate:"cpf" example:"52024227090"`
 	Email     string            `json:"email" validate:"required,email" example:"johndoe@example.com"`
 	Phone     string            `json:"phone" validate:"required,phone" example:"+5513997590579"`
-	Addresses []address.Address `json:"addresses" validate:"required,dive"`
-	OrdersID  []string          `json:"orders_id"`
+	Addresses []address.Address `json:"addresses" validate:"dive"`
+	OrdersID  []string          `json:"ordersID"`
 }
 
 func (c *Customer) Validate() error {
@@ -52,18 +52,17 @@ func (c *Customer) SaveNewAddress(address address.Address) error {
 	return c.Validate()
 }
 
-func (c *Customer) RemoveAddress(address address.Address) error {
+func (c *Customer) RemoveAddress(addrToRemove address.Address) error {
 	if len(c.Addresses) == 0 {
 		return ErrThereIsNoAddresses
 	}
-	for i, v := range c.Addresses {
-		if v == address {
-			c.Addresses = append(c.Addresses[:i], c.Addresses[i+1:]...)
-		}
-		if i == len(c.Addresses)-1 && v != address {
-			return ErrTryRemoveInvalidAddress
+	var addrs []address.Address
+	for _, v := range c.Addresses {
+		if v != addrToRemove {
+			addrs = append(addrs, v)
 		}
 	}
 
+	c.Addresses = addrs
 	return c.Validate()
 }

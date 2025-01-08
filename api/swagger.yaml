@@ -75,7 +75,7 @@ definitions:
       id:
         example: 295105940221919239
         type: integer
-      last_name:
+      lastName:
         example: Doe
         maxLength: 60
         minLength: 3
@@ -85,7 +85,7 @@ definitions:
         maxLength: 25
         minLength: 3
         type: string
-      orders_id:
+      ordersID:
         items:
           type: string
         type: array
@@ -93,10 +93,9 @@ definitions:
         example: "+5513997590579"
         type: string
     required:
-    - addresses
     - email
     - id
-    - last_name
+    - lastName
     - name
     - phone
     type: object
@@ -122,7 +121,7 @@ definitions:
     type: object
   store.AddOrDeleteBusinessHourDTO:
     properties:
-      business_hour:
+      businessHour:
         $ref: '#/definitions/store.BusinessHours'
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
@@ -135,28 +134,28 @@ definitions:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      payment_method:
+      paymentMethod:
         $ref: '#/definitions/store.PaymentMethod'
     required:
     - id
-    - payment_method
+    - paymentMethod
     type: object
   store.BusinessHours:
     properties:
-      closing_time:
+      closingTime:
         example: "15:00"
         type: string
-      opening_time:
+      openingTime:
         example: "09:00"
         type: string
-      week_day:
+      weekDay:
         example: 1
         maximum: 6
         minimum: 0
         type: integer
     required:
-    - closing_time
-    - opening_time
+    - closingTime
+    - openingTime
     type: object
   store.CreateNewStoreDTO:
     properties:
@@ -203,6 +202,94 @@ definitions:
     - Pix
     - Cash
     - Bitcoin
+  store.QueryStore:
+    properties:
+      address:
+        $ref: '#/definitions/address.Address'
+      businessHours:
+        items:
+          $ref: '#/definitions/store.BusinessHours'
+        type: array
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      headerImage:
+        example: https://example.com/header.jpg
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      paymentMethods:
+        items:
+          $ref: '#/definitions/store.PaymentMethod'
+        type: array
+      phone:
+        example: "+5511997590670"
+        type: string
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - businessHours
+    - description
+    - id
+    - name
+    - paymentMethods
+    - phone
+    - score
+    - type
+    type: object
+  store.QueryStoreList:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      neighborhood:
+        example: Downtown
+        maxLength: 25
+        type: string
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
+    required:
+    - id
+    - name
+    - neighborhood
+    - score
+    - type
+    type: object
   store.SetActiveDTO:
     properties:
       active:
@@ -219,11 +306,84 @@ definitions:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      is_open:
+      isOpen:
         example: true
         type: boolean
     required:
     - id
+    type: object
+  store.Store:
+    properties:
+      active:
+        example: true
+        type: boolean
+      address:
+        $ref: '#/definitions/address.Address'
+      businessHours:
+        items:
+          $ref: '#/definitions/store.BusinessHours'
+        type: array
+      cnpj:
+        example: "12345678000190"
+        type: string
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      headerImage:
+        example: https://example.com/header.jpg
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      ownerID:
+        example: 5692562784252
+        type: integer
+      paymentMethods:
+        items:
+          $ref: '#/definitions/store.PaymentMethod'
+        type: array
+      phone:
+        example: "+5511997590670"
+        type: string
+      productsID:
+        example:
+        - '[''prod1'''
+        - ' ''prod2'']'
+        items:
+          type: string
+        type: array
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - businessHours
+    - cnpj
+    - description
+    - id
+    - name
+    - ownerID
+    - paymentMethods
+    - phone
+    - productsID
+    - score
+    - type
     type: object
   store.Type:
     enum:
@@ -430,6 +590,107 @@ paths:
       summary: Update existing customer profile
       tags:
       - Customer Profile Management
+  /v1/customer/address:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an address to customer
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Address Model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/address.Address'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Address removed from user
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden - insufficient permissions
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Customer profile not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Remove an address to customer
+      tags:
+      - Customer Profile Management
+    post:
+      consumes:
+      - application/json
+      description: Add new address to customer
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Address Model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/address.Address'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Address added to user
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden - insufficient permissions
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Customer profile not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Add new address to customer
+      tags:
+      - Customer Profile Management
   /v1/owner:
     post:
       consumes:
@@ -476,6 +737,47 @@ paths:
       tags:
       - Owner
   /v1/owner/store:
+    get:
+      description: Get a store by ID
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store model
+          schema:
+            $ref: '#/definitions/store.Store'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Get a store by ID
+      tags:
+      - Store Management
     post:
       consumes:
       - application/json
@@ -574,6 +876,79 @@ paths:
       tags:
       - Store Management
   /v1/store:
+    get:
+      description: Get a stores by Filter
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: IsOpen
+        in: query
+        name: isOpen
+        required: true
+        type: string
+      - description: Score
+        in: query
+        name: score
+        required: true
+        type: integer
+      - description: Store Type
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: City
+        in: query
+        name: city
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: Items per page
+        in: query
+        name: maxItems
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query Store model
+          schema:
+            items:
+              $ref: '#/definitions/store.QueryStoreList'
+            type: array
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Get a stores by Filter
+      tags:
+      - Store
     put:
       consumes:
       - application/json
@@ -621,11 +996,53 @@ paths:
       summary: Update existing store profile
       tags:
       - Store Management
+  /v1/store/:id:
+    get:
+      description: Get a store by ID
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query Store model
+          schema:
+            $ref: '#/definitions/store.QueryStore'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Get a store by ID
+      tags:
+      - Store
   /v1/store/{id}/header-image:
     post:
       consumes:
       - multipart/form-data
-      description: Change store profile image
+      description: Change store header image
       parameters:
       - description: Bearer authentication token
         in: header
@@ -665,7 +1082,7 @@ paths:
             $ref: '#/definitions/xerrors.CustomError'
       security:
       - BearerAuth: []
-      summary: Change store profile image
+      summary: Change store header image
       tags:
       - Store Management
   /v1/store/active:

@@ -2,13 +2,12 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	_ "github.com/lib/pq"
 	"log"
 	"log/slog"
 	"os"
-	"strings"
-
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -46,7 +45,7 @@ func PopulateLocalDatabase() error {
 
 func createStringConn() string {
 	dbHost := "localhost"
-	dbPort := "5435"
+	dbPort := "5432"
 	dbUsername := "cardapiogo"
 	dbPassword := "cardapiogo"
 	dbName := "postgres"
@@ -69,27 +68,27 @@ func getSQLDBConnection(connStr string) (*sql.DB, error) {
 }
 
 func getMocks() []string {
-	files, err := os.ReadDir("internal/infrastructure/database/sql/mocks")
+	files, err := os.ReadDir("test/data")
 	if err != nil {
 		panic(err)
 	}
 	filesPath := make([]string, len(files))
 	for i, v := range files {
-		filesPath[i] = strings.Replace(v.Name(), ".sql", "", -1)
+		filesPath[i] = fmt.Sprintf("test/data/%s", v.Name())
 	}
-	log.Print(filesPath)
 	return filesPath
 }
 
 func executeSQLFile(db *sql.DB, mock string) error {
-	query, err := os.ReadFile(fmt.Sprintf("internal/infrastructure/database/sql/mocks/%v.sql", mock))
+	query, err := os.ReadFile(mock)
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("erro ao ler mock %v: %w", mock, err)
 	}
 	_, err = db.Exec(string(query))
 	if err != nil {
-		log.Println(err)
+		errJson, _ := json.Marshal(err)
+		log.Println(string(errJson))
 		return fmt.Errorf("erro ao executar o mock %v: %v", mock, err)
 	}
 	log.Printf("Mock %v adicionado com sucesso\n", mock)

@@ -76,7 +76,7 @@ type Querier interface {
 	FindPaymentMethodsByStoreID(ctx context.Context, id pgtype.UUID) ([]PaymentMethod, error)
 	//FindProductByID
 	//
-	//  SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.name,
+	//  SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
 	//         i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
 	//  FROM product i
 	//  WHERE i.id = $1
@@ -106,11 +106,11 @@ type Querier interface {
 	//      s.city, s.state, s.postal_code, s.latitude, s.longitude,
 	//      s.country, s.created_at, s.updated_at, s.deleted_at,
 	//      COALESCE(
-	//          ARRAY_AGG(rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
+	//          ARRAY_AGG(DISTINCT rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
 	//                      '{}'::text[]
 	//      )::text[] AS business_hours,
 	//      COALESCE(
-	//          ARRAY_AGG(rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
+	//          ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
 	//                      '{}'::"PaymentMethod"[]
 	//      )::text[] AS payment_methods
 	//  FROM store s
@@ -124,6 +124,112 @@ type Querier interface {
 	//      s.city, s.state, s.postal_code, s.latitude, s.longitude,
 	//      s.country, s.created_at, s.updated_at, s.deleted_at
 	FindStoreByID(ctx context.Context, id pgtype.UUID) (FindStoreByIDRow, error)
+	//                    latitude, longitude, country, created_at, updated_at)
+	// -- name: FindCustomerByID :many
+	// SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone, a.address_line_1, a.address_line_2,
+	//        a.neighborhood, a.city, a.state, a.postal_code, a.country, o.id
+	// FROM customer c
+	// LEFT JOIN address a on c.id = a.customer_id
+	// LEFT JOIN "order" o on c.id = o.customer_id;
+	//
+	// -- name: SaveCustomer :exec
+	// INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
+	//     VALUES ($1, $2, $3, $3, $5, $6,
+	//             NOW() AT TIME ZONE 'UTC',
+	//             NOW() AT TIME ZONE 'UTC',
+	//             NULL)
+	//     ON CONFLICT (id) DO UPDATE
+	// SET
+	//     name = $2,
+	//     last_name = $3,
+	//     cpf = $4,
+	//     email = $5,
+	//     phone = $6;
+	// -- name: CreateStore :exec
+	// INSERT INTO store (id, cpf_cnpj, owner_id, name, active, phone, score, type,
+	//                    address_line_1, address_line_2, neighborhood, city, state, postal_code,
+	//                    latitude, longitude, country, created_at, updated_at)
+	// VALUES(
+	//        $1,
+	//        $2,
+	//        $3,
+	//        $4,
+	//        $5,
+	//        $6,
+	//        $7,
+	//        $8,
+	//        $9,
+	//        $10,
+	//        $11,
+	//        $12,
+	//        $13,
+	//        $14,
+	//        $15,
+	//        $16,
+	//        $17,
+	//        NOW() AT TIME ZONE 'UTC',
+	//        NOW() AT TIME ZONE 'UTC');
+	//
+	// -- name: UpdateStore :exec
+	// UPDATE store
+	//   SET
+	//     name = $3,
+	//     phone = $4,
+	//     type = $5,
+	//     address_line_1 = $6,
+	//     address_line_2 = $7,
+	//     neighborhood = $8,
+	//     city = $9,
+	//     state = $10,
+	//     postal_code = $11,
+	//     country = $12,
+	//     updated_at = NOW() AT TIME ZONE 'UTC'
+	// WHERE id = $1 AND owner_id = $2;
+	//
+	// -- name: SetProfileImage :exec
+	// UPDATE store
+	//   SET
+	//     profile_image = $2
+	// WHERE id = $1;
+	//
+	// -- name: SetHeaderImage :exec
+	// UPDATE store
+	//   SET
+	//     header_image = $2
+	// WHERE id = $1;
+	//
+	// -- name: IsOwner :one
+	// SELECT EXISTS(SELECT 1 FROM store WHERE id = $1 AND owner_id = $2);
+	//
+	// -- name: GetStoreByID :one
+	// SELECT s.id, s.name, s.phone, s.score, s.type, s.address_line_1,
+	// s.address_line_2, s.neighborhood, s.city, s.state, s.country, s.profile_image, s.header_image
+	// FROM store s
+	// WHERE id = $1;
+	//
+	// -- name: GetStoreBusinessHoursByID :many
+	// SELECT week_day, timezone, opening_time, closing_time
+	// FROM business_hour
+	// WHERE store_id = $1
+	// ORDER BY week_day;
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//  SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+	//  FROM store s
+	//  WHERE 1 = 1
+	//      AND (COALESCE(NULLIF($1::text, ''), s.name) IS NULL OR s.name ILIKE '%' || $1::text || '%')
+	//      AND (NULLIF($2::text, '') IS NULL OR s.type::text = $2::text)
+	//      AND (NULLIF($3::text, '') IS NULL OR s.city::text = $3::text)
+	//      AND ($4::bool IS NULL OR s.is_open = $4::bool)
+	//  ORDER BY s.score DESC, s.type
+	//  OFFSET $5 LIMIT $6
+	FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error)
 	//IsOwner
 	//
 	//  SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
@@ -181,10 +287,10 @@ type Querier interface {
 	SaveOwner(ctx context.Context, arg SaveOwnerParams) error
 	//SaveProduct
 	//
-	//  INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, name, description,
+	//  INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, tag, name, description,
 	//                       stock_quantity, score, image_url, details, price, promotional_price, created_at, updated_at)
 	//  VALUES ($1, $2, $3, $4, $5, $6, $7,
-	//          $8, $9, $10, $11, $12, $13, $14,
+	//          $8, $9, $10, $11, $12, $13, $14, $15,
 	//          NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC')
 	//  ON CONFLICT (id) DO UPDATE
 	//  SET
@@ -192,6 +298,7 @@ type Querier interface {
 	//      active_for_sale = excluded.active_for_sale,
 	//      promo_active = excluded.promo_active,
 	//      type = excluded.type,
+	//      tag = excluded.tag,
 	//      name = excluded.name,
 	//      description = excluded.description,
 	//      stock_quantity = excluded.stock_quantity,

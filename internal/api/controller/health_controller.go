@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/application/api/middleware"
+	"github.com/oprimogus/cardapiogo/internal/api/middleware"
 	"github.com/oprimogus/cardapiogo/internal/config"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

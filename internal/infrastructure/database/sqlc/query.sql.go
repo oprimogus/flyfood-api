@@ -194,7 +194,7 @@ func (q *Queries) FindPaymentMethodsByStoreID(ctx context.Context, id pgtype.UUI
 }
 
 const findProductByID = `-- name: FindProductByID :one
-SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.name,
+SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
        i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
 FROM product i
 WHERE i.id = $1
@@ -207,6 +207,7 @@ type FindProductByIDRow struct {
 	ActiveForSale    bool        `db:"active_for_sale" json:"active_for_sale"`
 	PromoActive      bool        `db:"promo_active" json:"promo_active"`
 	Type             ProductType `db:"type" json:"type"`
+	Tag              string      `db:"tag" json:"tag"`
 	Name             string      `db:"name" json:"name"`
 	Description      string      `db:"description" json:"description"`
 	StockQuantity    int32       `db:"stock_quantity" json:"stock_quantity"`
@@ -219,7 +220,7 @@ type FindProductByIDRow struct {
 
 // FindProductByID
 //
-//	SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.name,
+//	SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
 //	       i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
 //	FROM product i
 //	WHERE i.id = $1
@@ -233,6 +234,7 @@ func (q *Queries) FindProductByID(ctx context.Context, id pgtype.UUID) (FindProd
 		&i.ActiveForSale,
 		&i.PromoActive,
 		&i.Type,
+		&i.Tag,
 		&i.Name,
 		&i.Description,
 		&i.StockQuantity,
@@ -292,11 +294,11 @@ SELECT
     s.city, s.state, s.postal_code, s.latitude, s.longitude,
     s.country, s.created_at, s.updated_at, s.deleted_at,
     COALESCE(
-        ARRAY_AGG(rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
+        ARRAY_AGG(DISTINCT rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
                     '{}'::text[]
     )::text[] AS business_hours,
     COALESCE(
-        ARRAY_AGG(rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
+        ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
                     '{}'::"PaymentMethod"[]
     )::text[] AS payment_methods
 FROM store s
@@ -358,11 +360,11 @@ type FindStoreByIDRow struct {
 //	    s.city, s.state, s.postal_code, s.latitude, s.longitude,
 //	    s.country, s.created_at, s.updated_at, s.deleted_at,
 //	    COALESCE(
-//	        ARRAY_AGG(rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
+//	        ARRAY_AGG(DISTINCT rbh.weekday || ' ' || rbh.open_hour || ' ' || rbh.closing_hour) FILTER (WHERE rbh.id IS NOT NULL),
 //	                    '{}'::text[]
 //	    )::text[] AS business_hours,
 //	    COALESCE(
-//	        ARRAY_AGG(rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
+//	        ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
 //	                    '{}'::"PaymentMethod"[]
 //	    )::text[] AS payment_methods
 //	FROM store s
@@ -406,6 +408,196 @@ func (q *Queries) FindStoreByID(ctx context.Context, id pgtype.UUID) (FindStoreB
 		&i.PaymentMethods,
 	)
 	return i, err
+}
+
+const findStoresByFilter = `-- name: FindStoresByFilter :many
+
+
+
+
+
+
+SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+FROM store s
+WHERE 1 = 1
+    AND (COALESCE(NULLIF($1::text, ''), s.name) IS NULL OR s.name ILIKE '%' || $1::text || '%')
+    AND (NULLIF($2::text, '') IS NULL OR s.type::text = $2::text)
+    AND (NULLIF($3::text, '') IS NULL OR s.city::text = $3::text)
+    AND ($4::bool IS NULL OR s.is_open = $4::bool)
+ORDER BY s.score DESC, s.type
+OFFSET $5 LIMIT $6
+`
+
+type FindStoresByFilterParams struct {
+	Name        string      `db:"name" json:"name"`
+	Type        string      `db:"type" json:"type"`
+	City        string      `db:"city" json:"city"`
+	IsOpen      pgtype.Bool `db:"is_open" json:"is_open"`
+	OffsetValue int32       `db:"offset_value" json:"offset_value"`
+	LimitItems  int32       `db:"limit_items" json:"limit_items"`
+}
+
+type FindStoresByFilterRow struct {
+	ID           pgtype.UUID `db:"id" json:"id"`
+	Name         string      `db:"name" json:"name"`
+	Score        int32       `db:"score" json:"score"`
+	IsOpen       bool        `db:"is_open" json:"is_open"`
+	Type         StoreType   `db:"type" json:"type"`
+	Neighborhood string      `db:"neighborhood" json:"neighborhood"`
+	Latitude     pgtype.Text `db:"latitude" json:"latitude"`
+	Longitude    pgtype.Text `db:"longitude" json:"longitude"`
+	ProfileImage pgtype.Text `db:"profile_image" json:"profile_image"`
+}
+
+//	latitude, longitude, country, created_at, updated_at)
+//
+// -- name: FindCustomerByID :many
+// SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone, a.address_line_1, a.address_line_2,
+//
+//	a.neighborhood, a.city, a.state, a.postal_code, a.country, o.id
+//
+// FROM customer c
+// LEFT JOIN address a on c.id = a.customer_id
+// LEFT JOIN "order" o on c.id = o.customer_id;
+//
+// -- name: SaveCustomer :exec
+// INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
+//
+//	VALUES ($1, $2, $3, $3, $5, $6,
+//	        NOW() AT TIME ZONE 'UTC',
+//	        NOW() AT TIME ZONE 'UTC',
+//	        NULL)
+//	ON CONFLICT (id) DO UPDATE
+//
+// SET
+//
+//	name = $2,
+//	last_name = $3,
+//	cpf = $4,
+//	email = $5,
+//	phone = $6;
+//
+// -- name: CreateStore :exec
+// INSERT INTO store (id, cpf_cnpj, owner_id, name, active, phone, score, type,
+//
+//	address_line_1, address_line_2, neighborhood, city, state, postal_code,
+//	latitude, longitude, country, created_at, updated_at)
+//
+// VALUES(
+//
+//	$1,
+//	$2,
+//	$3,
+//	$4,
+//	$5,
+//	$6,
+//	$7,
+//	$8,
+//	$9,
+//	$10,
+//	$11,
+//	$12,
+//	$13,
+//	$14,
+//	$15,
+//	$16,
+//	$17,
+//	NOW() AT TIME ZONE 'UTC',
+//	NOW() AT TIME ZONE 'UTC');
+//
+// -- name: UpdateStore :exec
+// UPDATE store
+//
+//	SET
+//	  name = $3,
+//	  phone = $4,
+//	  type = $5,
+//	  address_line_1 = $6,
+//	  address_line_2 = $7,
+//	  neighborhood = $8,
+//	  city = $9,
+//	  state = $10,
+//	  postal_code = $11,
+//	  country = $12,
+//	  updated_at = NOW() AT TIME ZONE 'UTC'
+//
+// WHERE id = $1 AND owner_id = $2;
+//
+// -- name: SetProfileImage :exec
+// UPDATE store
+//
+//	SET
+//	  profile_image = $2
+//
+// WHERE id = $1;
+//
+// -- name: SetHeaderImage :exec
+// UPDATE store
+//
+//	SET
+//	  header_image = $2
+//
+// WHERE id = $1;
+//
+// -- name: IsOwner :one
+// SELECT EXISTS(SELECT 1 FROM store WHERE id = $1 AND owner_id = $2);
+//
+// -- name: GetStoreByID :one
+// SELECT s.id, s.name, s.phone, s.score, s.type, s.address_line_1,
+// s.address_line_2, s.neighborhood, s.city, s.state, s.country, s.profile_image, s.header_image
+// FROM store s
+// WHERE id = $1;
+//
+// -- name: GetStoreBusinessHoursByID :many
+// SELECT week_day, timezone, opening_time, closing_time
+// FROM business_hour
+// WHERE store_id = $1
+// ORDER BY week_day;
+//
+//	SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+//	FROM store s
+//	WHERE 1 = 1
+//	    AND (COALESCE(NULLIF($1::text, ''), s.name) IS NULL OR s.name ILIKE '%' || $1::text || '%')
+//	    AND (NULLIF($2::text, '') IS NULL OR s.type::text = $2::text)
+//	    AND (NULLIF($3::text, '') IS NULL OR s.city::text = $3::text)
+//	    AND ($4::bool IS NULL OR s.is_open = $4::bool)
+//	ORDER BY s.score DESC, s.type
+//	OFFSET $5 LIMIT $6
+func (q *Queries) FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error) {
+	rows, err := q.db.Query(ctx, findStoresByFilter,
+		arg.Name,
+		arg.Type,
+		arg.City,
+		arg.IsOpen,
+		arg.OffsetValue,
+		arg.LimitItems,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindStoresByFilterRow
+	for rows.Next() {
+		var i FindStoresByFilterRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Score,
+			&i.IsOpen,
+			&i.Type,
+			&i.Neighborhood,
+			&i.Latitude,
+			&i.Longitude,
+			&i.ProfileImage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const isOwner = `-- name: IsOwner :one
@@ -588,10 +780,10 @@ func (q *Queries) SaveOwner(ctx context.Context, arg SaveOwnerParams) error {
 }
 
 const saveProduct = `-- name: SaveProduct :exec
-INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, name, description,
+INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, tag, name, description,
                      stock_quantity, score, image_url, details, price, promotional_price, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13, $14,
+        $8, $9, $10, $11, $12, $13, $14, $15,
         NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC')
 ON CONFLICT (id) DO UPDATE
 SET
@@ -599,6 +791,7 @@ SET
     active_for_sale = excluded.active_for_sale,
     promo_active = excluded.promo_active,
     type = excluded.type,
+    tag = excluded.tag,
     name = excluded.name,
     description = excluded.description,
     stock_quantity = excluded.stock_quantity,
@@ -618,6 +811,7 @@ type SaveProductParams struct {
 	ActiveForSale    bool        `db:"active_for_sale" json:"active_for_sale"`
 	PromoActive      bool        `db:"promo_active" json:"promo_active"`
 	Type             ProductType `db:"type" json:"type"`
+	Tag              string      `db:"tag" json:"tag"`
 	Name             string      `db:"name" json:"name"`
 	Description      string      `db:"description" json:"description"`
 	StockQuantity    int32       `db:"stock_quantity" json:"stock_quantity"`
@@ -630,10 +824,10 @@ type SaveProductParams struct {
 
 // SaveProduct
 //
-//	INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, name, description,
+//	INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, tag, name, description,
 //	                     stock_quantity, score, image_url, details, price, promotional_price, created_at, updated_at)
 //	VALUES ($1, $2, $3, $4, $5, $6, $7,
-//	        $8, $9, $10, $11, $12, $13, $14,
+//	        $8, $9, $10, $11, $12, $13, $14, $15,
 //	        NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC')
 //	ON CONFLICT (id) DO UPDATE
 //	SET
@@ -641,6 +835,7 @@ type SaveProductParams struct {
 //	    active_for_sale = excluded.active_for_sale,
 //	    promo_active = excluded.promo_active,
 //	    type = excluded.type,
+//	    tag = excluded.tag,
 //	    name = excluded.name,
 //	    description = excluded.description,
 //	    stock_quantity = excluded.stock_quantity,
@@ -659,6 +854,7 @@ func (q *Queries) SaveProduct(ctx context.Context, arg SaveProductParams) error 
 		arg.ActiveForSale,
 		arg.PromoActive,
 		arg.Type,
+		arg.Tag,
 		arg.Name,
 		arg.Description,
 		arg.StockQuantity,

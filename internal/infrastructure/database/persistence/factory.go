@@ -1,13 +1,21 @@
 package persistence
 
-import postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
+import (
+	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
+)
 
 type RepositoryFactory struct {
 	db *postgresDB.Database
+	q  sqlc.Querier
 }
 
 func NewRepositoryFactory(db *postgresDB.Database) RepositoryFactory {
-	return RepositoryFactory{db}
+	return RepositoryFactory{db: db, q: sqlc.New(db.GetDB())}
+}
+
+func (f RepositoryFactory) NewSQLC() sqlc.Querier {
+	return f.q
 }
 
 func (f RepositoryFactory) NewCustomerRepository() CustomerRepository {

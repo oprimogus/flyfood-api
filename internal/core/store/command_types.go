@@ -2,8 +2,32 @@ package store
 
 import (
 	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/core/store"
 )
+
+type Type string
+
+const (
+	Restaurant  Type = "RESTAURANT"
+	Pharmacy    Type = "PHARMACY"
+	Tobbaco     Type = "TOBBACO"
+	Market      Type = "MARKET"
+	Convenience Type = "CONVENIENCE"
+	Pub         Type = "PUB"
+)
+
+func IsValidType(storeType string) bool {
+	switch Type(storeType) {
+	case Restaurant,
+		Pharmacy,
+		Tobbaco,
+		Market,
+		Convenience,
+		Pub:
+		return true
+	default:
+		return false
+	}
+}
 
 type CreateNewStoreDTO struct {
 	CNPJ        string          `json:"cnpj" validate:"required,cnpj" example:"12345678000190"`
@@ -11,7 +35,7 @@ type CreateNewStoreDTO struct {
 	Description string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
 	Phone       string          `json:"phone" validate:"required,phone" example:"+5511997590670"`
 	Address     address.Address `json:"address" validate:"required"`
-	Type        store.Type      `json:"type" validate:"required,storeType" example:"RESTAURANT"`
+	Type        Type            `json:"type" validate:"required,storeType" example:"RESTAURANT"`
 }
 
 type UpdateStoreDTO struct {
@@ -20,22 +44,22 @@ type UpdateStoreDTO struct {
 	Description string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
 	Phone       string          `json:"phone" validate:"required,phone" example:"+5511997590670"`
 	Address     address.Address `json:"address" validate:"required"`
-	Type        store.Type      `json:"type" validate:"required,storeType" example:"RESTAURANT"`
+	Type        Type            `json:"type" validate:"required,storeType" example:"RESTAURANT"`
 }
 
 type AddOrDeleteBusinessHourDTO struct {
-	StoreID       string              `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	BusinessHours store.BusinessHours `json:"business_hour"`
+	StoreID       string        `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	BusinessHours BusinessHours `json:"businessHour"`
 }
 
 type AddOrDeletePaymentMethodDTO struct {
-	StoreID        string              `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	PaymentMethods store.PaymentMethod `json:"payment_method" validate:"required,paymentMethod"`
+	StoreID        string        `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	PaymentMethods PaymentMethod `json:"paymentMethod" validate:"required,paymentMethod"`
 }
 
 type SetOpenStateDTO struct {
 	StoreID string `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	IsOpen  bool   `json:"is_open" validate:"boolean" example:"true"`
+	IsOpen  bool   `json:"isOpen" validate:"boolean" example:"true"`
 }
 
 type SetActiveDTO struct {

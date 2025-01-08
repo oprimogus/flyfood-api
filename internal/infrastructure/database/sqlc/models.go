@@ -63,10 +63,11 @@ func (ns NullOrderStatus) Value() (driver.Value, error) {
 type PaymentMethod string
 
 const (
-	PaymentMethodCREDITDEBIT PaymentMethod = "CREDITDEBIT"
-	PaymentMethodCASH        PaymentMethod = "CASH"
-	PaymentMethodPIX         PaymentMethod = "PIX"
-	PaymentMethodBTC         PaymentMethod = "BTC"
+	PaymentMethodCREDIT PaymentMethod = "CREDIT"
+	PaymentMethodDEBIT  PaymentMethod = "DEBIT"
+	PaymentMethodCASH   PaymentMethod = "CASH"
+	PaymentMethodPIX    PaymentMethod = "PIX"
+	PaymentMethodBTC    PaymentMethod = "BTC"
 )
 
 func (e *PaymentMethod) Scan(src interface{}) error {
@@ -258,6 +259,7 @@ type Product struct {
 	ActiveForSale    bool             `db:"active_for_sale" json:"active_for_sale"`
 	PromoActive      bool             `db:"promo_active" json:"promo_active"`
 	Type             ProductType      `db:"type" json:"type"`
+	Tag              string           `db:"tag" json:"tag"`
 	Name             string           `db:"name" json:"name"`
 	Description      string           `db:"description" json:"description"`
 	StockQuantity    int32            `db:"stock_quantity" json:"stock_quantity"`

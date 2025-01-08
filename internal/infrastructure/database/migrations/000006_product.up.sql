@@ -10,6 +10,7 @@ CREATE TABLE "product" (
     "active_for_sale" bool NOT NULL,
     "promo_active" bool NOT NULL,
     "type" "ProductType" NOT NULL,
+    "tag" varchar NOT NULL,
     "name" varchar NOT NULL,
     "description" varchar NOT NULL,
     "stock_quantity" int NOT NULL,

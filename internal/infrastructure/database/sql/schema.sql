@@ -51,8 +51,8 @@ CREATE TYPE "StoreType" AS ENUM (
     );
 
 CREATE TYPE "PaymentMethod" AS ENUM (
-    'CREDIT'
-        'DEBIT',
+    'CREDIT',
+    'DEBIT',
     'CASH',
     'PIX',
     'BTC'
@@ -116,11 +116,12 @@ CREATE TYPE "ProductType" AS ENUM (
 
 CREATE TABLE "product" (
                            "id" uuid PRIMARY KEY,
-                           "store_id" uuid,
+                           "store_id" uuid NOT NULL,
                            "sku" varchar,
                            "active_for_sale" bool NOT NULL,
                            "promo_active" bool NOT NULL,
                            "type" "ProductType" NOT NULL,
+                           "tag" varchar NOT NULL,
                            "name" varchar NOT NULL,
                            "description" varchar NOT NULL,
                            "stock_quantity" int NOT NULL,

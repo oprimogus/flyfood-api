@@ -76,3 +76,6 @@ migration-down:
 migration-fix: 
 	@read -p "Enter migration version: " version; \
 	migrate -path internal/infrastructure/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
+
+infra:
+	go run scripts/create_infra.go

@@ -107,16 +107,16 @@ func (s *ProductRepositoryTestSuite) TestFindByIDAndSave() {
 	// Create product
 	p, err := product.NewProduct(
 		mockStore.ID,
-		"product one", "your desc", "P001", 2500, product.Food)
+		"product one", "product tag", "your desc", "P001", 2500, product.Food)
 	assert.NoError(s.T(), err)
 
 	// finally save product
-	err = s.productRepository.Save(ctx, &p)
+	err = s.productRepository.Save(ctx, p)
 	assert.NoError(s.T(), err)
 
 	//finally do test
 	persistentProduct, err := s.productRepository.FindByID(ctx, p.ID)
 	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), &p, persistentProduct)
+	assert.Equal(s.T(), p, persistentProduct)
 
 }

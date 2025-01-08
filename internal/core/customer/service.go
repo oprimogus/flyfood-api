@@ -3,23 +3,22 @@ package customer
 import (
 	"context"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/core/customer"
 )
 
 type Service struct {
-	r customer.Repository
+	r Repository
 }
 
-func NewService(r customer.Repository) Service {
+func NewService(r Repository) Service {
 	return Service{r}
 }
 
-func (s *Service) FindCustomer(ctx context.Context, id int) (*customer.Customer, error) {
+func (s *Service) FindCustomer(ctx context.Context, id int) (*Customer, error) {
 	return s.r.FindByID(ctx, id)
 }
 
-func (s *Service) CreateCustomer(ctx context.Context, dto CreateProfileDTO) (*customer.Customer, error) {
-	c, err := customer.NewCustomer(dto.ID, dto.Name, dto.LastName, dto.CPF, dto.Email, dto.Phone)
+func (s *Service) CreateCustomer(ctx context.Context, dto CreateProfileDTO) (*Customer, error) {
+	c, err := NewCustomer(dto.ID, dto.Name, dto.LastName, dto.CPF, dto.Email, dto.Phone)
 	if err != nil {
 		return nil, err
 	}

@@ -34,27 +34,28 @@ func IsValidType(value string) bool {
 
 type Product struct {
 	ID               string                 `json:"id" validate:"required,uuid"`
-	StoreID          string                 `json:"store_id" validate:"required,uuid"`
-	SKU              string                 `json:"SKU"`
+	StoreID          string                 `json:"store_id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	SKU              string                 `json:"SKU" example:"XBOO168"`
 	ActiveForSale    bool                   `json:"active" validate:"boolean"`
 	PromoActive      bool                   `json:"promo_active" validate:"boolean"`
-	Type             Type                   `json:"type" validate:"required,productType"`
-	Name             string                 `json:"name" validate:"required,lte=25,gte=3"`
-	Description      string                 `json:"description" validate:"required,lte=255"`
+	Type             Type                   `json:"type" validate:"required,productType" example:"FOOD"`
+	Tag              string                 `json:"tag" validate:"required" example:"Promotional 1"`
+	Name             string                 `json:"name" validate:"required,lte=25,gte=3" example:"Pizza Portuguesa"`
+	Description      string                 `json:"description" validate:"required,lte=255" example:"Pizza com queijo, azeitona, presunto"`
 	StockQuantity    int                    `json:"stock_quantity" validate:"number"`
 	Score            int                    `json:"score" validate:"number,required"`
 	Image            string                 `json:"image"`
 	Details          map[string]interface{} `json:"details"`
-	Price            int                    `json:"price" validate:"required,number,gt=0"`
+	Price            int                    `json:"price" validate:"required,number,gt=0" example:"5990"`
 	PromotionalPrice int                    `json:"promotional_price" validate:"number,gte=0"`
 }
 
-func NewProduct(storeID, name, description, sku string, price int, productType Type) (Product, error) {
+func NewProduct(storeID, name, tag, description, sku string, price int, productType Type) (*Product, error) {
 	uuidV7, err := uuid.NewV7()
 	if err != nil {
-		return Product{}, fmt.Errorf("fail on create  product id: %w", err)
+		return nil, fmt.Errorf("fail on create  product id: %w", err)
 	}
-	newProduct := Product{
+	newProduct := &Product{
 		ID:            uuidV7.String(),
 		StoreID:       storeID,
 		SKU:           sku,
@@ -63,11 +64,12 @@ func NewProduct(storeID, name, description, sku string, price int, productType T
 		Name:          name,
 		Description:   description,
 		Type:          productType,
+		Tag:           tag,
 		Price:         price,
 		Score:         defaultScore,
 	}
 	if err := newProduct.Validate(); err != nil {
-		return Product{}, err
+		return nil, err
 	}
 	return newProduct, nil
 }
@@ -120,6 +122,11 @@ func (p *Product) ChangePrice(price int) error {
 		return ErrPriceLessThanPromoPrice
 	}
 	p.Price = price
+	return p.Validate()
+}
+
+func (p *Product) ChangeTag(newTag string) error {
+	p.Tag = newTag
 	return p.Validate()
 }
 

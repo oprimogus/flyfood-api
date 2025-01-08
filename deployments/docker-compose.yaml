@@ -151,6 +151,7 @@ services:
       # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEBUG=${DEBUG:-0}
       - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_API_KEY}
+      - PERSISTENCE=1
     volumes:
       - localstack_data:/var/lib/localstack"
       - localstack_data:/var/run/docker.sock"

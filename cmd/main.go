@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/application/api"
+	"github.com/oprimogus/cardapiogo/internal/api"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"

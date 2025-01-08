@@ -74,24 +74,6 @@ func NewValidator(locale string) (*Validator, error) {
 	return validatorInstance, nil
 }
 
-func GetInstance(locale string) *Validator {
-	if validatorService == nil {
-		v, err := NewValidator(locale)
-		if err != nil {
-			panic(err)
-		}
-		validatorService = v
-	}
-	if validatorService.locale != locale {
-		v, err := NewValidator(locale)
-		if err != nil {
-			panic(err)
-		}
-		validatorService = v
-	}
-	return validatorService
-}
-
 func GetPtInstance() *Validator {
 	if validatorService == nil {
 		v, err := NewValidator("pt")
@@ -107,13 +89,13 @@ func (v *Validator) Validate(i interface{}) error {
 	if err := v.Validator.Struct(i); err != nil {
 		var errs validator.ValidationErrors
 		if errors.As(err, &errs) {
-			mapErrFields := make([]ErrField, len(errs))
+			mapErrFields := make([]FieldError, len(errs))
 			for i, value := range errs {
 				input, ok := value.Value().(string)
 				if !ok {
 					input = ""
 				}
-				mapErrFields[i] = ErrField{
+				mapErrFields[i] = FieldError{
 					Field:   value.Field(),
 					Input:   input,
 					Message: strings.Replace(value.Translate(v.translator), value.Field()+" ", "", 1),

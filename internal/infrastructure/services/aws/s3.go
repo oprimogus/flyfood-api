@@ -100,3 +100,19 @@ func (c *ClientS3) UploadFile(
 
 	return c.getPublicObjectUrl(bucketName, SouthEast1, objectKey), nil
 }
+
+func (c *ClientS3) RemoveFile(ctx context.Context, bucketName, objectKey string) error {
+	deleteObjectParams := &s3.DeleteObjectInput{
+		Bucket: &bucketName,
+		Key:    &objectKey,
+	}
+
+	result, err := c.s3.DeleteObject(ctx, deleteObjectParams)
+	if err != nil {
+		slog.ErrorContext(ctx, fmt.Sprintf("Couldn't delete object %v from S3: %v\n"))
+		return err
+	}
+	fmt.Println(result)
+
+	return nil
+}

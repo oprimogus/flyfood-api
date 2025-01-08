@@ -16,11 +16,19 @@ type CustomError struct {
 	Debug        interface{} `json:"debug,omitempty"`
 }
 
-type ErrField struct {
+type FieldError struct {
 	Field   string      `json:"field"`
 	Input   string      `json:"input"`
 	Message string      `json:"message"`
 	Debug   interface{} `json:"debug,omitempty"`
+}
+
+func (e *CustomError) Error() string {
+	return e.ErrorMessage
+}
+
+func (e *CustomError) StatusCode() int {
+	return e.Status
 }
 
 func New(traceID string, status int, message string, details ...interface{}) *CustomError {
@@ -35,14 +43,6 @@ func New(traceID string, status int, message string, details ...interface{}) *Cu
 	}
 
 	return err
-}
-
-func (e *CustomError) Error() string {
-	return e.ErrorMessage
-}
-
-func (e *CustomError) StatusCode() int {
-	return e.Status
 }
 
 func HandleError(err error, traceID string) *CustomError {

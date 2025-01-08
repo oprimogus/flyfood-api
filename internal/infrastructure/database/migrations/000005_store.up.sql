@@ -8,7 +8,7 @@ CREATE TYPE "StoreType" AS ENUM (
     );
 
 CREATE TYPE "PaymentMethod" AS ENUM (
-    'CREDIT'
+    'CREDIT',
     'DEBIT',
     'CASH',
     'PIX',

@@ -3,9 +3,9 @@ package controller
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/application/api/middleware"
-	"github.com/oprimogus/cardapiogo/internal/application/store"
+	"github.com/oprimogus/cardapiogo/internal/api/middleware"
 	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/cardapiogo/internal/core/store"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/zitadel"
@@ -16,12 +16,13 @@ import (
 )
 
 type storeController struct {
-	validator    *xvalidator.Validator
-	storeService store.Service
+	validator      *xvalidator.Validator
+	commandService store.CommandService
+	queryService   store.QueryService
 }
 
-func newStoreController(validator *xvalidator.Validator, storeService store.Service) storeController {
-	return storeController{validator: validator, storeService: storeService}
+func newStoreController(validator *xvalidator.Validator, command store.CommandService, query store.QueryService) storeController {
+	return storeController{validator: validator, commandService: command, queryService: query}
 }
 
 // createOwner godoc
@@ -49,7 +50,7 @@ func (c storeController) createOwner(w http.ResponseWriter, r *http.Request) {
 		HandleError(w, r, err)
 		return
 	}
-	err = c.storeService.NewOwner(r.Context(), userID)
+	err = c.commandService.NewOwner(r.Context(), userID)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -97,7 +98,7 @@ func (c storeController) createStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.storeService.CreateNewStore(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.CreateNewStore(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -137,7 +138,7 @@ func (c storeController) updateStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.storeService.Update(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.Update(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -176,7 +177,7 @@ func (c storeController) addBusinessHour(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = c.storeService.AddBusinessHour(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.AddBusinessHour(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -215,7 +216,7 @@ func (c storeController) removeBusinessHour(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = c.storeService.RemoveBusinessHour(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.RemoveBusinessHour(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -254,7 +255,7 @@ func (c storeController) addPaymentMethod(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = c.storeService.AddPaymentMethod(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.AddPaymentMethod(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -293,7 +294,7 @@ func (c storeController) removePaymentMethod(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = c.storeService.RemovePaymentMethod(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.RemovePaymentMethod(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -332,7 +333,7 @@ func (c storeController) openOrClose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.storeService.OpenOrCloseStore(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.OpenOrCloseStore(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -371,7 +372,7 @@ func (c storeController) activatedOrDeactivate(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = c.storeService.ActiveOrDeactivateStore(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.ActiveOrDeactivateStore(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -397,7 +398,7 @@ func (c storeController) activatedOrDeactivate(w http.ResponseWriter, r *http.Re
 //	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
 //	@Router			/v1/owner/store/{id}/profile-image [post]
 func (c storeController) changeProfileImage(w http.ResponseWriter, r *http.Request) {
-	file, _, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png", "image/jpg"})
+	file, ext, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png", "image/jpg"})
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -416,6 +417,7 @@ func (c storeController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 	params := store.UploadStoreImageDTO{
 		StoreID: storeID,
 		Image:   fileBytes,
+		Ext:     ext,
 	}
 
 	err = c.validator.Validate(params)
@@ -424,7 +426,7 @@ func (c storeController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = c.storeService.ChangeProfileImage(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.ChangeProfileImage(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -434,8 +436,8 @@ func (c storeController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 
 // changeHeaderImage godoc
 //
-//	@Summary		Change store profile image
-//	@Description	Change store profile image
+//	@Summary		Change store header image
+//	@Description	Change store header image
 //	@Tags			Store Management
 //	@Accept			multipart/form-data
 //	@Produce		json
@@ -478,7 +480,7 @@ func (c storeController) changeHeaderImage(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = c.storeService.ChangeHeaderImage(r.Context(), authCtx.UserID(), params)
+	err = c.commandService.ChangeHeaderImage(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -486,23 +488,181 @@ func (c storeController) changeHeaderImage(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 }
 
+// getOwnerStoreByID godoc
+//
+//	@Summary		Get a store by ID
+//	@Description	Get a store by ID
+//	@Tags			Store Management
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			Authorization	header		string				true	"Bearer authentication token"
+//	@Param			id				query		string				true	"Store ID"
+//	@Success		200				{object}	store.Store					"Store model"
+//	@Failure		400				{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
+//	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid status"
+//	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
+//	@Router			/v1/owner/store [get]
+func (c storeController) getOwnerStoreByID(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+	stID := queryParams.Get("id")
+
+	st, err := c.queryService.GetStoreByID(r.Context(), stID)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+	JSONResponse(w, http.StatusOK, st)
+}
+
+// getQueryStoreByID godoc
+//
+//	@Summary		Get a store by ID
+//	@Description	Get a store by ID
+//	@Tags			Store
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			Authorization	header		string				true	"Bearer authentication token"
+//	@Param			id				query		string				true	"Store ID"
+//	@Success		200				{object}	store.QueryStore					"Query Store model"
+//	@Failure		400				{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
+//	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid status"
+//	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
+//	@Router			/v1/store/:id [get]
+func (c storeController) getQueryStoreByID(w http.ResponseWriter, r *http.Request) {
+	stID := chi.URLParam(r, "id")
+
+	st, err := c.queryService.GetQueryStoreByID(r.Context(), stID)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+	JSONResponse(w, http.StatusOK, st)
+}
+
+// getQueryStoreListByFilter godoc
+//
+//	@Summary		Get a stores by Filter
+//	@Description	Get a stores by Filter
+//	@Tags			Store
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			Authorization		header		string				true	"Bearer authentication token"
+//	@Param			name				query		string				true	"Name"
+//	@Param			isOpen				query		string				true	"IsOpen"
+//	@Param			score				query		int					true	"Score"
+//	@Param			type				query		string				true	"Store Type"
+//	@Param			city				query		string				true	"City"
+//	@Param			page				query		string				true	"Page"
+//	@Param			maxItems			query		string				true	"Items per page"
+//	@Success		200				{object}	[]store.QueryStoreList					"Query Store model"
+//	@Failure		400				{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
+//	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid status"
+//	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
+//	@Router			/v1/store [get]
+func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *http.Request) {
+	var params store.QueryStoresInput
+	queryParams := r.URL.Query()
+
+	params.Name = queryParams.Get("name")
+	params.City = queryParams.Get("city")
+
+	typeStr := queryParams.Get("type")
+	if typeStr != "" {
+		params.Type = store.Type(typeStr)
+	}
+
+	isOpenStr := queryParams.Get("isOpen")
+	if isOpenStr != "" {
+		isOpen, err := strconv.ParseBool(isOpenStr)
+		if err != nil {
+			xerror := xvalidator.NewFieldError("isOpen", isOpenStr)
+			HandleError(w, r, xerror)
+			return
+		}
+		params.IsOpen = &isOpen
+	}
+
+	scoreStr := queryParams.Get("score")
+	if scoreStr != "" {
+		score, err := strconv.Atoi(scoreStr)
+		if err != nil {
+			xerror := xvalidator.NewFieldError("score", scoreStr)
+			HandleError(w, r, xerror)
+			return
+		}
+		params.Score = score
+	}
+
+	pageStr := queryParams.Get("page")
+	if pageStr != "" {
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			xerror := xvalidator.NewFieldError("page", pageStr)
+			HandleError(w, r, xerror)
+			return
+		}
+		params.Page = page
+	}
+
+	maxItemsStr := queryParams.Get("maxItems")
+	if maxItemsStr != "" {
+		maxItems, err := strconv.Atoi(maxItemsStr)
+		if err != nil {
+			xerror := xvalidator.NewFieldError("maxItems", maxItemsStr)
+			HandleError(w, r, xerror)
+			return
+		}
+		if maxItems > 50 {
+			params.MaxItems = 50
+		} else {
+			params.MaxItems = maxItems
+		}
+
+	}
+
+	err := c.validator.Validate(params)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+
+	st, err := c.queryService.GetStoreByFilter(r.Context(), params)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+	JSONResponse(w, http.StatusOK, st)
+}
+
 func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
 	basePath := config.GetInstance().Api.BasePath
 
 	validator := xvalidator.GetPtInstance()
 
-	service := store.NewService(
+	command := store.NewCommandService(
 		repoFactory.NewStoreRepository(),
 		repoFactory.NewCustomerRepository(),
 		services)
-	c := newStoreController(validator, service)
+	query := store.NewQueryService(repoFactory.NewStoreRepository(), repoFactory.NewSQLC())
+	c := newStoreController(validator, command, query)
 
-	r.Route(basePath+"/v1/owner", func(r chi.Router) {
+	r.Route(basePath+"/v1", func(r chi.Router) {
 		r.
 			With(middleware.Authentication).
-			Post("/", c.createOwner)
+			Get("/store/{id}", c.getQueryStoreByID)
+		r.
+			With(middleware.Authentication).
+			Get("/store", c.getQueryStoreListByFilter)
+	})
 
+	r.Route(basePath+"/v1/owner", func(r chi.Router) {
 		r.Route("/store", func(r chi.Router) {
+			r.
+				With(middleware.Authorization("owner")).
+				Get("/", c.getOwnerStoreByID)
 			r.
 				With(middleware.Authorization("owner")).
 				Post("/", c.createStore)
