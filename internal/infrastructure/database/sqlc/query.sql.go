@@ -108,6 +108,7 @@ func (q *Queries) FindBusinessHourByStoreID(ctx context.Context, id pgtype.UUID)
 }
 
 const findCustomerByID = `-- name: FindCustomerByID :one
+
 SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 FROM customer c
 WHERE c.id = $1
@@ -123,7 +124,7 @@ type FindCustomerByIDRow struct {
 	Phone    string `db:"phone" json:"phone"`
 }
 
-// FindCustomerByID
+// noinspection SqlResolveForFile
 //
 //	SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 //	FROM customer c
@@ -417,21 +418,46 @@ const findStoresByFilter = `-- name: FindStoresByFilter :many
 
 
 
-SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+SELECT
+    s.id,
+    s.name,
+    s.score,
+    s.is_open,
+    s.type,
+    s.neighborhood,
+    s.latitude,
+    s.longitude,
+    s.profile_image
 FROM store s
-WHERE 1 = 1
-    AND (COALESCE(NULLIF($1::text, ''), s.name) IS NULL OR s.name ILIKE '%' || $1::text || '%')
-    AND (NULLIF($2::text, '') IS NULL OR s.type::text = $2::text)
-    AND (NULLIF($3::text, '') IS NULL OR s.city::text = $3::text)
-    AND ($4::bool IS NULL OR s.is_open = $4::bool)
+WHERE (CASE
+           WHEN $1::text IS NOT NULL
+               THEN s.name ILIKE '%' || $1::text || '%'
+           ELSE true
+    END)
+  AND (CASE
+           WHEN $2::text IS NOT NULL
+               THEN s.type::text = $2::text
+           ELSE true
+    END)
+  AND (CASE
+           WHEN $3::text IS NOT NULL
+               THEN s.city = $3::text
+           ELSE true
+    END)
+  AND (CASE
+           WHEN $4::boolean IS NOT NULL
+               THEN s.is_open = $4::boolean
+           ELSE true
+    END)
 ORDER BY s.score DESC, s.type
-OFFSET $5 LIMIT $6
+OFFSET $5
+LIMIT $6
 `
 
 type FindStoresByFilterParams struct {
-	Name        string      `db:"name" json:"name"`
-	Type        string      `db:"type" json:"type"`
-	City        string      `db:"city" json:"city"`
+	Name        pgtype.Text `db:"name" json:"name"`
+	Type        pgtype.Text `db:"type" json:"type"`
+	City        pgtype.Text `db:"city" json:"city"`
 	IsOpen      pgtype.Bool `db:"is_open" json:"is_open"`
 	OffsetValue int32       `db:"offset_value" json:"offset_value"`
 	LimitItems  int32       `db:"limit_items" json:"limit_items"`
@@ -554,15 +580,40 @@ type FindStoresByFilterRow struct {
 // WHERE store_id = $1
 // ORDER BY week_day;
 //
-//	SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+//	SELECT
+//	    s.id,
+//	    s.name,
+//	    s.score,
+//	    s.is_open,
+//	    s.type,
+//	    s.neighborhood,
+//	    s.latitude,
+//	    s.longitude,
+//	    s.profile_image
 //	FROM store s
-//	WHERE 1 = 1
-//	    AND (COALESCE(NULLIF($1::text, ''), s.name) IS NULL OR s.name ILIKE '%' || $1::text || '%')
-//	    AND (NULLIF($2::text, '') IS NULL OR s.type::text = $2::text)
-//	    AND (NULLIF($3::text, '') IS NULL OR s.city::text = $3::text)
-//	    AND ($4::bool IS NULL OR s.is_open = $4::bool)
+//	WHERE (CASE
+//	           WHEN $1::text IS NOT NULL
+//	               THEN s.name ILIKE '%' || $1::text || '%'
+//	           ELSE true
+//	    END)
+//	  AND (CASE
+//	           WHEN $2::text IS NOT NULL
+//	               THEN s.type::text = $2::text
+//	           ELSE true
+//	    END)
+//	  AND (CASE
+//	           WHEN $3::text IS NOT NULL
+//	               THEN s.city = $3::text
+//	           ELSE true
+//	    END)
+//	  AND (CASE
+//	           WHEN $4::boolean IS NOT NULL
+//	               THEN s.is_open = $4::boolean
+//	           ELSE true
+//	    END)
 //	ORDER BY s.score DESC, s.type
-//	OFFSET $5 LIMIT $6
+//	OFFSET $5
+//	LIMIT $6
 func (q *Queries) FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error) {
 	rows, err := q.db.Query(ctx, findStoresByFilter,
 		arg.Name,

@@ -34,19 +34,27 @@ func (q QueryService) GetQueryStoreByID(ctx context.Context, id string) (QuerySt
 func (q QueryService) GetStoreByFilter(ctx context.Context, params QueryStoresInput) (*[]QueryStoreList, error) {
 	offset := (params.Page - 1) * params.MaxItems
 	args := sqlc.FindStoresByFilterParams{
-		Name:        params.Name,
-		City:        params.City,
-		Type:        string(params.Type),
 		LimitItems:  int32(params.MaxItems),
 		OffsetValue: int32(offset),
 	}
 
-	if params.IsOpen != nil {
-		args.IsOpen = pgtype.Bool{
-			Bool:  *params.IsOpen,
-			Valid: true,
-		}
+	if params.Name != nil {
+		args.Name = pgtype.Text{String: *params.Name, Valid: true}
 	}
+
+	if params.Score != nil {
+		args.Name = pgtype.Text{String: *params.Name, Valid: true}
+	}
+
+	if params.IsOpen != nil {
+		args.IsOpen = pgtype.Bool{Bool: *params.IsOpen, Valid: true}
+	}
+
+	if params.Type != nil {
+		typeConv := string(*params.Type)
+		args.Type = pgtype.Text{String: typeConv, Valid: true}
+	}
+
 	sts, err := q.q.FindStoresByFilter(ctx, args)
 	if err != nil {
 		return nil, err

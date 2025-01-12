@@ -57,7 +57,8 @@ type Querier interface {
 	//  FROM store_business_hour bh
 	//  WHERE bh.id = $1
 	FindBusinessHourByStoreID(ctx context.Context, id pgtype.UUID) ([]FindBusinessHourByStoreIDRow, error)
-	//FindCustomerByID
+	// noinspection SqlResolveForFile
+	//
 	//
 	//  SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 	//  FROM customer c
@@ -220,15 +221,40 @@ type Querier interface {
 	//
 	//
 	//
-	//  SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+	//  SELECT
+	//      s.id,
+	//      s.name,
+	//      s.score,
+	//      s.is_open,
+	//      s.type,
+	//      s.neighborhood,
+	//      s.latitude,
+	//      s.longitude,
+	//      s.profile_image
 	//  FROM store s
-	//  WHERE 1 = 1
-	//      AND (COALESCE(NULLIF($1::text, ''), s.name) IS NULL OR s.name ILIKE '%' || $1::text || '%')
-	//      AND (NULLIF($2::text, '') IS NULL OR s.type::text = $2::text)
-	//      AND (NULLIF($3::text, '') IS NULL OR s.city::text = $3::text)
-	//      AND ($4::bool IS NULL OR s.is_open = $4::bool)
+	//  WHERE (CASE
+	//             WHEN $1::text IS NOT NULL
+	//                 THEN s.name ILIKE '%' || $1::text || '%'
+	//             ELSE true
+	//      END)
+	//    AND (CASE
+	//             WHEN $2::text IS NOT NULL
+	//                 THEN s.type::text = $2::text
+	//             ELSE true
+	//      END)
+	//    AND (CASE
+	//             WHEN $3::text IS NOT NULL
+	//                 THEN s.city = $3::text
+	//             ELSE true
+	//      END)
+	//    AND (CASE
+	//             WHEN $4::boolean IS NOT NULL
+	//                 THEN s.is_open = $4::boolean
+	//             ELSE true
+	//      END)
 	//  ORDER BY s.score DESC, s.type
-	//  OFFSET $5 LIMIT $6
+	//  OFFSET $5
+	//  LIMIT $6
 	FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error)
 	//IsOwner
 	//

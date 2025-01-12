@@ -317,15 +317,49 @@ WHERE product.id = $1 AND product.store_id = $2;
 --
 
 -- name: FindStoresByFilter :many
-SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+SELECT
+    s.id,
+    s.name,
+    s.score,
+    s.is_open,
+    s.type,
+    s.neighborhood,
+    s.latitude,
+    s.longitude,
+    s.profile_image
 FROM store s
-WHERE 1 = 1
-    AND (COALESCE(NULLIF(@name::text, ''), s.name) IS NULL OR s.name ILIKE '%' || @name::text || '%')
-    AND (NULLIF(@type::text, '') IS NULL OR s.type::text = @type::text)
-    AND (NULLIF(@city::text, '') IS NULL OR s.city::text = @city::text)
-    AND (sqlc.narg('is_open')::bool IS NULL OR s.is_open = @is_open::bool)
+WHERE (CASE
+           WHEN sqlc.narg('name')::text IS NOT NULL
+               THEN s.name ILIKE '%' || sqlc.narg('name')::text || '%'
+           ELSE true
+    END)
+  AND (CASE
+           WHEN sqlc.narg('type')::text IS NOT NULL
+               THEN s.type::text = sqlc.narg('type')::text
+           ELSE true
+    END)
+  AND (CASE
+           WHEN sqlc.narg('city')::text IS NOT NULL
+               THEN s.city = sqlc.narg('city')::text
+           ELSE true
+    END)
+  AND (CASE
+           WHEN sqlc.narg('is_open')::boolean IS NOT NULL
+               THEN s.is_open = sqlc.narg('is_open')::boolean
+           ELSE true
+    END)
 ORDER BY s.score DESC, s.type
-OFFSET @offset_value LIMIT @limit_items;
+OFFSET sqlc.arg('offset_value')
+LIMIT sqlc.arg('limit_items');
+-- SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
+-- FROM store s
+-- WHERE 1 = 1
+--     AND (COALESCE(NULLIF(@name::text, ''), s.name) IS NULL OR s.name ILIKE '%' || @name::text || '%')
+--     AND (NULLIF(@type::text, '') IS NULL OR s.type::text = @type::text)
+--     AND (NULLIF(@city::text, '') IS NULL OR s.city::text = @city::text)
+--     AND (sqlc.narg('is_open')::bool IS NULL OR s.is_open = @is_open::bool)
+-- ORDER BY s.score DESC, s.type
+-- OFFSET @offset_value LIMIT @limit_items;
 --
 -- -- name: AddBusinessHours :batchexec
 -- INSERT INTO business_hour(store_id, week_day, opening_time, closing_time, timezone)

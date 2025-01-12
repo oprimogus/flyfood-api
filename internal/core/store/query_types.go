@@ -28,14 +28,14 @@ type QueryStoreList struct {
 }
 
 type QueryStoresInput struct {
-	Name           string          `json:"name" validate:"lte=25" example:"Delicious Bakery"`
-	IsOpen         *bool           `json:"isOpen" example:"false"`
-	Score          int             `json:"score" validate:"number" example:"500"`
-	Type           Type            `json:"type" validate:"storeType" example:"RESTAURANT"`
-	PaymentMethods []PaymentMethod `json:"paymentMethods" validate:"dive"`
-	City           string          `json:"city" validate:"lte=25" example:"New York"`
-	Page           int             `json:"page" validate:"required,number" example:"1" example:"1"`
-	MaxItems       int             `json:"maxItems" validate:"required,number" example:"10" example:"10"`
+	Name           *string          `json:"name" example:"Delicious Bakery"`
+	IsOpen         *bool            `json:"isOpen" example:"false"`
+	Score          *int             `json:"score" example:"500"`
+	Type           *Type            `json:"type" example:"RESTAURANT"`
+	PaymentMethods *[]PaymentMethod `json:"paymentMethods"`
+	City           *string          `json:"city" example:"New York"`
+	Page           int              `json:"page" example:"1" example:"1"`
+	MaxItems       int              `json:"maxItems" example:"10" example:"10"`
 }
 
 func (st *Store) ToQueryStore() QueryStore {

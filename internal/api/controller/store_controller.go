@@ -566,67 +566,74 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 	var params store.QueryStoresInput
 	queryParams := r.URL.Query()
 
-	params.Name = queryParams.Get("name")
-	params.City = queryParams.Get("city")
-
-	typeStr := queryParams.Get("type")
-	if typeStr != "" {
-		params.Type = store.Type(typeStr)
+	name := queryParams.Get("name")
+	if name != "" {
+		params.Name = &name
 	}
 
-	isOpenStr := queryParams.Get("isOpen")
-	if isOpenStr != "" {
-		isOpen, err := strconv.ParseBool(isOpenStr)
-		if err != nil {
-			xerror := xvalidator.NewFieldError("isOpen", isOpenStr)
+	city := queryParams.Get("city")
+	if city != "" {
+		params.City = &city
+	}
+
+	storeType := queryParams.Get("type")
+	if storeType != "" {
+		if store.IsValidType(storeType) {
+			value := store.Type(storeType)
+			params.Type = &value
+		} else {
+			xerror := xvalidator.NewFieldError("type", storeType)
 			HandleError(w, r, xerror)
 			return
 		}
-		params.IsOpen = &isOpen
 	}
 
-	scoreStr := queryParams.Get("score")
-	if scoreStr != "" {
-		score, err := strconv.Atoi(scoreStr)
+	isOpenParam := queryParams.Get("isOpen")
+	if isOpenParam != "" {
+		isOpen, err := IsValidBool(isOpenParam)
 		if err != nil {
-			xerror := xvalidator.NewFieldError("score", scoreStr)
+			xerror := xvalidator.NewFieldError("isOpen", isOpenParam)
 			HandleError(w, r, xerror)
 			return
+		} else {
+			params.IsOpen = &isOpen
 		}
-		params.Score = score
 	}
 
-	pageStr := queryParams.Get("page")
-	if pageStr != "" {
-		page, err := strconv.Atoi(pageStr)
+	scoreParam := queryParams.Get("score")
+	if scoreParam != "" {
+		score, err := isValidInt(scoreParam)
 		if err != nil {
-			xerror := xvalidator.NewFieldError("page", pageStr)
+			xerror := xvalidator.NewFieldError("score", scoreParam)
 			HandleError(w, r, xerror)
 			return
+		} else {
+			params.Score = &score
 		}
+	}
+
+	pageParam := queryParams.Get("page")
+	page, err := isValidInt(pageParam)
+	if err != nil {
+		xerror := xvalidator.NewFieldError("page", pageParam)
+		HandleError(w, r, xerror)
+		return
+	} else {
 		params.Page = page
 	}
 
-	maxItemsStr := queryParams.Get("maxItems")
-	if maxItemsStr != "" {
-		maxItems, err := strconv.Atoi(maxItemsStr)
-		if err != nil {
-			xerror := xvalidator.NewFieldError("maxItems", maxItemsStr)
-			HandleError(w, r, xerror)
-			return
-		}
+	maxItemsParam := queryParams.Get("maxItems")
+	maxItems, err := isValidInt(maxItemsParam)
+	if err != nil {
+		xerror := xvalidator.NewFieldError("maxItems", maxItemsParam)
+		HandleError(w, r, xerror)
+		return
+	} else {
 		if maxItems > 50 {
 			params.MaxItems = 50
 		} else {
 			params.MaxItems = maxItems
 		}
-
-	}
-
-	err := c.validator.Validate(params)
-	if err != nil {
-		HandleError(w, r, err)
-		return
 	}
 
 	st, err := c.queryService.GetStoreByFilter(r.Context(), params)

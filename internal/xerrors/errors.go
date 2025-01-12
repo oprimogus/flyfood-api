@@ -1,6 +1,7 @@
 package xerrors
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -45,12 +46,12 @@ func New(traceID string, status int, message string, details ...interface{}) *Cu
 	return err
 }
 
-func HandleError(err error, traceID string) *CustomError {
+func HandleError(ctx context.Context, err error, traceID string) *CustomError {
 	if err == nil {
 		return nil
 	}
 
-	slog.Debug(err.Error())
+	slog.DebugContext(ctx, err.Error())
 
 	if jsonErr := handleJSONError(err, traceID); jsonErr != nil {
 		return jsonErr

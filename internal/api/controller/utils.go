@@ -9,11 +9,12 @@ import (
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
+	"strconv"
 )
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	data := middleware.GetRequestData(r.Context())
-	xerror := xerrors.HandleError(err, data.TraceID)
+	xerror := xerrors.HandleError(r.Context(), err, data.TraceID)
 	w.WriteHeader(xerror.Status)
 	_ = json.NewEncoder(w).Encode(xerror)
 }
@@ -21,6 +22,14 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 func JSONResponse(w http.ResponseWriter, status int, response interface{}) {
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(response)
+}
+
+func IsValidBool(queryParam string) (bool, error) {
+	return strconv.ParseBool(queryParam)
+}
+
+func isValidInt(queryParam string) (int, error) {
+	return strconv.Atoi(queryParam)
 }
 
 func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key string, types []string) (multipart.File, string, error) {

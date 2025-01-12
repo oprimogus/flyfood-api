@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/oprimogus/cardapiogo/internal/xerrors"
+	logger "github.com/oprimogus/cardapiogo/pkg/log"
 	"log/slog"
 	"net/http"
 	"runtime/debug"
@@ -46,7 +47,7 @@ func Recovery(next http.Handler) http.Handler {
 					w.WriteHeader(http.StatusInternalServerError)
 
 					// Obtém o trace ID do contexto
-					reqData, ok := r.Context().Value(string(RequestKey)).(*RequestData)
+					reqData, ok := r.Context().Value(string(logger.RequestKey)).(*logger.RequestData)
 					traceID := ""
 					if ok && reqData != nil {
 						traceID = reqData.TraceID
@@ -76,7 +77,7 @@ type errorDetails struct {
 func prepareErrorDetails(r *http.Request, err error, stackTrace []byte) errorDetails {
 	// Obtém o trace ID do contexto, se disponível
 	traceID := ""
-	if reqData, ok := r.Context().Value(string(RequestKey)).(*RequestData); ok && reqData != nil {
+	if reqData, ok := r.Context().Value(string(logger.RequestKey)).(*logger.RequestData); ok && reqData != nil {
 		traceID = reqData.TraceID
 	}
 
