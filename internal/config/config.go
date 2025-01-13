@@ -31,6 +31,7 @@ func (d *DBConf) LogValue() slog.Value {
 }
 
 type APIConf struct {
+	ServiceName string
 	BasePath    string
 	Port        string
 	GinMode     string
@@ -133,6 +134,7 @@ func newConfig() *Config {
 			Password: os.Getenv("DB_PASSWORD"),
 		},
 		Api: &APIConf{
+			ServiceName: os.Getenv("API_SERVICE_NAME"),
 			BasePath:    os.Getenv("API_BASE_PATH"),
 			Port:        os.Getenv("API_PORT"),
 			GinMode:     os.Getenv("GIN_MODE"),

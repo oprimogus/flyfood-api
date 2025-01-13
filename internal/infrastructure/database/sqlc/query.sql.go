@@ -431,7 +431,7 @@ SELECT
 FROM store s
 WHERE (CASE
            WHEN $1::text IS NOT NULL
-               THEN s.name ILIKE '%' || $1::text || '%'
+               THEN unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
            ELSE true
     END)
   AND (CASE
@@ -593,7 +593,7 @@ type FindStoresByFilterRow struct {
 //	FROM store s
 //	WHERE (CASE
 //	           WHEN $1::text IS NOT NULL
-//	               THEN s.name ILIKE '%' || $1::text || '%'
+//	               THEN unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
 //	           ELSE true
 //	    END)
 //	  AND (CASE

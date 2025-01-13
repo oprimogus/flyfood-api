@@ -330,7 +330,7 @@ SELECT
 FROM store s
 WHERE (CASE
            WHEN sqlc.narg('name')::text IS NOT NULL
-               THEN s.name ILIKE '%' || sqlc.narg('name')::text || '%'
+               THEN unaccent(s.name) ILIKE '%' || unaccent(sqlc.narg('name')::text) || '%'
            ELSE true
     END)
   AND (CASE

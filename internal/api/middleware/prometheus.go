@@ -2,15 +2,15 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/oprimogus/cardapiogo/internal/config"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
-const service = "cardapiogo"
+var service = config.GetInstance().Api.ServiceName
 
-// PrometheusMetrics estrutura que armazena as métricas que queremos registrar.
 type PrometheusMetrics struct {
 	Registry          *prometheus.Registry
 	RequestCounter    *prometheus.CounterVec
@@ -19,7 +19,13 @@ type PrometheusMetrics struct {
 	ActiveConnections prometheus.Gauge
 }
 
+var metricsInstance *PrometheusMetrics
+
 func NewPrometheusMetrics() *PrometheusMetrics {
+	if metricsInstance != nil {
+		return metricsInstance
+	}
+
 	reg := prometheus.NewRegistry()
 	reg.MustRegister(collectors.NewGoCollector())
 
@@ -46,13 +52,15 @@ func NewPrometheusMetrics() *PrometheusMetrics {
 
 	reg.MustRegister(requestCounter, responseTime, errorCounter, activeConnections)
 
-	return &PrometheusMetrics{
+	metricsInstance = &PrometheusMetrics{
 		Registry:          reg,
 		RequestCounter:    requestCounter,
 		ResponseTime:      responseTime,
 		ErrorCounter:      errorCounter,
 		ActiveConnections: activeConnections,
 	}
+
+	return metricsInstance
 }
 
 func Prometheus(next http.Handler) http.Handler {
@@ -71,11 +79,11 @@ func Prometheus(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 
-		//status := fmt.Sprintf("%d", rw.Status)
-		//metrics.RequestCounter.WithLabelValues(service, path, method, status).Inc()
-		//
-		//if rw.Status >= 400 {
-		//	metrics.ErrorCounter.WithLabelValues(service, path, method, status).Inc()
-		//}
+		status := fmt.Sprintf("%d", rw.Status)
+		metrics.RequestCounter.WithLabelValues(service, path, method, status).Inc()
+
+		if rw.Status >= 400 {
+			metrics.ErrorCounter.WithLabelValues(service, path, method, status).Inc()
+		}
 	})
 }
