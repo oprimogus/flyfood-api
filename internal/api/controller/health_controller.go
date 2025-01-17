@@ -2,9 +2,9 @@ package controller
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/api/middleware"
 	"github.com/oprimogus/cardapiogo/internal/config"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/observability"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"time"
@@ -76,7 +76,7 @@ func (h *healthController) readinessProbe(w http.ResponseWriter, r *http.Request
 //	@Failure		500	{object}	HealthResponse
 //	@Router			/health/metrics [get]
 func (h *healthController) prometheusMetrics(w http.ResponseWriter, r *http.Request) {
-	metrics := middleware.NewPrometheusMetrics()
+	metrics := observability.GetPrometheusMetrics()
 	prometheusHandler := promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{})
 	prometheusHandler.ServeHTTP(w, r)
 }

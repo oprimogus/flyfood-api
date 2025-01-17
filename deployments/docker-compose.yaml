@@ -1,6 +1,6 @@
 services:
   postgres:
-    container_name: cardapiogo-postgres
+    container_name: flyfood-postgres
     image: postgres
     environment:
       POSTGRES_DB: postgres
@@ -20,7 +20,7 @@ services:
       start_period: '20s'
 
   zitadel:
-    container_name: cardapiogo-zitadel
+    container_name: flyfood-zitadel
     image: 'ghcr.io/zitadel/zitadel:latest'
     command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
     environment:
@@ -46,7 +46,7 @@ services:
   
   prometheus:
     image: bitnami/prometheus
-    container_name: cardapiogo-prometheus
+    container_name: flyfood-prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -59,34 +59,9 @@ services:
     networks:
       - observability
 
-  promtail:
-    image: grafana/promtail
-    container_name: cardapiogo-promtail
-    ports:
-      - "9080:9080"
-    volumes:
-      - /var/log/journal:/var/log/journal
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro # Adicione esta linha
-      - ../configs/promtail.yml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - observability
-
-  loki:
-    image: grafana/loki
-    container_name: cardapiogo-loki
-    ports:
-      - "3100:3100"
-    command:
-      - -config.file=/etc/loki/local-config.yaml
-      - -print-config-stderr=true
-    networks:
-      - observability
-
   grafana:
     image: grafana/grafana
-    container_name: cardapiogo-grafana
+    container_name: flyfood-grafana
     ports:
       - "3001:3000"
     environment:
@@ -94,14 +69,13 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
       - prometheus
-      - loki
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
       - observability
 
   localstack:
-    container_name: "cardapiogo-localstack"
+    container_name: "flyfood-localstack"
     image: localstack/localstack
     ports:
       - "127.0.0.1:4566:4566"            # LocalStack Gateway

@@ -666,39 +666,43 @@ func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, ser
 	})
 
 	r.Route(basePath+"/v1/owner", func(r chi.Router) {
+		r.
+			With(middleware.Authentication).
+			Post("/", c.createOwner)
+
 		r.Route("/store", func(r chi.Router) {
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Get("/", c.getOwnerStoreByID)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Post("/", c.createStore)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Put("/", c.updateStore)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Post("/business-hour", c.addBusinessHour)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Delete("/business-hour", c.removeBusinessHour)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Post("/payment-method", c.addPaymentMethod)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Delete("/payment-method", c.removePaymentMethod)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Post("/open", c.openOrClose)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Post("/active", c.activatedOrDeactivate)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Post("/{id}/profile-image", c.changeProfileImage)
 			r.
-				With(middleware.Authorization("owner")).
+				With(middleware.Authorization(string(zitadel.Owner))).
 				Post("/{id}/header-image", c.changeHeaderImage)
 		})
 	})

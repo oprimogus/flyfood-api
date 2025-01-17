@@ -14,26 +14,33 @@ type ResponseRecorder struct {
 	Written     int64
 	WroteHeader bool
 	Headers     http.Header
-	Body        *bytes.Buffer // Se precisar capturar o body
+	Body        *bytes.Buffer
 }
 
 func NewResponseRecorder(w http.ResponseWriter) *ResponseRecorder {
+	// Copie os headers existentes do ResponseWriter original
 	return &ResponseRecorder{
 		ResponseWriter: w,
-		Status:         http.StatusOK,
-		Headers:        make(http.Header),
+		Status:         http.StatusOK, // Status padrão é 200 OK
+		Headers:        w.Header(),    // Use os headers do writer original
 		Body:           &bytes.Buffer{},
+	}
+}
+
+func (r *ResponseRecorder) WriteHeader(status int) {
+	if !r.WroteHeader {
+		r.Status = status
+		r.WroteHeader = true
+		r.ResponseWriter.WriteHeader(status)
 	}
 }
 
 func (r *ResponseRecorder) Write(b []byte) (int, error) {
 	if !r.WroteHeader {
-		r.WriteHeader(http.StatusOK)
+		r.WriteHeader(r.Status)
 	}
 
-	// Captura o body se necessário
 	r.Body.Write(b)
-
 	n, err := r.ResponseWriter.Write(b)
 	r.Written += int64(n)
 	return n, err
@@ -50,4 +57,12 @@ func (r *ResponseRecorder) Flush() {
 	if flusher, ok := r.ResponseWriter.(http.Flusher); ok {
 		flusher.Flush()
 	}
+}
+
+// Push implementa http.Pusher
+func (r *ResponseRecorder) Push(target string, opts *http.PushOptions) error {
+	if pusher, ok := r.ResponseWriter.(http.Pusher); ok {
+		return pusher.Push(target, opts)
+	}
+	return http.ErrNotSupported
 }
