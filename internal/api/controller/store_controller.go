@@ -12,7 +12,6 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/xvalidator"
 	"github.com/oprimogus/cardapiogo/pkg/converters"
 	"net/http"
-	"strconv"
 )
 
 type storeController struct {
@@ -45,12 +44,8 @@ func newStoreController(validator *xvalidator.Validator, command store.CommandSe
 func (c storeController) createOwner(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()
 	authCtx := zt.GetContext(r.Context())
-	userID, err := strconv.Atoi(authCtx.UserID())
-	if err != nil {
-		HandleError(w, r, err)
-		return
-	}
-	err = c.commandService.NewOwner(r.Context(), userID)
+
+	err := c.commandService.NewOwner(r.Context(), authCtx.UserID())
 	if err != nil {
 		HandleError(w, r, err)
 		return

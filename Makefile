@@ -34,11 +34,11 @@ docs:
 
 # Executa somente testes unitários
 test:
-	go test ./... -v -count=1 -race -cover -coverprofile=./tmp/coverage.unit.out
+	go test ./internal... -v -count=1 -race -cover -coverprofile=./tmp/coverage.unit.out
 
 # Executa somente testes de integração
 test-integration:
-	go test -tags=integration ./... -v -count=1 -race -cover -coverprofile=./tmp/coverage.integration.out
+	go test -tags=integration ./internal... -v -count=1 -race -cover -coverprofile=./tmp/coverage.integration.out
 #go test -tags=integration ./...
 # Executa benchmarks
 test-benchmark:

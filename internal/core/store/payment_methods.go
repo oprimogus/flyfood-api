@@ -5,8 +5,8 @@ type PaymentMethod string
 const (
 	Credit  PaymentMethod = "CREDIT"
 	Debit   PaymentMethod = "DEBIT"
-	Pix     PaymentMethod = "CASH"
-	Cash    PaymentMethod = "PIX"
+	Cash    PaymentMethod = "CASH"
+	Pix     PaymentMethod = "PIX"
 	Bitcoin PaymentMethod = "BTC"
 )
 

@@ -73,8 +73,8 @@ definitions:
         example: johndoe@example.com
         type: string
       id:
-        example: 295105940221919239
-        type: integer
+        example: "295105940221919239"
+        type: string
       lastName:
         example: Doe
         maxLength: 60
@@ -345,8 +345,8 @@ definitions:
         minLength: 3
         type: string
       ownerID:
-        example: 5692562784252
-        type: integer
+        example: "5692562784252"
+        type: string
       paymentMethods:
         items:
           $ref: '#/definitions/store.PaymentMethod'

@@ -1493,8 +1493,8 @@ const docTemplate = `{
                     "example": "johndoe@example.com"
                 },
                 "id": {
-                    "type": "integer",
-                    "example": 295105940221919239
+                    "type": "string",
+                    "example": "295105940221919239"
                 },
                 "lastName": {
                     "type": "string",
@@ -1871,8 +1871,8 @@ const docTemplate = `{
                     "example": "Delicious Bakery"
                 },
                 "ownerID": {
-                    "type": "integer",
-                    "example": 5692562784252
+                    "type": "string",
+                    "example": "5692562784252"
                 },
                 "paymentMethods": {
                     "type": "array",

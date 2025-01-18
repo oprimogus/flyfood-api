@@ -63,7 +63,7 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 
 	return &store.Store{
 		ID:           id,
-		OwnerID:      int(st.OwnerID),
+		OwnerID:      st.OwnerID,
 		CNPJ:         st.Cnpj,
 		Name:         st.Name,
 		Description:  st.Description,
@@ -92,21 +92,31 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 
 }
 
-func (r StoreRepository) FindOwnerByID(ctx context.Context, id int) (*store.Owner, error) {
-	owner, err := r.q.FindOwnerByID(ctx, int64(id))
+func (r StoreRepository) FindOwnerByID(ctx context.Context, id string) (store.Owner, error) {
+	owner, err := r.q.FindOwnerByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return store.Owner{}, err
 	}
 
-	return &store.Owner{
-		ID:              int(owner.ID),
+	stIds := make([]string, len(owner.StoreIds))
+	for i, s := range owner.StoreIds {
+		vConv, err := converters.UuidToString(s)
+		if err != nil {
+			return store.Owner{}, err
+		}
+		stIds[i] = *vConv
+	}
+
+	return store.Owner{
+		ID:              owner.ID,
 		SignatureActive: owner.SignatureActive,
+		StoresID:        stIds,
 	}, nil
 }
 
 func (r StoreRepository) SaveOwner(ctx context.Context, ow store.Owner) error {
 	err := r.q.SaveOwner(ctx, sqlc.SaveOwnerParams{
-		ID:              int64(ow.ID),
+		ID:              ow.ID,
 		SignatureActive: ow.SignatureActive,
 	})
 	if err != nil {
@@ -116,8 +126,8 @@ func (r StoreRepository) SaveOwner(ctx context.Context, ow store.Owner) error {
 	return nil
 }
 
-func (r StoreRepository) IsOwner(ctx context.Context, customerID int) (bool, error) {
-	isOwner, err := r.q.IsOwner(ctx, int64(customerID))
+func (r StoreRepository) IsOwner(ctx context.Context, customerID string) (bool, error) {
+	isOwner, err := r.q.IsOwner(ctx, customerID)
 	if err != nil {
 		return false, err
 	}
@@ -199,7 +209,7 @@ func (r StoreRepository) Save(ctx context.Context, st *store.Store) error {
 
 	argsSaveStore := sqlc.SaveStoreParams{
 		ID:           storeID,
-		OwnerID:      int64(st.OwnerID),
+		OwnerID:      st.OwnerID,
 		Cnpj:         st.CNPJ,
 		Name:         st.Name,
 		Description:  st.Description,

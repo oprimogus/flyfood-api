@@ -76,7 +76,7 @@ func TestStore_AddNewBusinessHour(t *testing.T) {
 
 	for _, test := range tests {
 
-		mockOwner := NewOwner(8647877478)
+		mockOwner := NewOwner("8647877478")
 
 		addr := address.Address{
 			Name:         "Store name location",

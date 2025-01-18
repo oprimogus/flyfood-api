@@ -49,7 +49,7 @@ func TestProductRepositorySuite(t *testing.T) {
 func (s *ProductRepositoryTestSuite) TestFindByIDAndSave() {
 	ctx := context.Background()
 	mockCustomer := customer.Customer{
-		ID:       2575475247247542254,
+		ID:       "2575475247247542254",
 		Name:     "John",
 		LastName: "Marston",
 		CPF:      "fake cpf",

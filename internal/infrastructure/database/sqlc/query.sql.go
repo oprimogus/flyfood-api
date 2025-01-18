@@ -38,7 +38,7 @@ type FindAddressesByCustomerIDRow struct {
 //	FROM address a
 //	WHERE a.customer_id = $1
 //	ORDER BY a.created_at DESC
-func (q *Queries) FindAddressesByCustomerID(ctx context.Context, customerID int64) ([]FindAddressesByCustomerIDRow, error) {
+func (q *Queries) FindAddressesByCustomerID(ctx context.Context, customerID string) ([]FindAddressesByCustomerIDRow, error) {
 	rows, err := q.db.Query(ctx, findAddressesByCustomerID, customerID)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ LIMIT 1
 `
 
 type FindCustomerByIDRow struct {
-	ID       int64  `db:"id" json:"id"`
+	ID       string `db:"id" json:"id"`
 	Name     string `db:"name" json:"name"`
 	LastName string `db:"last_name" json:"last_name"`
 	Cpf      string `db:"cpf" json:"cpf"`
@@ -130,7 +130,7 @@ type FindCustomerByIDRow struct {
 //	FROM customer c
 //	WHERE c.id = $1
 //	LIMIT 1
-func (q *Queries) FindCustomerByID(ctx context.Context, id int64) (FindCustomerByIDRow, error) {
+func (q *Queries) FindCustomerByID(ctx context.Context, id string) (FindCustomerByIDRow, error) {
 	row := q.db.QueryRow(ctx, findCustomerByID, id)
 	var i FindCustomerByIDRow
 	err := row.Scan(
@@ -145,23 +145,40 @@ func (q *Queries) FindCustomerByID(ctx context.Context, id int64) (FindCustomerB
 }
 
 const findOwnerByID = `-- name: FindOwnerByID :one
-SELECT o.id, signature_active from owner o
+SELECT o.id,
+       signature_active,
+       COALESCE(
+                       ARRAY_AGG(DISTINCT s.id::uuid) FILTER (WHERE s.id IS NOT NULL),
+                       '{}'::uuid[]
+       )::uuid[] AS store_ids
+FROM owner o
+         LEFT JOIN store s ON o.id = s.owner_id
 WHERE o.id = $1
+GROUP BY o.id, signature_active
 `
 
 type FindOwnerByIDRow struct {
-	ID              int64 `db:"id" json:"id"`
-	SignatureActive bool  `db:"signature_active" json:"signature_active"`
+	ID              string        `db:"id" json:"id"`
+	SignatureActive bool          `db:"signature_active" json:"signature_active"`
+	StoreIds        []pgtype.UUID `db:"store_ids" json:"store_ids"`
 }
 
 // FindOwnerByID
 //
-//	SELECT o.id, signature_active from owner o
+//	SELECT o.id,
+//	       signature_active,
+//	       COALESCE(
+//	                       ARRAY_AGG(DISTINCT s.id::uuid) FILTER (WHERE s.id IS NOT NULL),
+//	                       '{}'::uuid[]
+//	       )::uuid[] AS store_ids
+//	FROM owner o
+//	         LEFT JOIN store s ON o.id = s.owner_id
 //	WHERE o.id = $1
-func (q *Queries) FindOwnerByID(ctx context.Context, id int64) (FindOwnerByIDRow, error) {
+//	GROUP BY o.id, signature_active
+func (q *Queries) FindOwnerByID(ctx context.Context, id string) (FindOwnerByIDRow, error) {
 	row := q.db.QueryRow(ctx, findOwnerByID, id)
 	var i FindOwnerByIDRow
-	err := row.Scan(&i.ID, &i.SignatureActive)
+	err := row.Scan(&i.ID, &i.SignatureActive, &i.StoreIds)
 	return i, err
 }
 
@@ -287,6 +304,7 @@ WITH relevant_business_hours AS (
          SELECT id, payment_method
          FROM store_payment_method pm
          WHERE id = $1
+         ORDER BY payment_method desc
      )
 SELECT
     s.owner_id, s.cnpj, s.name, s.description,
@@ -315,7 +333,7 @@ GROUP BY
 `
 
 type FindStoreByIDRow struct {
-	OwnerID        int64            `db:"owner_id" json:"owner_id"`
+	OwnerID        string           `db:"owner_id" json:"owner_id"`
 	Cnpj           string           `db:"cnpj" json:"cnpj"`
 	Name           string           `db:"name" json:"name"`
 	Description    string           `db:"description" json:"description"`
@@ -353,6 +371,7 @@ type FindStoreByIDRow struct {
 //	         SELECT id, payment_method
 //	         FROM store_payment_method pm
 //	         WHERE id = $1
+//	         ORDER BY payment_method desc
 //	     )
 //	SELECT
 //	    s.owner_id, s.cnpj, s.name, s.description,
@@ -658,7 +677,7 @@ SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
 // IsOwner
 //
 //	SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
-func (q *Queries) IsOwner(ctx context.Context, id int64) (bool, error) {
+func (q *Queries) IsOwner(ctx context.Context, id string) (bool, error) {
 	row := q.db.QueryRow(ctx, isOwner, id)
 	var exists bool
 	err := row.Scan(&exists)
@@ -674,7 +693,7 @@ WHERE id = $1
 //
 //	DELETE FROM owner
 //	WHERE id = $1
-func (q *Queries) RemoveOwner(ctx context.Context, id int64) error {
+func (q *Queries) RemoveOwner(ctx context.Context, id string) error {
 	_, err := q.db.Exec(ctx, removeOwner, id)
 	return err
 }
@@ -696,7 +715,7 @@ ON CONFLICT (id) DO UPDATE
 `
 
 type SaveCustomerParams struct {
-	ID       int64  `db:"id" json:"id"`
+	ID       string `db:"id" json:"id"`
 	Name     string `db:"name" json:"name"`
 	LastName string `db:"last_name" json:"last_name"`
 	Cpf      string `db:"cpf" json:"cpf"`
@@ -753,7 +772,7 @@ WHERE address.customer_id = $1
 `
 
 type SaveCustomerAddressParams struct {
-	CustomerID   int64       `db:"customer_id" json:"customer_id"`
+	CustomerID   string      `db:"customer_id" json:"customer_id"`
 	Name         string      `db:"name" json:"name"`
 	AddressLine1 string      `db:"address_line_1" json:"address_line_1"`
 	AddressLine2 string      `db:"address_line_2" json:"address_line_2"`
@@ -813,8 +832,8 @@ SET
 `
 
 type SaveOwnerParams struct {
-	ID              int64 `db:"id" json:"id"`
-	SignatureActive bool  `db:"signature_active" json:"signature_active"`
+	ID              string `db:"id" json:"id"`
+	SignatureActive bool   `db:"signature_active" json:"signature_active"`
 }
 
 // SaveOwner
@@ -954,7 +973,7 @@ WHERE store.id = excluded.id
 
 type SaveStoreParams struct {
 	ID           pgtype.UUID `db:"id" json:"id"`
-	OwnerID      int64       `db:"owner_id" json:"owner_id"`
+	OwnerID      string      `db:"owner_id" json:"owner_id"`
 	Cnpj         string      `db:"cnpj" json:"cnpj"`
 	Name         string      `db:"name" json:"name"`
 	Description  string      `db:"description" json:"description"`
@@ -1042,8 +1061,8 @@ VALUES ($1, $2, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null)
 `
 
 type SetOwnerParams struct {
-	ID              int64 `db:"id" json:"id"`
-	SignatureActive bool  `db:"signature_active" json:"signature_active"`
+	ID              string `db:"id" json:"id"`
+	SignatureActive bool   `db:"signature_active" json:"signature_active"`
 }
 
 // SetOwner

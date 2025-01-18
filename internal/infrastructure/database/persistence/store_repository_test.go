@@ -46,7 +46,7 @@ func TestStoreRepositorySuite(t *testing.T) {
 func (s *StoreRepositoryTestSuite) TestFindOwnerByID() {
 	ctx := context.Background()
 	mockCustomer := customer.Customer{
-		ID:       356278453827428,
+		ID:       "356278453827428",
 		Name:     "John",
 		LastName: "Marston",
 		CPF:      "fake cpf 345t643t",
@@ -92,7 +92,7 @@ func (s *StoreRepositoryTestSuite) TestIsOwner() {
 		{
 			name: "should return true",
 			customer: customer.Customer{
-				ID:       356278453827428,
+				ID:       "356278453827428",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -118,7 +118,7 @@ func (s *StoreRepositoryTestSuite) TestIsOwner() {
 		{
 			name: "should return false",
 			customer: customer.Customer{
-				ID:       356278453827429,
+				ID:       "356278453827429",
 				Name:     "John",
 				LastName: "Marstones",
 				CPF:      "fake cpf a",
@@ -165,7 +165,7 @@ func (s *StoreRepositoryTestSuite) TestIsOwner() {
 func (s *StoreRepositoryTestSuite) TestSave() {
 	ctx := context.Background()
 	mockCustomer := customer.Customer{
-		ID:       356278453827428,
+		ID:       "356278453827428",
 		Name:     "John",
 		LastName: "Marston",
 		CPF:      "fake cpf 21313",
@@ -244,10 +244,10 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 		store.Restaurant)
 	assert.NoError(s.T(), err)
 
-	err = mockStoreWithPaymentMethods.AddPaymentMethod(store.Bitcoin)
+	err = mockStoreWithPaymentMethods.AddPaymentMethod(store.Pix)
 	assert.NoError(s.T(), err)
 
-	err = mockStoreWithPaymentMethods.AddPaymentMethod(store.Pix)
+	err = mockStoreWithPaymentMethods.AddPaymentMethod(store.Bitcoin)
 	assert.NoError(s.T(), err)
 
 	tests := []struct {
@@ -278,6 +278,6 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 
 		savedStore, err := s.storeRepo.FindStoreByID(ctx, tt.store.ID)
 		assert.NoError(s.T(), err, tt.name)
-		assert.Equal(s.T(), tt.store, savedStore, tt.name)
+		assert.EqualValues(s.T(), tt.store, savedStore, tt.name)
 	}
 }

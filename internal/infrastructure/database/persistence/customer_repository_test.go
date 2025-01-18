@@ -51,7 +51,7 @@ func (s *CustomerRepositoryTestSuite) TestFindByID() {
 		{
 			name: "Should save with success customer without address",
 			customer: &customer.Customer{
-				ID:        4687487487864,
+				ID:        "4687487487864",
 				Name:      "John",
 				LastName:  "Marston",
 				CPF:       "fake cpf",
@@ -61,7 +61,7 @@ func (s *CustomerRepositoryTestSuite) TestFindByID() {
 			},
 			expectedError: nil,
 			expectedResult: &customer.Customer{
-				ID:        4687487487864,
+				ID:        "4687487487864",
 				Name:      "John",
 				LastName:  "Marston",
 				CPF:       "fake cpf",
@@ -73,7 +73,7 @@ func (s *CustomerRepositoryTestSuite) TestFindByID() {
 		{
 			name: "Should save with success customer with address",
 			customer: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -94,7 +94,7 @@ func (s *CustomerRepositoryTestSuite) TestFindByID() {
 			},
 			expectedError: nil,
 			expectedResult: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -137,7 +137,7 @@ func (s *CustomerRepositoryTestSuite) TestSave() {
 		{
 			name: "Should save with success customer with new address and remove older",
 			savedCustomer: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -157,7 +157,7 @@ func (s *CustomerRepositoryTestSuite) TestSave() {
 				},
 			},
 			inputCustomer: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -188,7 +188,7 @@ func (s *CustomerRepositoryTestSuite) TestSave() {
 			},
 			expectedError: nil,
 			expectedCustomer: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -221,7 +221,7 @@ func (s *CustomerRepositoryTestSuite) TestSave() {
 		{
 			name: "Should save with success customer with new address and keep older",
 			savedCustomer: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -241,7 +241,7 @@ func (s *CustomerRepositoryTestSuite) TestSave() {
 				},
 			},
 			inputCustomer: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",
@@ -282,7 +282,7 @@ func (s *CustomerRepositoryTestSuite) TestSave() {
 			},
 			expectedError: nil,
 			expectedCustomer: &customer.Customer{
-				ID:       4687487487864,
+				ID:       "4687487487864",
 				Name:     "John",
 				LastName: "Marston",
 				CPF:      "fake cpf",

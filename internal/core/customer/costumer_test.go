@@ -20,7 +20,7 @@ func TestCustomer_SaveNewAddress(t *testing.T) {
 	}
 
 	customer := &Customer{
-		ID:        34876876358756,
+		ID:        "34876876358756",
 		Name:      "John",
 		LastName:  "Doe",
 		CPF:       "",
@@ -99,7 +99,7 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 	}
 
 	customerWithAddress := &Customer{
-		ID:       257547567254247245,
+		ID:       "257547567254247245",
 		Name:     "John",
 		LastName: "Doe",
 		CPF:      "",
@@ -111,7 +111,7 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 	}
 
 	customerWithoutAddress := &Customer{
-		ID:        2547724254724575472,
+		ID:        "2547724254724575472",
 		Name:      "John",
 		LastName:  "Doe",
 		CPF:       "",
@@ -131,14 +131,14 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 			name:              "Should remove address",
 			customer:          customerWithAddress,
 			addressToRemove:   mockAddress,
-			expectedAddresses: []address.Address{},
+			expectedAddresses: nil,
 			expectedError:     nil,
 		},
 		{
 			name:              "Should return error when try remove an address when customer no have any address",
 			customer:          customerWithoutAddress,
 			addressToRemove:   mockAddress,
-			expectedAddresses: []address.Address{},
+			expectedAddresses: nil,
 			expectedError:     ErrThereIsNoAddresses,
 		},
 	}
@@ -147,9 +147,9 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 		err := test.customer.RemoveAddress(test.addressToRemove)
 		if test.expectedError == nil {
 			assert.NoError(t, err)
-			assert.Equal(t, test.expectedAddresses, test.customer.Addresses)
+			assert.Equal(t, test.expectedAddresses, test.customer.Addresses, test.name)
 		} else {
-			assert.Equal(t, test.expectedError, err)
+			assert.Equal(t, test.expectedError, err, test.name)
 		}
 	}
 

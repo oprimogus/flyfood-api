@@ -50,7 +50,7 @@ type Querier interface {
 	//  FROM address a
 	//  WHERE a.customer_id = $1
 	//  ORDER BY a.created_at DESC
-	FindAddressesByCustomerID(ctx context.Context, customerID int64) ([]FindAddressesByCustomerIDRow, error)
+	FindAddressesByCustomerID(ctx context.Context, customerID string) ([]FindAddressesByCustomerIDRow, error)
 	//FindBusinessHourByStoreID
 	//
 	//  SELECT bh.weekday, bh.open_hour, bh.closing_hour
@@ -64,12 +64,20 @@ type Querier interface {
 	//  FROM customer c
 	//  WHERE c.id = $1
 	//  LIMIT 1
-	FindCustomerByID(ctx context.Context, id int64) (FindCustomerByIDRow, error)
+	FindCustomerByID(ctx context.Context, id string) (FindCustomerByIDRow, error)
 	//FindOwnerByID
 	//
-	//  SELECT o.id, signature_active from owner o
+	//  SELECT o.id,
+	//         signature_active,
+	//         COALESCE(
+	//                         ARRAY_AGG(DISTINCT s.id::uuid) FILTER (WHERE s.id IS NOT NULL),
+	//                         '{}'::uuid[]
+	//         )::uuid[] AS store_ids
+	//  FROM owner o
+	//           LEFT JOIN store s ON o.id = s.owner_id
 	//  WHERE o.id = $1
-	FindOwnerByID(ctx context.Context, id int64) (FindOwnerByIDRow, error)
+	//  GROUP BY o.id, signature_active
+	FindOwnerByID(ctx context.Context, id string) (FindOwnerByIDRow, error)
 	//FindPaymentMethodsByStoreID
 	//
 	//  SELECT pm.payment_method FROM store_payment_method pm
@@ -99,6 +107,7 @@ type Querier interface {
 	//           SELECT id, payment_method
 	//           FROM store_payment_method pm
 	//           WHERE id = $1
+	//           ORDER BY payment_method desc
 	//       )
 	//  SELECT
 	//      s.owner_id, s.cnpj, s.name, s.description,
@@ -259,12 +268,12 @@ type Querier interface {
 	//IsOwner
 	//
 	//  SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
-	IsOwner(ctx context.Context, id int64) (bool, error)
+	IsOwner(ctx context.Context, id string) (bool, error)
 	//RemoveOwner
 	//
 	//  DELETE FROM owner
 	//  WHERE id = $1
-	RemoveOwner(ctx context.Context, id int64) error
+	RemoveOwner(ctx context.Context, id string) error
 	//SaveCustomer
 	//
 	//  INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)

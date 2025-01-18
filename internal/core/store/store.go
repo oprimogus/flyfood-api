@@ -19,7 +19,7 @@ func init() {
 
 type Store struct {
 	ID             string          `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OwnerID        int             `json:"ownerID" validate:"required,number" example:"5692562784252"`
+	OwnerID        string          `json:"ownerID" validate:"required" example:"5692562784252"`
 	CNPJ           string          `json:"cnpj" validate:"required,cnpj" example:"12345678000190"`
 	Name           string          `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
 	Description    string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`

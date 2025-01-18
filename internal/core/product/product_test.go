@@ -12,6 +12,7 @@ func TestNewProduct(t *testing.T) {
 		name        string
 		storeID     string
 		nameProduct string
+		tag         string
 		description string
 		sku         string
 		price       int
@@ -21,6 +22,7 @@ func TestNewProduct(t *testing.T) {
 			name:        "should create a new product",
 			storeID:     "01933d0f-6d9e-75f1-8448-b35edb94f1e2",
 			nameProduct: "product one",
+			tag:         "tag one",
 			description: "desc product 1",
 			sku:         "P001",
 			price:       2500,
@@ -29,7 +31,7 @@ func TestNewProduct(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		_, err := NewProduct(tt.storeID, tt.nameProduct, tt.description, tt.sku, tt.price, tt.pType)
+		_, err := NewProduct(tt.storeID, tt.nameProduct, tt.tag, tt.description, tt.sku, tt.price, tt.pType)
 		assert.NoError(t, err, tt.name)
 		if err != nil {
 			errJson, _ := json.Marshal(err)
@@ -57,7 +59,7 @@ func TestProduct_IncreaseStock(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your desc", "P001", 2500, Food)
+		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your tag", "your desc", "P001", 2500, Food)
 		assert.NoError(t, err, test.name)
 
 		err = p.IncreaseStock(test.newQuantity)
@@ -85,7 +87,7 @@ func TestProduct_DecreaseStock(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your desc", "P001", 2500, Food)
+		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your tag", "your desc", "P001", 2500, Food)
 		assert.NoError(t, err, test.name)
 
 		err = p.IncreaseStock(100)
@@ -136,7 +138,7 @@ func TestProduct_ChangePrice(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your desc", "P001", 2500, Food)
+		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your tag", "your desc", "P001", 2500, Food)
 		assert.NoError(t, err, test.name)
 
 		if test.hasPromoPrice {
@@ -177,7 +179,7 @@ func TestProduct_ChangePromotionalPrice(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your desc", "P001", 2500, Food)
+		p, err := NewProduct("01933d0f-6d9e-75f1-8448-b35edb94f1e2", "product one", "your tag", "your desc", "P001", 2500, Food)
 		assert.NoError(t, err, test.name)
 
 		err = p.ChangePromotionalPrice(test.promoPrice)

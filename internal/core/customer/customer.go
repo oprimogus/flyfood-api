@@ -6,7 +6,7 @@ import (
 )
 
 type Customer struct {
-	ID        int               `json:"id" validate:"required,number" example:"295105940221919239"`
+	ID        string            `json:"id" validate:"required" example:"295105940221919239"`
 	Name      string            `json:"name" validate:"required,alpha,gte=3,lte=25" example:"John"`
 	LastName  string            `json:"lastName" validate:"required,gte=3,lte=60" example:"Doe"`
 	CPF       string            `json:"cpf" validate:"cpf" example:"52024227090"`
@@ -20,7 +20,7 @@ func (c *Customer) Validate() error {
 	return xvalidator.GetPtInstance().Validate(c)
 }
 
-func NewCustomer(id int, name, lastName, cpf, email, phone string) (*Customer, error) {
+func NewCustomer(id, name, lastName, cpf, email, phone string) (*Customer, error) {
 	newCustomer := &Customer{
 		ID:        id,
 		Name:      name,

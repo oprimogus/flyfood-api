@@ -20,29 +20,29 @@ func NewProductRepository(db *postgresDB.Database) ProductRepository {
 	return ProductRepository{db: db.GetDB(), q: sqlc.New(db.GetDB())}
 }
 
-func (r ProductRepository) FindByID(ctx context.Context, id string) (*product.Product, error) {
+func (r ProductRepository) FindByID(ctx context.Context, id string) (product.Product, error) {
 	convUUID, err := converters.StringToUUID(id)
 	if err != nil {
-		return nil, err
+		return product.Product{}, err
 	}
 
 	p, err := r.q.FindProductByID(ctx, convUUID)
 	if err != nil {
-		return nil, err
+		return product.Product{}, err
 	}
 
 	convStoreID, err := converters.UuidToString(p.StoreID)
 	if err != nil {
-		return nil, err
+		return product.Product{}, err
 	}
 
 	var details map[string]interface{}
 	err = json.Unmarshal(p.Details, &details)
 	if err != nil {
-		return nil, err
+		return product.Product{}, err
 	}
 
-	return &product.Product{
+	return product.Product{
 		ID:               id,
 		StoreID:          *convStoreID,
 		SKU:              p.Sku.String,
@@ -61,7 +61,7 @@ func (r ProductRepository) FindByID(ctx context.Context, id string) (*product.Pr
 	}, nil
 }
 
-func (r ProductRepository) Save(ctx context.Context, p *product.Product) error {
+func (r ProductRepository) Save(ctx context.Context, p product.Product) error {
 
 	id, err := converters.StringToUUID(p.ID)
 	if err != nil {

@@ -109,7 +109,7 @@ func (c *ClientS3) RemoveFile(ctx context.Context, bucketName, objectKey string)
 
 	result, err := c.s3.DeleteObject(ctx, deleteObjectParams)
 	if err != nil {
-		slog.ErrorContext(ctx, fmt.Sprintf("Couldn't delete object %v from S3: %v\n"))
+		slog.ErrorContext(ctx, fmt.Sprintf("Couldn't delete object %v from S3: %v\n", objectKey, err))
 		return err
 	}
 	fmt.Println(result)

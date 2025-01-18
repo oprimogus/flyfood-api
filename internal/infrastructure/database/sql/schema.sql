@@ -1,11 +1,11 @@
 -- MIGRATION 2
 CREATE TABLE IF NOT EXISTS "customer" (
-                                          "id" BIGSERIAL PRIMARY KEY,
-                                          "name" varchar NOT NULL,
-                                          "last_name" varchar NOT NULL,
-                                          "cpf" varchar UNIQUE NOT NULL,
-                                          "email" varchar UNIQUE NOT NULL,
-                                          "phone" varchar NOT NULL,
+                                          "id" text PRIMARY KEY,
+                                          "name" text NOT NULL,
+                                          "last_name" text NOT NULL,
+                                          "cpf" text UNIQUE NOT NULL,
+                                          "email" text UNIQUE NOT NULL,
+                                          "phone" text NOT NULL,
                                           "created_at" timestamp NOT NULL,
                                           "updated_at" timestamp,
                                           "deleted_at" timestamp
@@ -13,17 +13,17 @@ CREATE TABLE IF NOT EXISTS "customer" (
 -- MIGRATION 3
 CREATE TABLE IF NOT EXISTS "address" (
                                          "id" BIGSERIAL PRIMARY KEY,
-                                         "customer_id" BIGSERIAL NOT NULL,
-                                         "name" varchar NOT NULL,
-                                         "address_line_1" varchar NOT NULL,
-                                         "address_line_2" varchar NOT NULL,
-                                         "neighborhood" varchar NOT NULL,
-                                         "city" varchar NOT NULL,
-                                         "state" varchar NOT NULL,
-                                         "postal_code" varchar NOT NULL,
-                                         "latitude" varchar,
-                                         "longitude" varchar,
-                                         "country" varchar NOT NULL,
+                                         "customer_id" text NOT NULL,
+                                         "name" text NOT NULL,
+                                         "address_line_1" text NOT NULL,
+                                         "address_line_2" text NOT NULL,
+                                         "neighborhood" text NOT NULL,
+                                         "city" text NOT NULL,
+                                         "state" text NOT NULL,
+                                         "postal_code" text NOT NULL,
+                                         "latitude" text,
+                                         "longitude" text,
+                                         "country" text NOT NULL,
                                          "created_at" timestamp NOT NULL,
                                          "updated_at" timestamp,
                                          "deleted_at" timestamp
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS "address" (
 ALTER TABLE "address" ADD FOREIGN KEY ("customer_id") REFERENCES "customer" ("id");
 -- MIGRATION 4
 CREATE TABLE IF NOT EXISTS "owner" (
-                                       "id" BIGSERIAL PRIMARY KEY,
+                                       "id" text PRIMARY KEY,
                                        "signature_active" bool NOT NULL,
                                        "created_at" timestamp NOT NULL,
                                        "updated_at" timestamp,
@@ -61,26 +61,26 @@ CREATE TYPE "PaymentMethod" AS ENUM (
 
 CREATE TABLE IF NOT EXISTS "store" (
                                        "id" uuid PRIMARY KEY,
-                                       "owner_id" BIGSERIAL NOT NULL,
-                                       "cnpj" varchar UNIQUE NOT NULL,
-                                       "name" varchar UNIQUE NOT NULL,
-                                       "description" varchar UNIQUE NOT NULL,
+                                       "owner_id" text NOT NULL,
+                                       "cnpj" text UNIQUE NOT NULL,
+                                       "name" text UNIQUE NOT NULL,
+                                       "description" text UNIQUE NOT NULL,
                                        "active" bool NOT NULL,
-                                       "phone" varchar UNIQUE NOT NULL,
+                                       "phone" text UNIQUE NOT NULL,
                                        "score" int NOT NULL,
                                        "is_open" boolean NOT NULL,
                                        "type" "StoreType" NOT NULL,
-                                       "profile_image" varchar,
-                                       "header_image" varchar,
-                                       "address_line_1" varchar NOT NULL,
-                                       "address_line_2" varchar NOT NULL,
-                                       "neighborhood" varchar NOT NULL,
-                                       "city" varchar NOT NULL,
-                                       "state" varchar NOT NULL,
-                                       "postal_code" varchar NOT NULL,
-                                       "latitude" varchar,
-                                       "longitude" varchar,
-                                       "country" varchar NOT NULL,
+                                       "profile_image" text,
+                                       "header_image" text,
+                                       "address_line_1" text NOT NULL,
+                                       "address_line_2" text NOT NULL,
+                                       "neighborhood" text NOT NULL,
+                                       "city" text NOT NULL,
+                                       "state" text NOT NULL,
+                                       "postal_code" text NOT NULL,
+                                       "latitude" text,
+                                       "longitude" text,
+                                       "country" text NOT NULL,
                                        "created_at" timestamp NOT NULL,
                                        "updated_at" timestamp,
                                        "deleted_at" timestamp
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS "store_payment_method" (
 CREATE TABLE IF NOT EXISTS "store_business_hour" (
                                                      "id" uuid,
                                                      "weekday" int NOT NULL,
-                                                     "open_hour" varchar NOT NULL,
-                                                     "closing_hour" varchar NOT NULL
+                                                     "open_hour" text NOT NULL,
+                                                     "closing_hour" text NOT NULL
 );
 
 ALTER TABLE "store" ADD FOREIGN KEY ("owner_id") REFERENCES "owner" ("id");
@@ -117,16 +117,16 @@ CREATE TYPE "ProductType" AS ENUM (
 CREATE TABLE "product" (
                            "id" uuid PRIMARY KEY,
                            "store_id" uuid NOT NULL,
-                           "sku" varchar,
+                           "sku" text,
                            "active_for_sale" bool NOT NULL,
                            "promo_active" bool NOT NULL,
                            "type" "ProductType" NOT NULL,
-                           "tag" varchar NOT NULL,
-                           "name" varchar NOT NULL,
-                           "description" varchar NOT NULL,
+                           "tag" text NOT NULL,
+                           "name" text NOT NULL,
+                           "description" text NOT NULL,
                            "stock_quantity" int NOT NULL,
                            "score" int NOT NULL,
-                           "image_url" varchar,
+                           "image_url" text,
                            "details" jsonb,
                            "price" int NOT NULL,
                            "promotional_price" int,
@@ -152,7 +152,7 @@ CREATE TYPE "OrderStatus" AS ENUM (
 CREATE TABLE IF NOT EXISTS "order" (
                                        "id" uuid PRIMARY KEY,
                                        "store_id" uuid NOT NULL,
-                                       "customer_id" BIGSERIAL NOT NULL,
+                                       "customer_id" text NOT NULL,
                                        "address_id" int NOT NULL,
                                        "status" "OrderStatus" NOT NULL,
                                        "shipping_amount" int NOT NULL,
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS "order_item" (
                                             "product_id" uuid,
                                             "quantity" int NOT NULL,
                                             "amount" int NOT NULL,
-                                            "details" varchar
+                                            "details" text
 );
 
 ALTER TABLE "order_item" ADD FOREIGN KEY ("order_id") REFERENCES "order" ("id");

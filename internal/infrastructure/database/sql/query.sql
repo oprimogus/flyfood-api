@@ -167,8 +167,17 @@ WHERE store.id = excluded.id;
 SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1);
 
 -- name: FindOwnerByID :one
-SELECT o.id, signature_active from owner o
-WHERE o.id = $1;
+SELECT o.id,
+       signature_active,
+       COALESCE(
+                       ARRAY_AGG(DISTINCT s.id::uuid) FILTER (WHERE s.id IS NOT NULL),
+                       '{}'::uuid[]
+       )::uuid[] AS store_ids
+FROM owner o
+         LEFT JOIN store s ON o.id = s.owner_id
+WHERE o.id = $1
+GROUP BY o.id, signature_active;
+
 
 -- name: SaveStoreBusinessHour :batchexec
 INSERT INTO store_business_hour(id, weekday, open_hour, closing_hour)

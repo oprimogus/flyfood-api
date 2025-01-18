@@ -22,7 +22,7 @@ func NewCustomerRepository(db *postgresDB.Database) CustomerRepository {
 	return CustomerRepository{db: db.GetDB(), q: sqlc.New(db.GetDB())}
 }
 
-func (r CustomerRepository) FindByID(ctx context.Context, id int) (*customer.Customer, error) {
+func (r CustomerRepository) FindByID(ctx context.Context, id string) (*customer.Customer, error) {
 	var customerRepo sqlc.FindCustomerByIDRow
 	var customerErr error
 	var addressesRepo []sqlc.FindAddressesByCustomerIDRow
@@ -33,12 +33,12 @@ func (r CustomerRepository) FindByID(ctx context.Context, id int) (*customer.Cus
 
 	go func() {
 		defer wg.Done()
-		customerRepo, customerErr = r.q.FindCustomerByID(ctx, int64(id))
+		customerRepo, customerErr = r.q.FindCustomerByID(ctx, id)
 	}()
 
 	go func() {
 		defer wg.Done()
-		addressesRepo, addressesErr = r.q.FindAddressesByCustomerID(ctx, int64(id))
+		addressesRepo, addressesErr = r.q.FindAddressesByCustomerID(ctx, id)
 	}()
 
 	wg.Wait()
@@ -90,7 +90,7 @@ func (r CustomerRepository) Save(ctx context.Context, c *customer.Customer) erro
 	qtx := sqlc.New(tx)
 
 	if err := qtx.SaveCustomer(ctx, sqlc.SaveCustomerParams{
-		ID:       int64(c.ID),
+		ID:       c.ID,
 		Name:     c.Name,
 		LastName: c.LastName,
 		Cpf:      c.CPF,
@@ -100,7 +100,7 @@ func (r CustomerRepository) Save(ctx context.Context, c *customer.Customer) erro
 		return err
 	}
 
-	if err := r.syncAddresses(ctx, qtx, int64(c.ID), c.Addresses); err != nil {
+	if err := r.syncAddresses(ctx, qtx, c.ID, c.Addresses); err != nil {
 		return err
 	}
 
@@ -108,7 +108,7 @@ func (r CustomerRepository) Save(ctx context.Context, c *customer.Customer) erro
 }
 
 func (r CustomerRepository) syncAddresses(ctx context.Context,
-	qtx *sqlc.Queries, customerID int64, addresses []address.Address) error {
+	qtx *sqlc.Queries, customerID string, addresses []address.Address) error {
 
 	addressesRepo, err := qtx.FindAddressesByCustomerID(ctx, customerID)
 	if err != nil {

@@ -50,12 +50,12 @@ type Product struct {
 	PromotionalPrice int                    `json:"promotional_price" validate:"number,gte=0"`
 }
 
-func NewProduct(storeID, name, tag, description, sku string, price int, productType Type) (*Product, error) {
+func NewProduct(storeID, name, tag, description, sku string, price int, productType Type) (Product, error) {
 	uuidV7, err := uuid.NewV7()
 	if err != nil {
-		return nil, fmt.Errorf("fail on create  product id: %w", err)
+		return Product{}, fmt.Errorf("fail on create  product id: %w", err)
 	}
-	newProduct := &Product{
+	newProduct := Product{
 		ID:            uuidV7.String(),
 		StoreID:       storeID,
 		SKU:           sku,
@@ -69,7 +69,7 @@ func NewProduct(storeID, name, tag, description, sku string, price int, productT
 		Score:         defaultScore,
 	}
 	if err := newProduct.Validate(); err != nil {
-		return nil, err
+		return Product{}, err
 	}
 	return newProduct, nil
 }

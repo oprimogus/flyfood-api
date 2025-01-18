@@ -5,7 +5,6 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/core/customer"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter/storage"
-	"strconv"
 )
 
 type CommandService struct {
@@ -30,7 +29,7 @@ func NewCommandService(r Repository, cr customer.Repository, f adapter.Factory) 
 	return CommandService{r: r, cr: cr, s: f.NewStorageService()}
 }
 
-func (s CommandService) NewOwner(ctx context.Context, customerID int) error {
+func (s CommandService) NewOwner(ctx context.Context, customerID string) error {
 	_, err := s.cr.FindByID(ctx, customerID)
 	if err != nil {
 		return err
@@ -51,13 +50,13 @@ func (s CommandService) NewOwner(ctx context.Context, customerID int) error {
 }
 
 func (s CommandService) CreateNewStore(ctx context.Context, ownerID string, params CreateNewStoreDTO) error {
-	owID, err := strconv.Atoi(ownerID)
+
+	owner, err := s.r.FindOwnerByID(ctx, ownerID)
 	if err != nil {
 		return err
 	}
 
-	owner, err := s.r.FindOwnerByID(ctx, owID)
-	if err != nil {
+	if owner.ID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -70,17 +69,12 @@ func (s CommandService) CreateNewStore(ctx context.Context, ownerID string, para
 }
 
 func (s CommandService) Update(ctx context.Context, ownerID string, params UpdateStoreDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.ID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -93,17 +87,12 @@ func (s CommandService) Update(ctx context.Context, ownerID string, params Updat
 }
 
 func (s CommandService) AddBusinessHour(ctx context.Context, ownerID string, params AddOrDeleteBusinessHourDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -116,17 +105,12 @@ func (s CommandService) AddBusinessHour(ctx context.Context, ownerID string, par
 }
 
 func (s CommandService) RemoveBusinessHour(ctx context.Context, ownerID string, params AddOrDeleteBusinessHourDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -139,17 +123,12 @@ func (s CommandService) RemoveBusinessHour(ctx context.Context, ownerID string, 
 }
 
 func (s CommandService) AddPaymentMethod(ctx context.Context, ownerID string, params AddOrDeletePaymentMethodDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -162,17 +141,12 @@ func (s CommandService) AddPaymentMethod(ctx context.Context, ownerID string, pa
 }
 
 func (s CommandService) RemovePaymentMethod(ctx context.Context, ownerID string, params AddOrDeletePaymentMethodDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -185,17 +159,12 @@ func (s CommandService) RemovePaymentMethod(ctx context.Context, ownerID string,
 }
 
 func (s CommandService) OpenOrCloseStore(ctx context.Context, ownerID string, params SetOpenStateDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -213,17 +182,12 @@ func (s CommandService) OpenOrCloseStore(ctx context.Context, ownerID string, pa
 }
 
 func (s CommandService) ActiveOrDeactivateStore(ctx context.Context, ownerID string, params SetActiveDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -241,17 +205,12 @@ func (s CommandService) ActiveOrDeactivateStore(ctx context.Context, ownerID str
 }
 
 func (s CommandService) ChangeProfileImage(ctx context.Context, ownerID string, params UploadStoreImageDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 
@@ -275,17 +234,12 @@ func (s CommandService) ChangeProfileImage(ctx context.Context, ownerID string, 
 }
 
 func (s CommandService) ChangeHeaderImage(ctx context.Context, ownerID string, params UploadStoreImageDTO) error {
-	owID, err := strconv.Atoi(ownerID)
-	if err != nil {
-		return err
-	}
-
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err
 	}
 
-	if st.OwnerID != owID {
+	if st.OwnerID != ownerID {
 		return ErrNotOwner
 	}
 

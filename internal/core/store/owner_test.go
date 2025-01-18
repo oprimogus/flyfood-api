@@ -8,7 +8,7 @@ import (
 
 func TestOwner_NewStore(t *testing.T) {
 
-	mockOwner := NewOwner(45678948674)
+	mockOwner := NewOwner("45678948674")
 
 	addr := address.Address{
 		Name:         "Store name location",
@@ -31,7 +31,7 @@ func TestOwner_NewStore(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, store)
-	assert.Equal(t, 45678948674, store.OwnerID)
+	assert.Equal(t, "45678948674", store.OwnerID)
 	assert.Equal(t, DefaultScore, store.Score)
 	assert.Equal(t, false, store.Active)
 	assert.Equal(t, false, store.IsOpen)

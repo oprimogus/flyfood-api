@@ -11,7 +11,6 @@ import (
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/zitadel"
 	"github.com/oprimogus/cardapiogo/internal/xvalidator"
 	"net/http"
-	"strconv"
 )
 
 type customerController struct {
@@ -41,16 +40,11 @@ func newCustomerController(validator *xvalidator.Validator, customerService cust
 func (c customerController) getCustomer(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()
 	authCtx := zt.GetContext(r.Context())
-	userID, err := strconv.Atoi(authCtx.UserID())
-	if err != nil {
-		HandleError(w, r, err)
-		return
-	}
 
-	cs, err := c.customerService.FindCustomer(r.Context(), userID)
+	cs, err := c.customerService.FindCustomer(r.Context(), authCtx.UserID())
 	if err != nil {
 		params := customer.CreateProfileDTO{
-			ID:       userID,
+			ID:       authCtx.UserID(),
 			Name:     authCtx.GivenName,
 			Email:    authCtx.Email,
 			LastName: authCtx.FamilyName,
@@ -98,14 +92,9 @@ func (c customerController) getCustomer(w http.ResponseWriter, r *http.Request) 
 func (c customerController) updateCustomerProfile(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()
 	authCtx := zt.Middleware.Context(r.Context())
-	userID, err := strconv.Atoi(authCtx.UserID())
-	if err != nil {
-		HandleError(w, r, err)
-		return
-	}
 
 	var params customer.UpdateProfileDTO
-	err = json.NewDecoder(r.Body).Decode(&params)
+	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -117,7 +106,7 @@ func (c customerController) updateCustomerProfile(w http.ResponseWriter, r *http
 		return
 	}
 
-	err = c.customerService.UpdateCustomerProfile(r.Context(), userID, params)
+	err = c.customerService.UpdateCustomerProfile(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -147,14 +136,9 @@ func (c customerController) updateCustomerProfile(w http.ResponseWriter, r *http
 func (c customerController) addAddress(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()
 	authCtx := zt.Middleware.Context(r.Context())
-	userID, err := strconv.Atoi(authCtx.UserID())
-	if err != nil {
-		HandleError(w, r, err)
-		return
-	}
 
 	var params address.Address
-	err = json.NewDecoder(r.Body).Decode(&params)
+	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -166,7 +150,7 @@ func (c customerController) addAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.customerService.AddAddress(r.Context(), userID, params)
+	err = c.customerService.AddAddress(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -196,14 +180,9 @@ func (c customerController) addAddress(w http.ResponseWriter, r *http.Request) {
 func (c customerController) removeAddress(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()
 	authCtx := zt.Middleware.Context(r.Context())
-	userID, err := strconv.Atoi(authCtx.UserID())
-	if err != nil {
-		HandleError(w, r, err)
-		return
-	}
 
 	var params address.Address
-	err = json.NewDecoder(r.Body).Decode(&params)
+	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -215,7 +194,7 @@ func (c customerController) removeAddress(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = c.customerService.RemoveAddress(r.Context(), userID, params)
+	err = c.customerService.RemoveAddress(r.Context(), authCtx.UserID(), params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
