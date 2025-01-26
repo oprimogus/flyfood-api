@@ -53,7 +53,6 @@ clean:
 	rm -f ./tmp/coverage.*
 
 dev:
-	make docs
 	air
 
 run:
