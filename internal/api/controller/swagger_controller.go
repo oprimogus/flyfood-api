@@ -16,7 +16,7 @@ func docsHandler(w http.ResponseWriter, r *http.Request) {
 	htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 		SpecURL: "./api/swagger.json",
 		CustomOptions: scalar.CustomOptions{
-			PageTitle: "Cardapiogo",
+			PageTitle: "FlyFood",
 		},
 		DarkMode: true,
 	})

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/oprimogus/cardapiogo/internal/core/product"
+	"github.com/oprimogus/cardapiogo/internal/core/store/product"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
 	"github.com/oprimogus/cardapiogo/pkg/converters"

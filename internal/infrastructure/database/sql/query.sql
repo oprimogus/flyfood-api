@@ -1,5 +1,3 @@
--- noinspection SqlResolveForFile
-
 -- name: FindCustomerByID :one
 SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 FROM customer c
@@ -91,7 +89,12 @@ WITH relevant_business_hours AS (
          SELECT *
          FROM store_payment_method pm
          WHERE id = $1
-     )
+     ),
+    relevant_products AS (
+        SELECT id, store_id
+        FROM product
+        WHERE store_id = $1
+    )
 SELECT
     s.owner_id, s.cnpj, s.name, s.description,
     s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
@@ -105,10 +108,15 @@ SELECT
     COALESCE(
         ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
                     '{}'::"PaymentMethod"[]
-    )::text[] AS payment_methods
+    )::text[] AS payment_methods,
+    COALESCE(
+            ARRAY_AGG(DISTINCT rp.id) FILTER (WHERE rp.id IS NOT NULL),
+                        '{}'::uuid[]
+        )::uuid[] AS products
 FROM store s
          LEFT JOIN relevant_business_hours rbh ON s.id = rbh.id
          LEFT JOIN relevant_payment_methods rpm ON s.id = rpm.id
+         LEFT JOIN relevant_products rp ON s.id = rp.store_id
 WHERE s.id = $1
 GROUP BY
     s.owner_id, s.cnpj, s.name, s.description,
@@ -116,6 +124,44 @@ GROUP BY
     s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
     s.city, s.state, s.postal_code, s.latitude, s.longitude,
     s.country, s.created_at, s.updated_at, s.deleted_at;
+
+-- name: FindStoresByFilter :many
+SELECT
+    s.id,
+    s.name,
+    s.score,
+    s.is_open,
+    s.type,
+    s.neighborhood,
+    s.latitude,
+    s.longitude,
+    s.profile_image
+FROM store s
+WHERE 1 = 1
+  AND (
+    NULLIF(@name::text, '') IS NULL
+        OR unaccent(s.name) ILIKE '%' || unaccent(@name::text) || '%'
+    )
+  AND (
+    NULLIF(@type::text, '') IS NULL
+        OR s.type::text = @type
+    )
+  AND (
+    NULLIF(@city::text, '') IS NULL
+        OR s.city = @city
+    )
+  AND (
+    sqlc.narg(is_open)::boolean IS NULL
+        OR s.is_open = sqlc.narg(is_open)::boolean
+    )
+ORDER BY s.score DESC, s.type
+OFFSET sqlc.arg('offset_value')
+    LIMIT sqlc.arg('limit_items');
+
+-- name: FindOwnerStores :many
+SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+FROM store
+WHERE owner_id = $1;
 
 -- name: FindBusinessHourByStoreID :many
 SELECT bh.weekday, bh.open_hour, bh.closing_hour
@@ -166,6 +212,9 @@ WHERE store.id = excluded.id;
 -- name: IsOwner :one
 SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1);
 
+-- name: IsOwnerOf :one
+SELECT EXISTS(SELECT 1 FROM store WHERE owner_id = $1 AND id = $2);
+
 -- name: FindOwnerByID :one
 SELECT o.id,
        signature_active,
@@ -205,6 +254,12 @@ SELECT i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.na
 FROM product i
 WHERE i.id = $1
 LIMIT 1;
+
+-- name: FindProductsByStoreID :many
+SELECT i.id, i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
+       i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
+FROM product i
+WHERE i.store_id = $1;
 
 -- name: SaveProduct :exec
 INSERT INTO product (id, store_id, sku, active_for_sale, promo_active, type, tag, name, description,
@@ -325,41 +380,6 @@ WHERE product.id = $1 AND product.store_id = $2;
 -- ORDER BY week_day;
 --
 
--- name: FindStoresByFilter :many
-SELECT
-    s.id,
-    s.name,
-    s.score,
-    s.is_open,
-    s.type,
-    s.neighborhood,
-    s.latitude,
-    s.longitude,
-    s.profile_image
-FROM store s
-WHERE (CASE
-           WHEN sqlc.narg('name')::text IS NOT NULL
-               THEN unaccent(s.name) ILIKE '%' || unaccent(sqlc.narg('name')::text) || '%'
-           ELSE true
-    END)
-  AND (CASE
-           WHEN sqlc.narg('type')::text IS NOT NULL
-               THEN s.type::text = sqlc.narg('type')::text
-           ELSE true
-    END)
-  AND (CASE
-           WHEN sqlc.narg('city')::text IS NOT NULL
-               THEN s.city = sqlc.narg('city')::text
-           ELSE true
-    END)
-  AND (CASE
-           WHEN sqlc.narg('is_open')::boolean IS NOT NULL
-               THEN s.is_open = sqlc.narg('is_open')::boolean
-           ELSE true
-    END)
-ORDER BY s.score DESC, s.type
-OFFSET sqlc.arg('offset_value')
-LIMIT sqlc.arg('limit_items');
 -- SELECT s.id, s.name, s.score, s.is_open, s.type, s.neighborhood, s.latitude, s.longitude, s.profile_image
 -- FROM store s
 -- WHERE 1 = 1

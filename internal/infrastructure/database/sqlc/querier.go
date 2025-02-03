@@ -57,8 +57,7 @@ type Querier interface {
 	//  FROM store_business_hour bh
 	//  WHERE bh.id = $1
 	FindBusinessHourByStoreID(ctx context.Context, id pgtype.UUID) ([]FindBusinessHourByStoreIDRow, error)
-	// noinspection SqlResolveForFile
-	//
+	//FindCustomerByID
 	//
 	//  SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 	//  FROM customer c
@@ -78,6 +77,12 @@ type Querier interface {
 	//  WHERE o.id = $1
 	//  GROUP BY o.id, signature_active
 	FindOwnerByID(ctx context.Context, id string) (FindOwnerByIDRow, error)
+	//FindOwnerStores
+	//
+	//  SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+	//  FROM store
+	//  WHERE owner_id = $1
+	FindOwnerStores(ctx context.Context, ownerID string) ([]FindOwnerStoresRow, error)
 	//FindPaymentMethodsByStoreID
 	//
 	//  SELECT pm.payment_method FROM store_payment_method pm
@@ -91,6 +96,13 @@ type Querier interface {
 	//  WHERE i.id = $1
 	//  LIMIT 1
 	FindProductByID(ctx context.Context, id pgtype.UUID) (FindProductByIDRow, error)
+	//FindProductsByStoreID
+	//
+	//  SELECT i.id, i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
+	//         i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
+	//  FROM product i
+	//  WHERE i.store_id = $1
+	FindProductsByStoreID(ctx context.Context, storeID pgtype.UUID) ([]FindProductsByStoreIDRow, error)
 	//FindProductsIDByStoreID
 	//
 	//  SELECT p.id from product p
@@ -107,8 +119,12 @@ type Querier interface {
 	//           SELECT id, payment_method
 	//           FROM store_payment_method pm
 	//           WHERE id = $1
-	//           ORDER BY payment_method desc
-	//       )
+	//       ),
+	//      relevant_products AS (
+	//          SELECT id, store_id
+	//          FROM product
+	//          WHERE store_id = $1
+	//      )
 	//  SELECT
 	//      s.owner_id, s.cnpj, s.name, s.description,
 	//      s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
@@ -122,10 +138,15 @@ type Querier interface {
 	//      COALESCE(
 	//          ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
 	//                      '{}'::"PaymentMethod"[]
-	//      )::text[] AS payment_methods
+	//      )::text[] AS payment_methods,
+	//      COALESCE(
+	//              ARRAY_AGG(DISTINCT rp.id) FILTER (WHERE rp.id IS NOT NULL),
+	//                          '{}'::uuid[]
+	//          )::uuid[] AS products
 	//  FROM store s
 	//           LEFT JOIN relevant_business_hours rbh ON s.id = rbh.id
 	//           LEFT JOIN relevant_payment_methods rpm ON s.id = rpm.id
+	//           LEFT JOIN relevant_products rp ON s.id = rp.store_id
 	//  WHERE s.id = $1
 	//  GROUP BY
 	//      s.owner_id, s.cnpj, s.name, s.description,
@@ -134,101 +155,7 @@ type Querier interface {
 	//      s.city, s.state, s.postal_code, s.latitude, s.longitude,
 	//      s.country, s.created_at, s.updated_at, s.deleted_at
 	FindStoreByID(ctx context.Context, id pgtype.UUID) (FindStoreByIDRow, error)
-	//                    latitude, longitude, country, created_at, updated_at)
-	// -- name: FindCustomerByID :many
-	// SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone, a.address_line_1, a.address_line_2,
-	//        a.neighborhood, a.city, a.state, a.postal_code, a.country, o.id
-	// FROM customer c
-	// LEFT JOIN address a on c.id = a.customer_id
-	// LEFT JOIN "order" o on c.id = o.customer_id;
-	//
-	// -- name: SaveCustomer :exec
-	// INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
-	//     VALUES ($1, $2, $3, $3, $5, $6,
-	//             NOW() AT TIME ZONE 'UTC',
-	//             NOW() AT TIME ZONE 'UTC',
-	//             NULL)
-	//     ON CONFLICT (id) DO UPDATE
-	// SET
-	//     name = $2,
-	//     last_name = $3,
-	//     cpf = $4,
-	//     email = $5,
-	//     phone = $6;
-	// -- name: CreateStore :exec
-	// INSERT INTO store (id, cpf_cnpj, owner_id, name, active, phone, score, type,
-	//                    address_line_1, address_line_2, neighborhood, city, state, postal_code,
-	//                    latitude, longitude, country, created_at, updated_at)
-	// VALUES(
-	//        $1,
-	//        $2,
-	//        $3,
-	//        $4,
-	//        $5,
-	//        $6,
-	//        $7,
-	//        $8,
-	//        $9,
-	//        $10,
-	//        $11,
-	//        $12,
-	//        $13,
-	//        $14,
-	//        $15,
-	//        $16,
-	//        $17,
-	//        NOW() AT TIME ZONE 'UTC',
-	//        NOW() AT TIME ZONE 'UTC');
-	//
-	// -- name: UpdateStore :exec
-	// UPDATE store
-	//   SET
-	//     name = $3,
-	//     phone = $4,
-	//     type = $5,
-	//     address_line_1 = $6,
-	//     address_line_2 = $7,
-	//     neighborhood = $8,
-	//     city = $9,
-	//     state = $10,
-	//     postal_code = $11,
-	//     country = $12,
-	//     updated_at = NOW() AT TIME ZONE 'UTC'
-	// WHERE id = $1 AND owner_id = $2;
-	//
-	// -- name: SetProfileImage :exec
-	// UPDATE store
-	//   SET
-	//     profile_image = $2
-	// WHERE id = $1;
-	//
-	// -- name: SetHeaderImage :exec
-	// UPDATE store
-	//   SET
-	//     header_image = $2
-	// WHERE id = $1;
-	//
-	// -- name: IsOwner :one
-	// SELECT EXISTS(SELECT 1 FROM store WHERE id = $1 AND owner_id = $2);
-	//
-	// -- name: GetStoreByID :one
-	// SELECT s.id, s.name, s.phone, s.score, s.type, s.address_line_1,
-	// s.address_line_2, s.neighborhood, s.city, s.state, s.country, s.profile_image, s.header_image
-	// FROM store s
-	// WHERE id = $1;
-	//
-	// -- name: GetStoreBusinessHoursByID :many
-	// SELECT week_day, timezone, opening_time, closing_time
-	// FROM business_hour
-	// WHERE store_id = $1
-	// ORDER BY week_day;
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+	//FindStoresByFilter
 	//
 	//  SELECT
 	//      s.id,
@@ -241,34 +168,35 @@ type Querier interface {
 	//      s.longitude,
 	//      s.profile_image
 	//  FROM store s
-	//  WHERE (CASE
-	//             WHEN $1::text IS NOT NULL
-	//                 THEN unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
-	//             ELSE true
-	//      END)
-	//    AND (CASE
-	//             WHEN $2::text IS NOT NULL
-	//                 THEN s.type::text = $2::text
-	//             ELSE true
-	//      END)
-	//    AND (CASE
-	//             WHEN $3::text IS NOT NULL
-	//                 THEN s.city = $3::text
-	//             ELSE true
-	//      END)
-	//    AND (CASE
-	//             WHEN $4::boolean IS NOT NULL
-	//                 THEN s.is_open = $4::boolean
-	//             ELSE true
-	//      END)
+	//  WHERE 1 = 1
+	//    AND (
+	//      NULLIF($1::text, '') IS NULL
+	//          OR unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
+	//      )
+	//    AND (
+	//      NULLIF($2::text, '') IS NULL
+	//          OR s.type::text = $2
+	//      )
+	//    AND (
+	//      NULLIF($3::text, '') IS NULL
+	//          OR s.city = $3
+	//      )
+	//    AND (
+	//      $4::boolean IS NULL
+	//          OR s.is_open = $4::boolean
+	//      )
 	//  ORDER BY s.score DESC, s.type
 	//  OFFSET $5
-	//  LIMIT $6
+	//      LIMIT $6
 	FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error)
 	//IsOwner
 	//
 	//  SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
 	IsOwner(ctx context.Context, id string) (bool, error)
+	//IsOwnerOf
+	//
+	//  SELECT EXISTS(SELECT 1 FROM store WHERE owner_id = $1 AND id = $2)
+	IsOwnerOf(ctx context.Context, arg IsOwnerOfParams) (bool, error)
 	//RemoveOwner
 	//
 	//  DELETE FROM owner

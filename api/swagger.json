@@ -7,8 +7,8 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "Documentação da API de delivery Cardapiogo.",
-        "title": "Cardapiogo API",
+        "description": "Documentação da API de delivery FlyFood.",
+        "title": "FlyFood API",
         "contact": {
             "name": "Gustavo Ferreira de Jesus",
             "email": "gustavo081900@gmail.com"
@@ -103,7 +103,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Customer Profile Management"
+                    "Customer Profile Management V1"
                 ],
                 "summary": "Get a customer account",
                 "responses": {
@@ -165,7 +165,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Customer Profile Management"
+                    "Customer Profile Management V1"
                 ],
                 "summary": "Update existing customer profile",
                 "parameters": [
@@ -244,7 +244,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Customer Profile Management"
+                    "Customer Profile Management V1"
                 ],
                 "summary": "Add new address to customer",
                 "parameters": [
@@ -321,7 +321,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Customer Profile Management"
+                    "Customer Profile Management V1"
                 ],
                 "summary": "Remove an address to customer",
                 "parameters": [
@@ -400,9 +400,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Owner"
+                    "Owner V1"
                 ],
-                "summary": "Create an owner",
+                "summary": "Owner: Create an owner",
                 "parameters": [
                     {
                         "type": "string",
@@ -456,20 +456,23 @@
             }
         },
         "/v1/owner/store": {
-            "get": {
+            "put": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a store by ID",
+                "description": "Modify comprehensive store details including contact, operational, and profile information",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Store Management"
+                    "Store Management V1"
                 ],
-                "summary": "Get a store by ID",
+                "summary": "Store: Update existing store profile",
                 "parameters": [
                     {
                         "type": "string",
@@ -479,19 +482,18 @@
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Store ID",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
+                        "description": "Updated store information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.UpdateStoreDTO"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Store model",
-                        "schema": {
-                            "$ref": "#/definitions/store.Store"
-                        }
+                        "description": "Store successfully updated"
                     },
                     "400": {
                         "description": "Invalid request data or malformed JSON",
@@ -505,8 +507,14 @@
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
                     },
+                    "404": {
+                        "description": "Store not found",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
                     "422": {
-                        "description": "Validation error - invalid status",
+                        "description": "Validation error - invalid store details",
                         "schema": {
                             "$ref": "#/definitions/xerrors.CustomError"
                         }
@@ -533,9 +541,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Owner"
+                    "Store Management V1"
                 ],
-                "summary": "Create a new store for an owner",
+                "summary": "Store: Create a new store for an owner",
                 "parameters": [
                     {
                         "type": "string",
@@ -597,6 +605,913 @@
                 }
             }
         },
+        "/v1/owner/store/active": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Activate or deactivate store to control product visibility and order processing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Change store's visibility and order acceptance status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Store activation status",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.SetActiveDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store activation status updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/all": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all stores of an owner",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Get all stores of an owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "store model for owner list",
+                        "schema": {
+                            "$ref": "#/definitions/store.QueryOwnerStoreList"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/business-hour": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register specific business hours for a store's operational schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Add business operating hours for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Business hours details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeleteBusinessHourDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Business hours successfully added"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid business hours",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete specific business hours from store's operational schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Remove business operating hours for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Business hours to remove",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeleteBusinessHourDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Business hours successfully removed"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid business hours",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/open": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Toggle store's availability to accept or stop accepting new orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Change store's operational status for orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Store open/close status",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.SetOpenStateDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store operational status updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/payment-method": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a new payment method accepted by the store",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Add payment method for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment method details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeletePaymentMethodDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment method successfully added"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid payment method",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a previously added payment method from store's accepted methods",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Remove payment method for store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment method to remove",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/store.AddOrDeletePaymentMethodDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment method successfully removed"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid payment method",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/product": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update a product of store",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Product: Update a product of store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Detailed product information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/product.UpdateProductDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stock successfully updated"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - store may already exist",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid store details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "External service communication error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add a new product into store",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Product: Add a new product into store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Detailed product creation information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/product.CreateProductDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Product successfully created"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - store may already exist",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid store details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "External service communication error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/product/decrease-stock": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Decrease stock of a product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Product: Decrease stock of a product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Detailed product information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/product.ChangeStockProductDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stock successfully updated"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - store may already exist",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid store details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "External service communication error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/product/increase-stock": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Increase stock of a product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Product: Increase stock of a product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Detailed product information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/product.ChangeStockProductDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stock successfully updated"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - store may already exist",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid store details",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "502": {
+                        "description": "External service communication error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a store by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Get a store by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "QueryOwnerStore model",
+                        "schema": {
+                            "$ref": "#/definitions/store.QueryOwnerStore"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/owner/store/{id}/header-image": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change store header image",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Store Management V1"
+                ],
+                "summary": "Store: Change store header image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer authentication token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Store ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Store header image",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Store activation status updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data or malformed JSON",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/xerrors.CustomError"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/owner/store/{id}/profile-image": {
             "post": {
                 "security": [
@@ -612,9 +1527,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Store Management"
+                    "Store Management V1"
                 ],
-                "summary": "Change store profile image",
+                "summary": "Store: Change store profile image",
                 "parameters": [
                     {
                         "type": "string",
@@ -681,7 +1596,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Store"
+                    "Store V1"
                 ],
                 "summary": "Get a stores by Filter",
                 "parameters": [
@@ -777,77 +1692,6 @@
                         }
                     }
                 }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Modify comprehensive store details including contact, operational, and profile information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Update existing store profile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated store information",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.UpdateStoreDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Store successfully updated"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "404": {
-                        "description": "Store not found",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid store details",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
             }
         },
         "/v1/store/:id": {
@@ -862,7 +1706,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Store"
+                    "Store V1"
                 ],
                 "summary": "Get a store by ID",
                 "parameters": [
@@ -915,404 +1759,6 @@
                 }
             }
         },
-        "/v1/store/active": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Activate or deactivate store to control product visibility and order processing",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Change store's visibility and order acceptance status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Store activation status",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.SetActiveDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Store activation status updated successfully"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid status",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/business-hour": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Register specific business hours for a store's operational schedule",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Add business operating hours for store",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Business hours details",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.AddOrDeleteBusinessHourDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Business hours successfully added"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid business hours",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete specific business hours from store's operational schedule",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Remove business operating hours for store",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Business hours to remove",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.AddOrDeleteBusinessHourDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Business hours successfully removed"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid business hours",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/open": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Toggle store's availability to accept or stop accepting new orders",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Change store's operational status for orders",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Store open/close status",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.SetOpenStateDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Store operational status updated successfully"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid status",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/store/payment-method": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Register a new payment method accepted by the store",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Add payment method for store",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Payment method details",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.AddOrDeletePaymentMethodDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Payment method successfully added"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid payment method",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete a previously added payment method from store's accepted methods",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Store Management"
-                ],
-                "summary": "Remove payment method for store",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer authentication token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Payment method to remove",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/store.AddOrDeletePaymentMethodDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Payment method successfully removed"
-                    },
-                    "400": {
-                        "description": "Invalid request data or malformed JSON",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - invalid payment method",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/xerrors.CustomError"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/store/{id}/header-image": {
             "post": {
                 "security": [
@@ -1320,7 +1766,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Change store header image",
+                "description": "Change product image",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -1328,9 +1774,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Store Management"
+                    "Store Management V1"
                 ],
-                "summary": "Change store header image",
+                "summary": "Product: Change product image",
                 "parameters": [
                     {
                         "type": "string",
@@ -1342,13 +1788,20 @@
                     {
                         "type": "string",
                         "description": "Store ID",
-                        "name": "id",
+                        "name": "store_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "file",
-                        "description": "Store header image",
+                        "description": "Product Image",
                         "name": "file",
                         "in": "formData",
                         "required": true
@@ -1356,7 +1809,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Store activation status updated successfully"
+                        "description": "Product image updated with success"
                     },
                     "400": {
                         "description": "Invalid request data or malformed JSON",
@@ -1540,6 +1993,275 @@
                 }
             }
         },
+        "product.ChangeStockProductDTO": {
+            "type": "object",
+            "required": [
+                "id",
+                "store_id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "0194900a-8909-755a-bd61-ec7a18224200"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "store_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "product.CreateProductDTO": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "price",
+                "store_id",
+                "tag",
+                "type"
+            ],
+            "properties": {
+                "SKU": {
+                    "type": "string",
+                    "example": "XBOO168"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Pizza com queijo, azeitona, presunto"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Pizza Portuguesa"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 5990
+                },
+                "store_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "tag": {
+                    "type": "string",
+                    "example": "Promotional 1"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/product.Type"
+                        }
+                    ],
+                    "example": "FOOD"
+                }
+            }
+        },
+        "product.Product": {
+            "type": "object",
+            "required": [
+                "description",
+                "id",
+                "name",
+                "price",
+                "score",
+                "store_id",
+                "tag",
+                "type"
+            ],
+            "properties": {
+                "SKU": {
+                    "type": "string",
+                    "example": "XBOO168"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Pizza com queijo, azeitona, presunto"
+                },
+                "details": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Pizza Portuguesa"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 5990
+                },
+                "promo_active": {
+                    "type": "boolean"
+                },
+                "promotional_price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "stock_quantity": {
+                    "type": "integer"
+                },
+                "store_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "tag": {
+                    "type": "string",
+                    "example": "Promotional 1"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/product.Type"
+                        }
+                    ],
+                    "example": "FOOD"
+                }
+            }
+        },
+        "product.ProductDTO": {
+            "type": "object",
+            "required": [
+                "description",
+                "id",
+                "name",
+                "price",
+                "score",
+                "tag",
+                "type"
+            ],
+            "properties": {
+                "SKU": {
+                    "type": "string",
+                    "example": "XBOO168"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Pizza com queijo, azeitona, presunto"
+                },
+                "details": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Pizza Portuguesa"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 5990
+                },
+                "promo_active": {
+                    "type": "boolean"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "tag": {
+                    "type": "string",
+                    "example": "Promotional 1"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/product.Type"
+                        }
+                    ],
+                    "example": "FOOD"
+                }
+            }
+        },
+        "product.Type": {
+            "type": "string",
+            "enum": [
+                "FOOD",
+                "WATER"
+            ],
+            "x-enum-varnames": [
+                "Food",
+                "Water"
+            ]
+        },
+        "product.UpdateProductDTO": {
+            "type": "object",
+            "required": [
+                "description",
+                "id",
+                "name",
+                "price",
+                "store_id",
+                "tag",
+                "type"
+            ],
+            "properties": {
+                "SKU": {
+                    "type": "string",
+                    "example": "XBOO168"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Pizza com queijo, azeitona, presunto"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "0194900a-8909-755a-bd61-ec7a18224200"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Pizza Portuguesa"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 5990
+                },
+                "store_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "tag": {
+                    "type": "string",
+                    "example": "Promotional 1"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/product.Type"
+                        }
+                    ],
+                    "example": "FOOD"
+                }
+            }
+        },
         "store.AddOrDeleteBusinessHourDTO": {
             "type": "object",
             "required": [
@@ -1649,12 +2371,12 @@
             "x-enum-varnames": [
                 "Credit",
                 "Debit",
-                "Pix",
                 "Cash",
+                "Pix",
                 "Bitcoin"
             ]
         },
-        "store.QueryStore": {
+        "store.QueryOwnerStore": {
             "type": "object",
             "required": [
                 "address",
@@ -1664,6 +2386,7 @@
                 "name",
                 "paymentMethods",
                 "phone",
+                "products",
                 "score",
                 "type"
             ],
@@ -1709,6 +2432,156 @@
                 "phone": {
                     "type": "string",
                     "example": "+5511997590670"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/product.Product"
+                    }
+                },
+                "profileImage": {
+                    "type": "string",
+                    "example": "https://example.com/profile.jpg"
+                },
+                "score": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.Type"
+                        }
+                    ],
+                    "example": "RESTAURANT"
+                }
+            }
+        },
+        "store.QueryOwnerStoreList": {
+            "type": "object",
+            "required": [
+                "city",
+                "country",
+                "id",
+                "name",
+                "score",
+                "state",
+                "type"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "city": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "example": "New York"
+                },
+                "country": {
+                    "type": "string",
+                    "maxLength": 15,
+                    "example": "United States"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOpen": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Delicious Bakery"
+                },
+                "profileImage": {
+                    "type": "string",
+                    "example": "https://example.com/profile.jpg"
+                },
+                "score": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "state": {
+                    "type": "string",
+                    "maxLength": 15,
+                    "example": "NY"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.Type"
+                        }
+                    ],
+                    "example": "RESTAURANT"
+                }
+            }
+        },
+        "store.QueryStore": {
+            "type": "object",
+            "required": [
+                "address",
+                "businessHours",
+                "description",
+                "id",
+                "name",
+                "paymentMethods",
+                "phone",
+                "products",
+                "score",
+                "type"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/address.Address"
+                },
+                "businessHours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.BusinessHours"
+                    }
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Best bakery in town with fresh pastries"
+                },
+                "headerImage": {
+                    "type": "string",
+                    "example": "https://example.com/header.jpg"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOpen": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 25,
+                    "minLength": 3,
+                    "example": "Delicious Bakery"
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.PaymentMethod"
+                    }
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+5511997590670"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/product.ProductDTO"
+                    }
                 },
                 "profileImage": {
                     "type": "string",
@@ -1804,105 +2677,6 @@
                 "isOpen": {
                     "type": "boolean",
                     "example": true
-                }
-            }
-        },
-        "store.Store": {
-            "type": "object",
-            "required": [
-                "address",
-                "businessHours",
-                "cnpj",
-                "description",
-                "id",
-                "name",
-                "ownerID",
-                "paymentMethods",
-                "phone",
-                "productsID",
-                "score",
-                "type"
-            ],
-            "properties": {
-                "active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "address": {
-                    "$ref": "#/definitions/address.Address"
-                },
-                "businessHours": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/store.BusinessHours"
-                    }
-                },
-                "cnpj": {
-                    "type": "string",
-                    "example": "12345678000190"
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "example": "Best bakery in town with fresh pastries"
-                },
-                "headerImage": {
-                    "type": "string",
-                    "example": "https://example.com/header.jpg"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "isOpen": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 25,
-                    "minLength": 3,
-                    "example": "Delicious Bakery"
-                },
-                "ownerID": {
-                    "type": "string",
-                    "example": "5692562784252"
-                },
-                "paymentMethods": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/store.PaymentMethod"
-                    }
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+5511997590670"
-                },
-                "productsID": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "['prod1'",
-                        " 'prod2']"
-                    ]
-                },
-                "profileImage": {
-                    "type": "string",
-                    "example": "https://example.com/profile.jpg"
-                },
-                "score": {
-                    "type": "integer",
-                    "example": 500
-                },
-                "type": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/store.Type"
-                        }
-                    ],
-                    "example": "RESTAURANT"
                 }
             }
         },

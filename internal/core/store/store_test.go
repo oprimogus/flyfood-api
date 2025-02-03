@@ -2,6 +2,7 @@ package store
 
 import (
 	"github.com/oprimogus/cardapiogo/internal/core/address"
+	"github.com/oprimogus/cardapiogo/internal/core/owner"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -76,7 +77,7 @@ func TestStore_AddNewBusinessHour(t *testing.T) {
 
 	for _, test := range tests {
 
-		mockOwner := NewOwner("8647877478")
+		mockOwner := owner.NewOwner("8647877478")
 
 		addr := address.Address{
 			Name:         "Store name location",
@@ -89,7 +90,8 @@ func TestStore_AddNewBusinessHour(t *testing.T) {
 			Country:      "Brasil",
 		}
 
-		storeCreated, err := mockOwner.NewStore(
+		storeCreated, err := NewStore(
+			mockOwner.ID,
 			"63432495000148",
 			"Store test",
 			"store from test",
@@ -103,4 +105,37 @@ func TestStore_AddNewBusinessHour(t *testing.T) {
 		err = storeCreated.AddNewBusinessHour(test.newBusinessHour)
 		assert.Equal(t, test.expected, err)
 	}
+}
+
+func TestStore_NewStore(t *testing.T) {
+
+	mockOwner := owner.NewOwner("45678948674")
+
+	addr := address.Address{
+		Name:         "Store name location",
+		AddressLine1: "rua 1",
+		AddressLine2: "879",
+		Neighborhood: "test",
+		City:         "test",
+		State:        "test",
+		PostalCode:   "11490-135",
+		Country:      "Brasil",
+	}
+
+	store, err := NewStore(
+		mockOwner.ID,
+		"63432495000148",
+		"Store test",
+		"store from test",
+		"+5513997590579",
+		addr,
+		Restaurant)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, store)
+	assert.Equal(t, "45678948674", store.OwnerID)
+	assert.Equal(t, DefaultScore, store.Score)
+	assert.Equal(t, false, store.Active)
+	assert.Equal(t, false, store.IsOpen)
+	assert.Equal(t, store.Address, addr)
 }

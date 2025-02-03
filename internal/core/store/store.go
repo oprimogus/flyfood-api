@@ -1,6 +1,8 @@
 package store
 
 import (
+	"fmt"
+	"github.com/google/uuid"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/oprimogus/cardapiogo/internal/xvalidator"
 )
@@ -33,7 +35,34 @@ type Store struct {
 	HeaderImage    string          `json:"headerImage" example:"https://example.com/header.jpg"`
 	BusinessHours  []BusinessHours `json:"businessHours" validate:"required,dive"`
 	PaymentMethods []PaymentMethod `json:"paymentMethods" validate:"required,dive"`
-	Products       []string        `json:"productsID" validate:"required" example:"['prod1', 'prod2']"`
+}
+
+func NewStore(ownerID, cnpj, name, description,
+	phone string, address address.Address, types Type) (Store, error) {
+	uuidV7, err := uuid.NewV7()
+	if err != nil {
+		return Store{}, fmt.Errorf("fail on create store id: %w", err)
+	}
+	newStore := Store{
+		ID:             uuidV7.String(),
+		OwnerID:        ownerID,
+		CNPJ:           cnpj,
+		Name:           name,
+		Description:    description,
+		Active:         false,
+		IsOpen:         false,
+		Phone:          phone,
+		Score:          DefaultScore,
+		Address:        address,
+		Type:           types,
+		BusinessHours:  []BusinessHours{},
+		PaymentMethods: []PaymentMethod{},
+	}
+	if err := newStore.Validate(); err != nil {
+		return Store{}, err
+	}
+
+	return newStore, nil
 }
 
 func (st *Store) Validate() error {
@@ -64,10 +93,6 @@ func (st *Store) UpdateStoreProfile(name, description,
 	st.Address = address
 	st.Type = types
 	return st.Validate()
-}
-
-func (st *Store) AddNewProduct(productID string) {
-	st.Products = append(st.Products, productID)
 }
 
 func (st *Store) AddNewBusinessHour(hour BusinessHours) error {

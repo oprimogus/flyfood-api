@@ -4,7 +4,6 @@ import "errors"
 
 var (
 	ErrClosingTimeBeforeOpeningTime = errors.New("o horário de encerramento não pode ser anterior ao horário de abertura no mesmo dia")
-	ErrNotOwner                     = errors.New("apenas o dono pode efetuar essa ação")
 	ErrInvalidWeekDayBusinessHour   = errors.New("dia inválido")
 	ErrBusinessHourAlreadyExist     = errors.New("horário de funcionamento já cadastrado")
 	ErrBusinessHourNotExist         = errors.New("horário de funcionamento informado não existe")

@@ -25,3 +25,11 @@ func (f RepositoryFactory) NewCustomerRepository() CustomerRepository {
 func (f RepositoryFactory) NewStoreRepository() StoreRepository {
 	return NewStoreRepository(f.db)
 }
+
+func (f RepositoryFactory) NewProductRepository() ProductRepository {
+	return NewProductRepository(f.db)
+}
+
+func (f RepositoryFactory) NewOwnerRepository() OwnerRepository {
+	return NewOwnerRepository(f.db)
+}

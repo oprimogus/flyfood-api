@@ -33,9 +33,9 @@ services:
       ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: cardapiogo
       ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: cardapiogo
       ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
-      ZITADEL_EXTERNALSECURE: false
-      ZITADEL_EXTERNAL_SECURE: false
       ZITADEL_TLS_ENABLED: false
+      ZITADEL_EXTERNAL_DOMAIN: "192.168.18.5"
+      ZITADEL_EXTERNAL_SECURE: "false"
     depends_on:
       postgres:
         condition: 'service_healthy'

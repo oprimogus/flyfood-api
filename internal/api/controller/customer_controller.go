@@ -26,16 +26,16 @@ func newCustomerController(validator *xvalidator.Validator, customerService cust
 //
 //	@Summary		Get a customer account
 //	@Description	Register a comprehensive customer profile with full registration details
-//	@Tags			Customer Profile Management
+//	@Tags			Customer Profile Management V1
 //	@Accept			json
 //	@Produce		json
-//	@Success		200		{object}	customer.Customer							"Customer"
-//	@Success		201		{object}	customer.Customer							"Customer"
-//	@Failure		400		{object}	xerrors.CustomError			"Invalid request data or malformed JSON"
-//	@Failure		409		{object}	xerrors.CustomError			"Conflict - customer may already exist"
-//	@Failure		422		{object}	xerrors.CustomError			"Validation error - invalid customer details"
-//	@Failure		500		{object}	xerrors.CustomError			"Internal server error"
-//	@Failure		502		{object}	xerrors.CustomError			"External service communication error"
+//	@Success		200	{object}	customer.Customer	"Customer"
+//	@Success		201	{object}	customer.Customer	"Customer"
+//	@Failure		400	{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
+//	@Failure		409	{object}	xerrors.CustomError	"Conflict - customer may already exist"
+//	@Failure		422	{object}	xerrors.CustomError	"Validation error - invalid customer details"
+//	@Failure		500	{object}	xerrors.CustomError	"Internal server error"
+//	@Failure		502	{object}	xerrors.CustomError	"External service communication error"
 //	@Router			/v1/customer [get]
 func (c customerController) getCustomer(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()
@@ -75,7 +75,7 @@ func (c customerController) getCustomer(w http.ResponseWriter, r *http.Request) 
 //
 //	@Summary		Update existing customer profile
 //	@Description	Modify comprehensive customer account details with full profile update
-//	@Tags			Customer Profile Management
+//	@Tags			Customer Profile Management V1
 //	@Accept			json
 //	@Produce		json
 //	@Security		BearerAuth
@@ -119,19 +119,19 @@ func (c customerController) updateCustomerProfile(w http.ResponseWriter, r *http
 //
 //	@Summary		Add new address to customer
 //	@Description	Add new address to customer
-//	@Tags			Customer Profile Management
+//	@Tags			Customer Profile Management V1
 //	@Accept			json
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			Authorization	header		string						true	"Bearer authentication token"
-//	@Param			request			body		address.Address	true	"Address Model"
-//	@Success		200				{object}	nil							"Address added to user"
-//	@Failure		400				{object}	xerrors.CustomError			"Invalid request data or malformed JSON"
-//	@Failure		401				{object}	xerrors.CustomError			"Unauthorized - authentication required"
-//	@Failure		403				{object}	xerrors.CustomError			"Forbidden - insufficient permissions"
-//	@Failure		404				{object}	xerrors.CustomError			"Customer profile not found"
-//	@Failure		422				{object}	xerrors.CustomError			"Validation error - invalid profile details"
-//	@Failure		500				{object}	xerrors.CustomError			"Internal server error"
+//	@Param			Authorization	header		string				true	"Bearer authentication token"
+//	@Param			request			body		address.Address		true	"Address Model"
+//	@Success		200				{object}	nil					"Address added to user"
+//	@Failure		400				{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
+//	@Failure		403				{object}	xerrors.CustomError	"Forbidden - insufficient permissions"
+//	@Failure		404				{object}	xerrors.CustomError	"Customer profile not found"
+//	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid profile details"
+//	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
 //	@Router			/v1/customer/address [post]
 func (c customerController) addAddress(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()
@@ -163,19 +163,19 @@ func (c customerController) addAddress(w http.ResponseWriter, r *http.Request) {
 //
 //	@Summary		Remove an address to customer
 //	@Description	Remove an address to customer
-//	@Tags			Customer Profile Management
+//	@Tags			Customer Profile Management V1
 //	@Accept			json
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			Authorization	header		string						true	"Bearer authentication token"
-//	@Param			request			body		address.Address	true	"Address Model"
-//	@Success		200				{object}	nil							"Address removed from user"
-//	@Failure		400				{object}	xerrors.CustomError			"Invalid request data or malformed JSON"
-//	@Failure		401				{object}	xerrors.CustomError			"Unauthorized - authentication required"
-//	@Failure		403				{object}	xerrors.CustomError			"Forbidden - insufficient permissions"
-//	@Failure		404				{object}	xerrors.CustomError			"Customer profile not found"
-//	@Failure		422				{object}	xerrors.CustomError			"Validation error - invalid profile details"
-//	@Failure		500				{object}	xerrors.CustomError			"Internal server error"
+//	@Param			Authorization	header		string				true	"Bearer authentication token"
+//	@Param			request			body		address.Address		true	"Address Model"
+//	@Success		200				{object}	nil					"Address removed from user"
+//	@Failure		400				{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
+//	@Failure		403				{object}	xerrors.CustomError	"Forbidden - insufficient permissions"
+//	@Failure		404				{object}	xerrors.CustomError	"Customer profile not found"
+//	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid profile details"
+//	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
 //	@Router			/v1/customer/address [delete]
 func (c customerController) removeAddress(w http.ResponseWriter, r *http.Request) {
 	zt := zitadel.GetInstance()

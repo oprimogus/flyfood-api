@@ -3,7 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
-	//"github.com/oprimogus/cardapiogo/internal/api"
 	"github.com/oprimogus/cardapiogo/internal/api/middleware"
 	"github.com/oprimogus/cardapiogo/internal/xerrors"
 	"log/slog"

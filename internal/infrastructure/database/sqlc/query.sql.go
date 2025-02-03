@@ -108,7 +108,6 @@ func (q *Queries) FindBusinessHourByStoreID(ctx context.Context, id pgtype.UUID)
 }
 
 const findCustomerByID = `-- name: FindCustomerByID :one
-
 SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 FROM customer c
 WHERE c.id = $1
@@ -124,7 +123,7 @@ type FindCustomerByIDRow struct {
 	Phone    string `db:"phone" json:"phone"`
 }
 
-// noinspection SqlResolveForFile
+// FindCustomerByID
 //
 //	SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone
 //	FROM customer c
@@ -180,6 +179,61 @@ func (q *Queries) FindOwnerByID(ctx context.Context, id string) (FindOwnerByIDRo
 	var i FindOwnerByIDRow
 	err := row.Scan(&i.ID, &i.SignatureActive, &i.StoreIds)
 	return i, err
+}
+
+const findOwnerStores = `-- name: FindOwnerStores :many
+SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+FROM store
+WHERE owner_id = $1
+`
+
+type FindOwnerStoresRow struct {
+	ID           pgtype.UUID `db:"id" json:"id"`
+	Name         string      `db:"name" json:"name"`
+	Active       bool        `db:"active" json:"active"`
+	Type         StoreType   `db:"type" json:"type"`
+	Score        int32       `db:"score" json:"score"`
+	IsOpen       bool        `db:"is_open" json:"is_open"`
+	ProfileImage pgtype.Text `db:"profile_image" json:"profile_image"`
+	City         string      `db:"city" json:"city"`
+	State        string      `db:"state" json:"state"`
+	Country      string      `db:"country" json:"country"`
+}
+
+// FindOwnerStores
+//
+//	SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+//	FROM store
+//	WHERE owner_id = $1
+func (q *Queries) FindOwnerStores(ctx context.Context, ownerID string) ([]FindOwnerStoresRow, error) {
+	rows, err := q.db.Query(ctx, findOwnerStores, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindOwnerStoresRow
+	for rows.Next() {
+		var i FindOwnerStoresRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Active,
+			&i.Type,
+			&i.Score,
+			&i.IsOpen,
+			&i.ProfileImage,
+			&i.City,
+			&i.State,
+			&i.Country,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const findPaymentMethodsByStoreID = `-- name: FindPaymentMethodsByStoreID :many
@@ -265,6 +319,73 @@ func (q *Queries) FindProductByID(ctx context.Context, id pgtype.UUID) (FindProd
 	return i, err
 }
 
+const findProductsByStoreID = `-- name: FindProductsByStoreID :many
+SELECT i.id, i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
+       i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
+FROM product i
+WHERE i.store_id = $1
+`
+
+type FindProductsByStoreIDRow struct {
+	ID               pgtype.UUID `db:"id" json:"id"`
+	StoreID          pgtype.UUID `db:"store_id" json:"store_id"`
+	Sku              pgtype.Text `db:"sku" json:"sku"`
+	ActiveForSale    bool        `db:"active_for_sale" json:"active_for_sale"`
+	PromoActive      bool        `db:"promo_active" json:"promo_active"`
+	Type             ProductType `db:"type" json:"type"`
+	Tag              string      `db:"tag" json:"tag"`
+	Name             string      `db:"name" json:"name"`
+	Description      string      `db:"description" json:"description"`
+	StockQuantity    int32       `db:"stock_quantity" json:"stock_quantity"`
+	Score            int32       `db:"score" json:"score"`
+	ImageUrl         pgtype.Text `db:"image_url" json:"image_url"`
+	Details          []byte      `db:"details" json:"details"`
+	Price            int32       `db:"price" json:"price"`
+	PromotionalPrice pgtype.Int4 `db:"promotional_price" json:"promotional_price"`
+}
+
+// FindProductsByStoreID
+//
+//	SELECT i.id, i.store_id, i.sku, i.active_for_sale, i.promo_active, i.type, i.tag, i.name,
+//	       i.description, i.stock_quantity, i.score, i.image_url, i.details, i.price, i.promotional_price
+//	FROM product i
+//	WHERE i.store_id = $1
+func (q *Queries) FindProductsByStoreID(ctx context.Context, storeID pgtype.UUID) ([]FindProductsByStoreIDRow, error) {
+	rows, err := q.db.Query(ctx, findProductsByStoreID, storeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindProductsByStoreIDRow
+	for rows.Next() {
+		var i FindProductsByStoreIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StoreID,
+			&i.Sku,
+			&i.ActiveForSale,
+			&i.PromoActive,
+			&i.Type,
+			&i.Tag,
+			&i.Name,
+			&i.Description,
+			&i.StockQuantity,
+			&i.Score,
+			&i.ImageUrl,
+			&i.Details,
+			&i.Price,
+			&i.PromotionalPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findProductsIDByStoreID = `-- name: FindProductsIDByStoreID :many
 SELECT p.id from product p
 WHERE p.store_id = $1
@@ -304,8 +425,12 @@ WITH relevant_business_hours AS (
          SELECT id, payment_method
          FROM store_payment_method pm
          WHERE id = $1
-         ORDER BY payment_method desc
-     )
+     ),
+    relevant_products AS (
+        SELECT id, store_id
+        FROM product
+        WHERE store_id = $1
+    )
 SELECT
     s.owner_id, s.cnpj, s.name, s.description,
     s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
@@ -319,10 +444,15 @@ SELECT
     COALESCE(
         ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
                     '{}'::"PaymentMethod"[]
-    )::text[] AS payment_methods
+    )::text[] AS payment_methods,
+    COALESCE(
+            ARRAY_AGG(DISTINCT rp.id) FILTER (WHERE rp.id IS NOT NULL),
+                        '{}'::uuid[]
+        )::uuid[] AS products
 FROM store s
          LEFT JOIN relevant_business_hours rbh ON s.id = rbh.id
          LEFT JOIN relevant_payment_methods rpm ON s.id = rpm.id
+         LEFT JOIN relevant_products rp ON s.id = rp.store_id
 WHERE s.id = $1
 GROUP BY
     s.owner_id, s.cnpj, s.name, s.description,
@@ -358,6 +488,7 @@ type FindStoreByIDRow struct {
 	DeletedAt      pgtype.Timestamp `db:"deleted_at" json:"deleted_at"`
 	BusinessHours  []string         `db:"business_hours" json:"business_hours"`
 	PaymentMethods []string         `db:"payment_methods" json:"payment_methods"`
+	Products       []pgtype.UUID    `db:"products" json:"products"`
 }
 
 // FindStoreByID
@@ -371,8 +502,12 @@ type FindStoreByIDRow struct {
 //	         SELECT id, payment_method
 //	         FROM store_payment_method pm
 //	         WHERE id = $1
-//	         ORDER BY payment_method desc
-//	     )
+//	     ),
+//	    relevant_products AS (
+//	        SELECT id, store_id
+//	        FROM product
+//	        WHERE store_id = $1
+//	    )
 //	SELECT
 //	    s.owner_id, s.cnpj, s.name, s.description,
 //	    s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
@@ -386,10 +521,15 @@ type FindStoreByIDRow struct {
 //	    COALESCE(
 //	        ARRAY_AGG(DISTINCT rpm.payment_method) FILTER (WHERE rpm.id IS NOT NULL),
 //	                    '{}'::"PaymentMethod"[]
-//	    )::text[] AS payment_methods
+//	    )::text[] AS payment_methods,
+//	    COALESCE(
+//	            ARRAY_AGG(DISTINCT rp.id) FILTER (WHERE rp.id IS NOT NULL),
+//	                        '{}'::uuid[]
+//	        )::uuid[] AS products
 //	FROM store s
 //	         LEFT JOIN relevant_business_hours rbh ON s.id = rbh.id
 //	         LEFT JOIN relevant_payment_methods rpm ON s.id = rpm.id
+//	         LEFT JOIN relevant_products rp ON s.id = rp.store_id
 //	WHERE s.id = $1
 //	GROUP BY
 //	    s.owner_id, s.cnpj, s.name, s.description,
@@ -426,17 +566,12 @@ func (q *Queries) FindStoreByID(ctx context.Context, id pgtype.UUID) (FindStoreB
 		&i.DeletedAt,
 		&i.BusinessHours,
 		&i.PaymentMethods,
+		&i.Products,
 	)
 	return i, err
 }
 
 const findStoresByFilter = `-- name: FindStoresByFilter :many
-
-
-
-
-
-
 SELECT
     s.id,
     s.name,
@@ -448,35 +583,32 @@ SELECT
     s.longitude,
     s.profile_image
 FROM store s
-WHERE (CASE
-           WHEN $1::text IS NOT NULL
-               THEN unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
-           ELSE true
-    END)
-  AND (CASE
-           WHEN $2::text IS NOT NULL
-               THEN s.type::text = $2::text
-           ELSE true
-    END)
-  AND (CASE
-           WHEN $3::text IS NOT NULL
-               THEN s.city = $3::text
-           ELSE true
-    END)
-  AND (CASE
-           WHEN $4::boolean IS NOT NULL
-               THEN s.is_open = $4::boolean
-           ELSE true
-    END)
+WHERE 1 = 1
+  AND (
+    NULLIF($1::text, '') IS NULL
+        OR unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
+    )
+  AND (
+    NULLIF($2::text, '') IS NULL
+        OR s.type::text = $2
+    )
+  AND (
+    NULLIF($3::text, '') IS NULL
+        OR s.city = $3
+    )
+  AND (
+    $4::boolean IS NULL
+        OR s.is_open = $4::boolean
+    )
 ORDER BY s.score DESC, s.type
 OFFSET $5
-LIMIT $6
+    LIMIT $6
 `
 
 type FindStoresByFilterParams struct {
-	Name        pgtype.Text `db:"name" json:"name"`
-	Type        pgtype.Text `db:"type" json:"type"`
-	City        pgtype.Text `db:"city" json:"city"`
+	Name        string      `db:"name" json:"name"`
+	Type        string      `db:"type" json:"type"`
+	City        string      `db:"city" json:"city"`
 	IsOpen      pgtype.Bool `db:"is_open" json:"is_open"`
 	OffsetValue int32       `db:"offset_value" json:"offset_value"`
 	LimitItems  int32       `db:"limit_items" json:"limit_items"`
@@ -494,110 +626,7 @@ type FindStoresByFilterRow struct {
 	ProfileImage pgtype.Text `db:"profile_image" json:"profile_image"`
 }
 
-//	latitude, longitude, country, created_at, updated_at)
-//
-// -- name: FindCustomerByID :many
-// SELECT c.id, c.name, c.last_name, c.cpf, c.email, c.phone, a.address_line_1, a.address_line_2,
-//
-//	a.neighborhood, a.city, a.state, a.postal_code, a.country, o.id
-//
-// FROM customer c
-// LEFT JOIN address a on c.id = a.customer_id
-// LEFT JOIN "order" o on c.id = o.customer_id;
-//
-// -- name: SaveCustomer :exec
-// INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
-//
-//	VALUES ($1, $2, $3, $3, $5, $6,
-//	        NOW() AT TIME ZONE 'UTC',
-//	        NOW() AT TIME ZONE 'UTC',
-//	        NULL)
-//	ON CONFLICT (id) DO UPDATE
-//
-// SET
-//
-//	name = $2,
-//	last_name = $3,
-//	cpf = $4,
-//	email = $5,
-//	phone = $6;
-//
-// -- name: CreateStore :exec
-// INSERT INTO store (id, cpf_cnpj, owner_id, name, active, phone, score, type,
-//
-//	address_line_1, address_line_2, neighborhood, city, state, postal_code,
-//	latitude, longitude, country, created_at, updated_at)
-//
-// VALUES(
-//
-//	$1,
-//	$2,
-//	$3,
-//	$4,
-//	$5,
-//	$6,
-//	$7,
-//	$8,
-//	$9,
-//	$10,
-//	$11,
-//	$12,
-//	$13,
-//	$14,
-//	$15,
-//	$16,
-//	$17,
-//	NOW() AT TIME ZONE 'UTC',
-//	NOW() AT TIME ZONE 'UTC');
-//
-// -- name: UpdateStore :exec
-// UPDATE store
-//
-//	SET
-//	  name = $3,
-//	  phone = $4,
-//	  type = $5,
-//	  address_line_1 = $6,
-//	  address_line_2 = $7,
-//	  neighborhood = $8,
-//	  city = $9,
-//	  state = $10,
-//	  postal_code = $11,
-//	  country = $12,
-//	  updated_at = NOW() AT TIME ZONE 'UTC'
-//
-// WHERE id = $1 AND owner_id = $2;
-//
-// -- name: SetProfileImage :exec
-// UPDATE store
-//
-//	SET
-//	  profile_image = $2
-//
-// WHERE id = $1;
-//
-// -- name: SetHeaderImage :exec
-// UPDATE store
-//
-//	SET
-//	  header_image = $2
-//
-// WHERE id = $1;
-//
-// -- name: IsOwner :one
-// SELECT EXISTS(SELECT 1 FROM store WHERE id = $1 AND owner_id = $2);
-//
-// -- name: GetStoreByID :one
-// SELECT s.id, s.name, s.phone, s.score, s.type, s.address_line_1,
-// s.address_line_2, s.neighborhood, s.city, s.state, s.country, s.profile_image, s.header_image
-// FROM store s
-// WHERE id = $1;
-//
-// -- name: GetStoreBusinessHoursByID :many
-// SELECT week_day, timezone, opening_time, closing_time
-// FROM business_hour
-// WHERE store_id = $1
-// ORDER BY week_day;
+// FindStoresByFilter
 //
 //	SELECT
 //	    s.id,
@@ -610,29 +639,26 @@ type FindStoresByFilterRow struct {
 //	    s.longitude,
 //	    s.profile_image
 //	FROM store s
-//	WHERE (CASE
-//	           WHEN $1::text IS NOT NULL
-//	               THEN unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
-//	           ELSE true
-//	    END)
-//	  AND (CASE
-//	           WHEN $2::text IS NOT NULL
-//	               THEN s.type::text = $2::text
-//	           ELSE true
-//	    END)
-//	  AND (CASE
-//	           WHEN $3::text IS NOT NULL
-//	               THEN s.city = $3::text
-//	           ELSE true
-//	    END)
-//	  AND (CASE
-//	           WHEN $4::boolean IS NOT NULL
-//	               THEN s.is_open = $4::boolean
-//	           ELSE true
-//	    END)
+//	WHERE 1 = 1
+//	  AND (
+//	    NULLIF($1::text, '') IS NULL
+//	        OR unaccent(s.name) ILIKE '%' || unaccent($1::text) || '%'
+//	    )
+//	  AND (
+//	    NULLIF($2::text, '') IS NULL
+//	        OR s.type::text = $2
+//	    )
+//	  AND (
+//	    NULLIF($3::text, '') IS NULL
+//	        OR s.city = $3
+//	    )
+//	  AND (
+//	    $4::boolean IS NULL
+//	        OR s.is_open = $4::boolean
+//	    )
 //	ORDER BY s.score DESC, s.type
 //	OFFSET $5
-//	LIMIT $6
+//	    LIMIT $6
 func (q *Queries) FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error) {
 	rows, err := q.db.Query(ctx, findStoresByFilter,
 		arg.Name,
@@ -679,6 +705,25 @@ SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
 //	SELECT EXISTS(SELECT 1 FROM owner WHERE id = $1)
 func (q *Queries) IsOwner(ctx context.Context, id string) (bool, error) {
 	row := q.db.QueryRow(ctx, isOwner, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isOwnerOf = `-- name: IsOwnerOf :one
+SELECT EXISTS(SELECT 1 FROM store WHERE owner_id = $1 AND id = $2)
+`
+
+type IsOwnerOfParams struct {
+	OwnerID string      `db:"owner_id" json:"owner_id"`
+	ID      pgtype.UUID `db:"id" json:"id"`
+}
+
+// IsOwnerOf
+//
+//	SELECT EXISTS(SELECT 1 FROM store WHERE owner_id = $1 AND id = $2)
+func (q *Queries) IsOwnerOf(ctx context.Context, arg IsOwnerOfParams) (bool, error) {
+	row := q.db.QueryRow(ctx, isOwnerOf, arg.OwnerID, arg.ID)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

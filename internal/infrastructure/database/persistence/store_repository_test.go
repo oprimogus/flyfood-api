@@ -6,7 +6,9 @@ import (
 	"context"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/oprimogus/cardapiogo/internal/core/customer"
+	"github.com/oprimogus/cardapiogo/internal/core/owner"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
+	"github.com/oprimogus/cardapiogo/internal/core/store/product"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/cardapiogo/test/integration"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +21,7 @@ type StoreRepositoryTestSuite struct {
 	mockPostgres *integration.Container
 	customerRepo CustomerRepository
 	storeRepo    StoreRepository
+	ownerRepo    OwnerRepository
 }
 
 func (s *StoreRepositoryTestSuite) SetupSuite() {
@@ -32,6 +35,7 @@ func (s *StoreRepositoryTestSuite) SetupSuite() {
 	db := postgresDB.GetTestInstance(mockDB.Port)
 	s.customerRepo = NewCustomerRepository(db)
 	s.storeRepo = NewStoreRepository(db)
+	s.ownerRepo = NewOwnerRepository(db)
 }
 
 func (s *StoreRepositoryTestSuite) TearDownSuite() {
@@ -43,126 +47,7 @@ func TestStoreRepositorySuite(t *testing.T) {
 	suite.Run(t, new(StoreRepositoryTestSuite))
 }
 
-func (s *StoreRepositoryTestSuite) TestFindOwnerByID() {
-	ctx := context.Background()
-	mockCustomer := customer.Customer{
-		ID:       "356278453827428",
-		Name:     "John",
-		LastName: "Marston",
-		CPF:      "fake cpf 345t643t",
-		Phone:    "fake phone fefefge",
-		Email:    "fake email 42376762",
-		Addresses: []address.Address{
-			{
-				Name:         "test address",
-				AddressLine1: "test Street",
-				AddressLine2: "test Number",
-				Neighborhood: "test neighborhood",
-				City:         "test city",
-				State:        "test state",
-				PostalCode:   "test postal code",
-				Country:      "teste country",
-			},
-		},
-	}
-
-	mockOwner := store.NewOwner(mockCustomer.ID)
-
-	err := s.customerRepo.Save(ctx, &mockCustomer)
-	assert.NoError(s.T(), err)
-
-	err = s.storeRepo.SaveOwner(ctx, mockOwner)
-	assert.NoError(s.T(), err)
-
-	ow, err := s.storeRepo.FindOwnerByID(ctx, mockCustomer.ID)
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), mockCustomer.ID, ow.ID)
-	assert.Equal(s.T(), false, ow.SignatureActive)
-}
-
-func (s *StoreRepositoryTestSuite) TestIsOwner() {
-
-	testCases := []struct {
-		name        string
-		customer    customer.Customer
-		isOwner     bool
-		expectBool  bool
-		expectError error
-	}{
-		{
-			name: "should return true",
-			customer: customer.Customer{
-				ID:       "356278453827428",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-			isOwner:     true,
-			expectBool:  true,
-			expectError: nil,
-		},
-		{
-			name: "should return false",
-			customer: customer.Customer{
-				ID:       "356278453827429",
-				Name:     "John",
-				LastName: "Marstones",
-				CPF:      "fake cpf a",
-				Phone:    "fake phone a",
-				Email:    "fake email a",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-			isOwner:     false,
-			expectBool:  false,
-			expectError: nil,
-		},
-	}
-
-	for _, tt := range testCases {
-		ctx := context.Background()
-
-		err := s.customerRepo.Save(ctx, &tt.customer)
-		assert.NoError(s.T(), err)
-
-		if tt.isOwner {
-			mockOwner := store.NewOwner(tt.customer.ID)
-			err = s.storeRepo.SaveOwner(ctx, mockOwner)
-			assert.NoError(s.T(), err)
-		}
-
-		isOwner, err := s.storeRepo.IsOwner(ctx, tt.customer.ID)
-		assert.NoError(s.T(), err)
-		assert.Equal(s.T(), tt.expectBool, isOwner, tt.name)
-	}
-
-}
-
-func (s *StoreRepositoryTestSuite) TestSave() {
+func (s *StoreRepositoryTestSuite) TestSaveStore() {
 	ctx := context.Background()
 	mockCustomer := customer.Customer{
 		ID:       "356278453827428",
@@ -188,9 +73,9 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 	err := s.customerRepo.Save(ctx, &mockCustomer)
 	assert.NoError(s.T(), err)
 
-	mockOwner := store.NewOwner(mockCustomer.ID)
+	mockOwner := owner.NewOwner(mockCustomer.ID)
 
-	err = s.storeRepo.SaveOwner(ctx, mockOwner)
+	err = s.ownerRepo.SaveOwner(ctx, mockOwner)
 	assert.NoError(s.T(), err)
 
 	addr := address.Address{
@@ -203,16 +88,18 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 		Country:      "Brasil",
 	}
 
-	mockStore, err := mockOwner.NewStore(
-		"63432495000148",
-		"Store test",
-		"store from test",
-		"+5513997590579",
+	mockStore, err := store.NewStore(
+		mockOwner.ID,
+		"23754700000177",
+		"Store test b",
+		"store from test b",
+		"+5513997590531",
 		addr,
 		store.Restaurant)
 	assert.NoError(s.T(), err)
 
-	mockStoreWithBusinessHour, err := mockOwner.NewStore(
+	mockStoreWithBusinessHour, err := store.NewStore(
+		mockOwner.ID,
 		"65815550000104",
 		"Store test 2",
 		"store from test 2",
@@ -235,7 +122,8 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 	})
 	assert.NoError(s.T(), err)
 
-	mockStoreWithPaymentMethods, err := mockOwner.NewStore(
+	mockStoreWithPaymentMethods, err := store.NewStore(
+		mockOwner.ID,
 		"43544583000124",
 		"Store test 3",
 		"store from test 3",
@@ -252,32 +140,112 @@ func (s *StoreRepositoryTestSuite) TestSave() {
 
 	tests := []struct {
 		name   string
-		store  *store.Store
+		store  store.Store
 		expect error
 	}{
 		{
 			name:   "Should save a new store",
-			store:  &mockStore,
+			store:  mockStore,
 			expect: nil,
 		},
 		{
 			name:   "Should save a new store with businessHour",
-			store:  &mockStoreWithBusinessHour,
+			store:  mockStoreWithBusinessHour,
 			expect: nil,
 		},
 		{
 			name:   "Should save a new store with payment methods",
-			store:  &mockStoreWithPaymentMethods,
+			store:  mockStoreWithPaymentMethods,
 			expect: nil,
 		},
 	}
 
 	for _, tt := range tests {
-		err := s.storeRepo.Save(ctx, tt.store)
+		err := s.storeRepo.SaveStore(ctx, tt.store)
 		assert.Equal(s.T(), tt.expect, err, tt.name)
 
 		savedStore, err := s.storeRepo.FindStoreByID(ctx, tt.store.ID)
 		assert.NoError(s.T(), err, tt.name)
 		assert.EqualValues(s.T(), tt.store, savedStore, tt.name)
 	}
+}
+
+func (s *StoreRepositoryTestSuite) TestSaveProduct() {
+	ctx := context.Background()
+	mockCustomer := customer.Customer{
+		ID:       "2575475247247542254",
+		Name:     "John",
+		LastName: "Marston",
+		CPF:      "fake cpf",
+		Phone:    "fake phone",
+		Email:    "fake email",
+		Addresses: []address.Address{
+			{
+				Name:         "test address",
+				AddressLine1: "test Street",
+				AddressLine2: "test Number",
+				Neighborhood: "test neighborhood",
+				City:         "test city",
+				State:        "test state",
+				PostalCode:   "test postal code",
+				Country:      "teste country",
+			},
+		},
+	}
+
+	// mock customer
+	err := s.customerRepo.Save(ctx, &mockCustomer)
+	assert.NoError(s.T(), err)
+
+	mockOwner := owner.NewOwner(mockCustomer.ID)
+
+	// become mock customer an owner
+	err = s.ownerRepo.SaveOwner(context.Background(), mockOwner)
+	assert.NoError(s.T(), err)
+
+	// store address
+	addr := address.Address{
+		AddressLine1: "rua 1",
+		AddressLine2: "879",
+		Neighborhood: "test",
+		City:         "test",
+		State:        "test",
+		PostalCode:   "11490-135",
+		Country:      "Brasil",
+	}
+
+	// owner create a store
+	mockStore, err := store.NewStore(
+		mockCustomer.ID,
+		"63432495000148",
+		"Store test",
+		"store from test",
+		"+5513997590579",
+		addr,
+		store.Restaurant)
+	assert.NoError(s.T(), err)
+
+	//Save store
+	err = s.storeRepo.SaveStore(ctx, mockStore)
+	assert.NoError(s.T(), err)
+
+	// Create product
+	p, err := product.NewProduct(
+		mockStore.ID,
+		"product one", "product tag", "your desc", "P001", 2500, product.Food)
+	assert.NoError(s.T(), err)
+
+	// finally save product
+	err = s.storeRepo.SaveProduct(ctx, p)
+	assert.NoError(s.T(), err)
+
+	//finally do test
+	persistentProduct, err := s.storeRepo.FindStoreProductByID(ctx, p.ID)
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), p, persistentProduct)
+
+	st, err := s.storeRepo.FindStoreByID(ctx, mockStore.ID)
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), mockStore, st)
+
 }

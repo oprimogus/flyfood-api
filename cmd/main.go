@@ -18,9 +18,9 @@ import (
 	"time"
 )
 
-//	@title			Cardapiogo API
+//	@title			FlyFood API
 //	@version		1.0
-//	@description	Documentação da API de delivery Cardapiogo.
+//	@description	Documentação da API de delivery FlyFood.
 //	@contact.name	Gustavo Ferreira de Jesus
 //	@contact.email	gustavo081900@gmail.com
 

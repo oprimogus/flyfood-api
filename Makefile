@@ -30,6 +30,7 @@ sqlc-vet:
 
 docs:
 	make lint
+	swag fmt -d ./
 	swag init -g cmd/main.go -o api 
 
 # Executa somente testes unitários

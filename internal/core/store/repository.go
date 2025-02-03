@@ -1,11 +1,13 @@
 package store
 
-import "context"
+import (
+	"context"
+	"github.com/oprimogus/cardapiogo/internal/core/store/product"
+)
 
 type Repository interface {
-	SaveOwner(ctx context.Context, owner Owner) error
-	FindStoreByID(ctx context.Context, id string) (*Store, error)
-	FindOwnerByID(ctx context.Context, id string) (Owner, error)
-	IsOwner(ctx context.Context, customerID string) (bool, error)
-	Save(ctx context.Context, s *Store) error
+	FindStoreByID(ctx context.Context, id string) (Store, error)
+	FindStoreProductByID(ctx context.Context, id string) (product.Product, error)
+	SaveStore(ctx context.Context, s Store) error
+	SaveProduct(ctx context.Context, p product.Product) error
 }

@@ -2,10 +2,12 @@ package persistence
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/oprimogus/cardapiogo/internal/core/address"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
+	"github.com/oprimogus/cardapiogo/internal/core/store/product"
 	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
 	"github.com/oprimogus/cardapiogo/pkg/converters"
@@ -24,15 +26,15 @@ func NewStoreRepository(db *postgresDB.Database) StoreRepository {
 	return StoreRepository{db: db.GetDB(), q: sqlc.New(db.GetDB())}
 }
 
-func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.Store, error) {
+func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (store.Store, error) {
 	idPg, err := converters.StringToUUID(id)
 	if err != nil {
-		return nil, err
+		return store.Store{}, err
 	}
 
 	st, err := r.q.FindStoreByID(ctx, idPg)
 	if err != nil {
-		return nil, err
+		return store.Store{}, err
 	}
 
 	bhs := make([]store.BusinessHours, len(st.BusinessHours))
@@ -43,7 +45,7 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 		}
 		weekDay, err := strconv.Atoi(arrayText[0])
 		if err != nil {
-			return nil, err
+			return store.Store{}, err
 		}
 		bhs[i] = store.BusinessHours{
 			WeekDay:     weekDay,
@@ -61,7 +63,7 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 		pms[i] = store.PaymentMethod(arrayText)
 	}
 
-	return &store.Store{
+	return store.Store{
 		ID:           id,
 		OwnerID:      st.OwnerID,
 		CNPJ:         st.Cnpj,
@@ -87,55 +89,52 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (*store.S
 		},
 		BusinessHours:  bhs,
 		PaymentMethods: pms,
-		Products:       []string{},
 	}, nil
 
 }
 
-func (r StoreRepository) FindOwnerByID(ctx context.Context, id string) (store.Owner, error) {
-	owner, err := r.q.FindOwnerByID(ctx, id)
+func (r StoreRepository) FindStoreProductByID(ctx context.Context, id string) (product.Product, error) {
+	convUUID, err := converters.StringToUUID(id)
 	if err != nil {
-		return store.Owner{}, err
+		return product.Product{}, err
 	}
 
-	stIds := make([]string, len(owner.StoreIds))
-	for i, s := range owner.StoreIds {
-		vConv, err := converters.UuidToString(s)
-		if err != nil {
-			return store.Owner{}, err
-		}
-		stIds[i] = *vConv
+	p, err := r.q.FindProductByID(ctx, convUUID)
+	if err != nil {
+		return product.Product{}, err
 	}
 
-	return store.Owner{
-		ID:              owner.ID,
-		SignatureActive: owner.SignatureActive,
-		StoresID:        stIds,
+	convStoreID, err := converters.UuidToString(p.StoreID)
+	if err != nil {
+		return product.Product{}, err
+	}
+
+	var details map[string]interface{}
+	err = json.Unmarshal(p.Details, &details)
+	if err != nil {
+		return product.Product{}, err
+	}
+
+	return product.Product{
+		ID:               id,
+		StoreID:          *convStoreID,
+		SKU:              p.Sku.String,
+		ActiveForSale:    p.ActiveForSale,
+		PromoActive:      p.PromoActive,
+		Type:             product.Type(p.Type),
+		Tag:              p.Tag,
+		Name:             p.Name,
+		Description:      p.Description,
+		StockQuantity:    int(p.StockQuantity),
+		Score:            int(p.Score),
+		Image:            p.ImageUrl.String,
+		Details:          details,
+		Price:            int(p.Price),
+		PromotionalPrice: int(p.PromotionalPrice.Int32),
 	}, nil
 }
 
-func (r StoreRepository) SaveOwner(ctx context.Context, ow store.Owner) error {
-	err := r.q.SaveOwner(ctx, sqlc.SaveOwnerParams{
-		ID:              ow.ID,
-		SignatureActive: ow.SignatureActive,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r StoreRepository) IsOwner(ctx context.Context, customerID string) (bool, error) {
-	isOwner, err := r.q.IsOwner(ctx, customerID)
-	if err != nil {
-		return false, err
-	}
-
-	return isOwner, nil
-}
-
-func (r StoreRepository) Save(ctx context.Context, st *store.Store) error {
+func (r StoreRepository) SaveStore(ctx context.Context, st store.Store) error {
 
 	storeID, err := converters.StringToUUID(st.ID)
 	if err != nil {
@@ -236,14 +235,51 @@ func (r StoreRepository) Save(ctx context.Context, st *store.Store) error {
 	}
 
 	if hasChange(bhSlice, st.BusinessHours) {
-		syncBusinessHour(ctx, qtx, storeID, businessHourRepo, st)
+		syncBusinessHour(ctx, qtx, storeID, businessHourRepo, &st)
 	}
 
 	if hasChange(pmSlice, st.PaymentMethods) {
-		syncPaymentMethods(ctx, qtx, storeID, paymentMethodRepo, st)
+		syncPaymentMethods(ctx, qtx, storeID, paymentMethodRepo, &st)
 	}
 
 	return tx.Commit(ctx)
+}
+
+func (r StoreRepository) SaveProduct(ctx context.Context, p product.Product) error {
+	id, err := converters.StringToUUID(p.ID)
+	if err != nil {
+		return err
+	}
+
+	storeID, err := converters.StringToUUID(p.StoreID)
+	if err != nil {
+		return err
+	}
+
+	details, err := json.Marshal(p.Details)
+	if err != nil {
+		return err
+	}
+
+	args := sqlc.SaveProductParams{
+		ID:               id,
+		StoreID:          storeID,
+		Sku:              converters.StringToText(p.SKU),
+		ActiveForSale:    p.ActiveForSale,
+		PromoActive:      p.PromoActive,
+		Type:             sqlc.ProductType(p.Type),
+		Tag:              p.Tag,
+		Name:             p.Name,
+		Description:      p.Description,
+		StockQuantity:    int32(p.StockQuantity),
+		Score:            int32(p.Score),
+		ImageUrl:         converters.StringToText(p.Image),
+		Details:          details,
+		Price:            int32(p.Price),
+		PromotionalPrice: pgtype.Int4{Int32: int32(p.PromotionalPrice), Valid: p.PromotionalPrice != 0},
+	}
+
+	return r.q.SaveProduct(ctx, args)
 }
 
 func syncPaymentMethods(ctx context.Context, qtx *sqlc.Queries, id pgtype.UUID,
@@ -288,7 +324,6 @@ func syncPaymentMethods(ctx context.Context, qtx *sqlc.Queries, id pgtype.UUID,
 	if err := resultSavePaymentMethods.Close(); err != nil {
 		slog.ErrorContext(ctx, "Failed to close batch", "error", err.Error())
 	}
-
 }
 
 func syncBusinessHour(ctx context.Context, qtx sqlc.Querier,
@@ -339,7 +374,6 @@ func syncBusinessHour(ctx context.Context, qtx sqlc.Querier,
 	if err := resultSaveBhs.Close(); err != nil {
 		slog.ErrorContext(ctx, "Failed to close batch", "error", err.Error())
 	}
-
 }
 
 func hasChange[T comparable](persistence []T, aggregate []T) bool {

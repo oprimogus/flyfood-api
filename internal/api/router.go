@@ -27,7 +27,9 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 	controller.SetupHealthRoutes(r, db)
 	controller.SetupSwaggerRoutes(r)
 	controller.SetupCustomerRoutes(r, repoFactory)
+	controller.SetupOwnerRoutes(r, repoFactory, serviceFactory)
 	controller.SetupStoreRoutes(r, repoFactory, serviceFactory)
+	controller.SetupProductRoutes(r, repoFactory, serviceFactory)
 
 	configInstance := config.GetInstance().Api
 	port := configInstance.Port
