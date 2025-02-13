@@ -1,418 +1,173 @@
 package controller
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
-
-	"github.com/gin-gonic/gin"
-
+	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/cardapiogo/internal/api/middleware"
-	validatorutils "github.com/oprimogus/cardapiogo/internal/api/validator"
+	"github.com/oprimogus/cardapiogo/internal/config"
 	"github.com/oprimogus/cardapiogo/internal/core/store"
-	xerrors "github.com/oprimogus/cardapiogo/internal/errors"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/persistence"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
+	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"net/http"
 )
 
-type StoreController struct {
-	validator   *validatorutils.Validator
-	storeModule store.StoreModule
+type storeController struct {
+	validator      *xvalidator.Validator
+	commandService store.Command
+	queryService   store.Query
 }
 
-func NewStoreController(validator *validatorutils.Validator, repository store.Repository) *StoreController {
-	return &StoreController{
-		validator:   validator,
-		storeModule: store.NewStoreModule(repository),
-	}
+func newStoreController(validator *xvalidator.Validator, command store.Command, query store.Query) storeController {
+	return storeController{validator: validator, commandService: command, queryService: query}
 }
 
-// GetStoreByID godoc
+// getQueryStoreByID godoc
 //
-//	@Summary		Any user can view a store.
-//	@Description	Any user can view a store.
-//	@Tags			Store
-//	@Accept			json
+//	@Summary		Get a store by ID
+//	@Description	Get a store by ID
+//	@Tags			Store V1
 //	@Produce		json
-//	@Param			id	path		string	true	"Store ID"
-//	@Success		200	{object}	store.GetStoreByIdOutput
-//	@Failure		404	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
-//	@Router			/v1/store/{id} [get]
-func (c *StoreController) GetStoreByID(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	id := ctx.Param("id")
-	storeInstance, err := c.storeModule.GetByID.Execute(ctx, id)
+//	@Security		BearerAuth
+//	@Param			Authorization	header		string				true	"Bearer authentication token"
+//	@Param			id				query		string				true	"Store ID"
+//	@Success		200				{object}	store.QueryStore	"Query Store model"
+//	@Failure		400				{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
+//	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid status"
+//	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
+//	@Router			/v1/store/:id [get]
+func (c storeController) getQueryStoreByID(w http.ResponseWriter, r *http.Request) {
+	stID := chi.URLParam(r, "id")
+
+	st, err := c.queryService.GetQueryStoreByID(r.Context(), stID)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
+		HandleError(w, r, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, storeInstance)
+	JSONResponse(w, http.StatusOK, st)
 }
 
-// GetStoreByFilter godoc
+// getQueryStoreListByFilter godoc
 //
-//	@Summary		Any user can view filtered stores.
-//	@Description	Any user can view filtered stores.
-//	@Tags			Store
-//	@Accept			json
+//	@Summary		Get a stores by Filter
+//	@Description	Get a stores by Filter
+//	@Tags			Store V1
 //	@Produce		json
-//	@Param			range		query		int		false	"Specify max range"
-//	@Param			score		query		int		false	"Specify in score"
-//	@Param			name		query		string	false	"Specify name like"
-//	@Param			city		query		string	false	"Specify city"
-//	@Param			latitude	query		string	false	"latitude of address selected"
-//	@Param			longitude	query		string	false	"longitude of address selected"
-//	@Param			type		query		string	false	"Specify store type"
-//	@Success		200			{object}	[]store.GetStoreByIdOutput
-//	@Failure		404			{object}	xerrors.ErrorResponse
-//	@Failure		500			{object}	xerrors.ErrorResponse
-//	@Failure		502			{object}	xerrors.ErrorResponse
+//	@Security		BearerAuth
+//	@Param			Authorization	header		string					true	"Bearer authentication token"
+//	@Param			name			query		string					true	"Name"
+//	@Param			isOpen			query		string					true	"IsOpen"
+//	@Param			score			query		int						true	"Score"
+//	@Param			type			query		string					true	"Store Type"
+//	@Param			city			query		string					true	"City"
+//	@Param			page			query		string					true	"Page"
+//	@Param			maxItems		query		string					true	"Items per page"
+//	@Success		200				{object}	[]store.QueryStoreList	"Query Store model"
+//	@Failure		400				{object}	xerrors.CustomError		"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError		"Unauthorized - authentication required"
+//	@Failure		422				{object}	xerrors.CustomError		"Validation error - invalid status"
+//	@Failure		500				{object}	xerrors.CustomError		"Internal server error"
 //	@Router			/v1/store [get]
-func (c *StoreController) GetStoreByFilter(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	var params store.StoreFilter
-	params.Name = ctx.Query("name")
-	params.City = ctx.Query("city")
-	params.Latitude = ctx.Query("latitude")
-	params.Longitude = ctx.Query("longitude")
-	params.Type = store.ShopType(ctx.Query("type"))
+func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *http.Request) {
+	var params store.QueryStoresInput
+	queryParams := r.URL.Query()
 
-	queryRange := ctx.Query("range")
-	if queryRange != "" {
-		rangeValue, err := strconv.Atoi(queryRange)
-		if err != nil {
-			xerror := xerrors.HandleError(err, transactionID)
-			ctx.JSON(xerror.Status, xerror)
+	name := queryParams.Get("name")
+	if name != "" {
+		params.Name = &name
+	}
+
+	city := queryParams.Get("city")
+	if city != "" {
+		params.City = &city
+	}
+
+	storeType := queryParams.Get("type")
+	if storeType != "" {
+		if store.IsValidType(storeType) {
+			value := store.Type(storeType)
+			params.Type = &value
+		} else {
+			xerror := xvalidator.NewFieldError("type", storeType)
+			HandleError(w, r, xerror)
 			return
 		}
-		params.Range = rangeValue
 	}
 
-	queryScore := ctx.Query("score")
-	if queryScore != "" {
-		scoreValue, err := strconv.Atoi(queryScore)
+	isOpenParam := queryParams.Get("isOpen")
+	if isOpenParam != "" {
+		isOpen, err := IsValidBool(isOpenParam)
 		if err != nil {
-			xerror := xerrors.HandleError(err, transactionID)
-			ctx.JSON(xerror.Status, xerror)
+			xerror := xvalidator.NewFieldError("isOpen", isOpenParam)
+			HandleError(w, r, xerror)
 			return
+		} else {
+			params.IsOpen = &isOpen
 		}
-		params.Score = scoreValue
 	}
 
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
+	scoreParam := queryParams.Get("score")
+	if scoreParam != "" {
+		score, err := isValidInt(scoreParam)
+		if err != nil {
+			xerror := xvalidator.NewFieldError("score", scoreParam)
+			HandleError(w, r, xerror)
+			return
+		} else {
+			params.Score = &score
+		}
 	}
-	storeList, err := c.storeModule.GetByFilter.Execute(ctx, params)
+
+	pageParam := queryParams.Get("page")
+	page, err := isValidInt(pageParam)
 	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
+		xerror := xvalidator.NewFieldError("page", pageParam)
+		HandleError(w, r, xerror)
+		return
+	} else {
+		params.Page = page
+	}
+
+	maxItemsParam := queryParams.Get("maxItems")
+	maxItems, err := isValidInt(maxItemsParam)
+	if err != nil {
+		xerror := xvalidator.NewFieldError("maxItems", maxItemsParam)
+		HandleError(w, r, xerror)
+		return
+	} else {
+		if maxItems > 50 {
+			params.MaxItems = 50
+		} else {
+			params.MaxItems = maxItems
+		}
+	}
+
+	st, err := c.queryService.GetStoreByFilter(r.Context(), params)
+	if err != nil {
+		HandleError(w, r, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, storeList)
+	JSONResponse(w, http.StatusOK, st)
 }
 
-// Create godoc
-//
-//	@Summary		Owner can create stores.
-//	@Description	Owner user can create store
-//	@Tags			Store
-//	@Accept			json
-//	@Produce		json
-//	@Param			Params	body	store.CreateParams	true	"Params to create a store"
-//	@Success		201 {object}    store.CreatedStore
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
-//	@Router			/v1/store [post]
-func (c *StoreController) Create(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	var params store.CreateParams
-	err := ctx.BindJSON(&params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	storeID, err := c.storeModule.Create.Execute(ctx, params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	response := store.CreatedStore{ID: storeID}
-	ctx.JSON(http.StatusCreated, response)
-}
+func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
+	basePath := config.GetInstance().Api.BasePath
 
-// Update godoc
-//
-//	@Summary		Owner can update your stores.
-//	@Description	Owner can update your stores.
-//	@Tags			Store
-//	@Accept			json
-//	@Produce		json
-//	@Param			Params	body	store.UpdateParams	true	"Params to update a store"
-//	@Success		200
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
-//	@Router			/v1/store [put]
-func (c *StoreController) Update(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	var params store.UpdateParams
-	err := ctx.BindJSON(&params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	err = c.storeModule.Update.Execute(ctx, params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
+	validator := xvalidator.GetPtInstance()
 
-	ctx.Status(http.StatusOK)
-}
+	command := store.NewCommand(
+		repoFactory.NewStoreRepository(),
+		repoFactory.NewOwnerRepository(),
+		services)
+	query := store.NewQueryService(repoFactory.NewStoreRepository(), repoFactory.NewSQLC())
+	c := newStoreController(validator, command, query)
 
-// AddBusinessHours godoc
-//
-//	@Summary		Owner can update business hours of store.
-//	@Description	Owner can update business hours of store.
-//	@Tags			Store
-//	@Accept			json
-//	@Produce		json
-//	@Param			Params	body	store.StoreBusinessHoursParams	true	"Params to update business hours of store"
-//	@Success		200
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
-//	@Router			/v1/store/business-hours [put]
-func (c *StoreController) AddBusinessHours(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	var params store.StoreBusinessHoursParams
-	err := ctx.BindJSON(&params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	err = c.storeModule.AddBusinessHour.Execute(ctx, params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	ctx.Status(http.StatusOK)
-}
-
-// DeleteBusinessHours godoc
-//
-//	@Summary		Owner can delete business hours of store.
-//	@Description	Owner can delete business hours of store.
-//	@Tags			Store
-//	@Accept			json
-//	@Produce		json
-//	@Param			Params	body	store.StoreBusinessHoursParams	true	"Params to delete business hours of store"
-//	@Success		200
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
-//	@Router			/v1/store/business-hours [delete]
-func (c *StoreController) DeleteBusinessHours(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	var params store.StoreBusinessHoursParams
-	err := ctx.BindJSON(&params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	errValidate := c.validator.Validate(params, transactionID)
-	if errValidate != nil {
-		xerror := xerrors.HandleError(errValidate, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-	err = c.storeModule.DeleteBusinessHour.Execute(ctx, params)
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	ctx.Status(http.StatusOK)
-}
-
-// SetProfileImage godoc
-//
-//	@Summary		Owner can update profile image of store.
-//	@Description	Owner can update profile image of store.
-//	@Tags			Store
-//	@Accept			multipart/form-data
-//	@Produce		json
-//	@Param			id	path	string true	"Store ID"
-//	@Param			file	formData	file true	"jpeg/png image"
-//	@Success		200 {object} setFileOutput
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
-//	@Router			/v1/store/{id}/profile-image [post]
-func (c *StoreController) SetProfileImage(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	storeID := ctx.Param("id")
-	if storeID == "" {
-		xerror := xerrors.New(http.StatusBadRequest, "Store ID is required", transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	image, err := ctx.FormFile("file")
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	openedFile, err := image.Open()
-	if err != nil {
-		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
-		return
-	}
-	defer openedFile.Close()
-
-	buffer := make([]byte, 512)
-	if _, err := openedFile.Read(buffer); err != nil {
-		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
-		return
-	}
-
-	fileType := http.DetectContentType(buffer)
-
-	if fileType != "image/jpeg" && fileType != "image/png" {
-		xerr := xerrors.BadRequest("Unsupported file type", transactionID)
-		ctx.JSON(xerr.Status, xerr)
-		return
-	}
-
-	url, err := c.storeModule.SetProfileImage.Execute(ctx, storeID, image)
-
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, setFileOutput{URL: url})
-}
-
-// SetHeaderImage godoc
-//
-//	@Summary		Owner can update header image of store.
-//	@Description	Owner can update header image of store.
-//	@Tags			Store
-//	@Accept			multipart/form-data
-//	@Produce		json
-//	@Param			id	path	string true	"Store ID"
-//	@Param			file	formData	file true	"jpeg/png image"
-//	@Success		200 {object} setFileOutput
-//	@Failure		400	{object}	xerrors.ErrorResponse
-//	@Failure		401	{object}	xerrors.ErrorResponse
-//	@Failure		403	{object}	xerrors.ErrorResponse
-//	@Failure		409	{object}	xerrors.ErrorResponse
-//	@Failure		500	{object}	xerrors.ErrorResponse
-//	@Failure		502	{object}	xerrors.ErrorResponse
-//	@Router			/v1/store/{id}/header-image [post]
-func (c *StoreController) SetHeaderImage(ctx *gin.Context) {
-	transactionID := ctx.GetString(middleware.TransactionIDLabel)
-	storeID := ctx.Param("id")
-	if storeID == "" {
-		xerror := xerrors.New(http.StatusBadRequest, "Store ID is required", transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	image, err := ctx.FormFile("file")
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	openedFile, err := image.Open()
-	if err != nil {
-		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
-		return
-	}
-	defer openedFile.Close()
-
-	buffer := make([]byte, 512)
-	if _, err := openedFile.Read(buffer); err != nil {
-		message := fmt.Sprintf("file sent is invalid: %s", err)
-		xerr := xerrors.BadRequest(message, transactionID)
-		ctx.JSON(xerr.Status, xerr)
-		return
-	}
-
-	fileType := http.DetectContentType(buffer)
-
-	if fileType != "image/jpeg" && fileType != "image/png" {
-		xerr := xerrors.BadRequest("Unsupported file type", transactionID)
-		ctx.JSON(xerr.Status, xerr)
-		return
-	}
-
-	url, err := c.storeModule.SetHeaderImage.Execute(ctx, storeID, image)
-
-	if err != nil {
-		xerror := xerrors.HandleError(err, transactionID)
-		ctx.JSON(xerror.Status, xerror)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, setFileOutput{URL: url})
+	r.Route(basePath+"/v1", func(r chi.Router) {
+		r.
+			With(middleware.Authentication).
+			Get("/store/{id}", c.getQueryStoreByID)
+		r.
+			With(middleware.Authentication).
+			Get("/store", c.getQueryStoreListByFilter)
+	})
 }

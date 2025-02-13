@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
-	"log"
-	"os"
-	"strings"
-
 	_ "github.com/lib/pq"
+	"log"
+	"log/slog"
+	"os"
 )
 
 func main() {
@@ -22,7 +22,12 @@ func PopulateLocalDatabase() error {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			slog.Error("fail on close DB Connection")
+		}
+	}(db)
 
 	err = db.Ping()
 	if err != nil {
@@ -30,11 +35,6 @@ func PopulateLocalDatabase() error {
 	}
 	mocks := getMocks()
 	for _, v := range mocks {
-		exist := checkTestDataExists(db, v)
-		if exist {
-			log.Printf("Mocks para a tabela %v já existem, prosseguindo...", v)
-			continue
-		}
 		err := executeSQLFile(db, v)
 		if err != nil {
 			return err
@@ -45,7 +45,7 @@ func PopulateLocalDatabase() error {
 
 func createStringConn() string {
 	dbHost := "localhost"
-	dbPort := "5435"
+	dbPort := "5432"
 	dbUsername := "cardapiogo"
 	dbPassword := "cardapiogo"
 	dbName := "postgres"
@@ -68,39 +68,27 @@ func getSQLDBConnection(connStr string) (*sql.DB, error) {
 }
 
 func getMocks() []string {
-	files, err := os.ReadDir("internal/infra/database/sql/mocks")
+	files, err := os.ReadDir("test/data")
 	if err != nil {
 		panic(err)
 	}
 	filesPath := make([]string, len(files))
 	for i, v := range files {
-		filesPath[i] = strings.Replace(v.Name(), ".sql", "", -1)
+		filesPath[i] = fmt.Sprintf("test/data/%s", v.Name())
 	}
-	log.Print(filesPath)
 	return filesPath
 }
 
-func checkTestDataExists(db *sql.DB, mock string) bool {
-	var exists bool
-	query := fmt.Sprintf(`SELECT EXISTS(SELECT 1 FROM %v LIMIT 1);`, mock)
-	err := db.QueryRow(query).Scan(&exists)
-	if err != nil {
-		log.Fatalf("Erro ao verificar a existência de dados de teste: %v", err)
-		exists = false
-		return exists
-	}
-	return exists
-}
-
 func executeSQLFile(db *sql.DB, mock string) error {
-	query, err := os.ReadFile(fmt.Sprintf("internal/infra/database/sql/mocks/%v.sql", mock))
+	query, err := os.ReadFile(mock)
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("erro ao ler mock %v: %w", mock, err)
 	}
 	_, err = db.Exec(string(query))
 	if err != nil {
-		log.Println(err)
+		errJson, _ := json.Marshal(err)
+		log.Println(string(errJson))
 		return fmt.Errorf("erro ao executar o mock %v: %v", mock, err)
 	}
 	log.Printf("Mock %v adicionado com sucesso\n", mock)

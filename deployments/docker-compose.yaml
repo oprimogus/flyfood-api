@@ -1,6 +1,6 @@
 services:
   postgres:
-    container_name: cardapiogo-postgres
+    container_name: flyfood-postgres
     image: postgres
     environment:
       POSTGRES_DB: postgres
@@ -12,51 +12,43 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - observability
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "postgres", "-U", "cardapiogo" ]
+      interval: '10s'
+      timeout: '30s'
+      retries: 5
+      start_period: '20s'
 
-  create-keycloak-schema:
-    image: postgres
-    container_name: create-keycloak-schema
-    depends_on:
-      - postgres
+  zitadel:
+    container_name: flyfood-zitadel
+    image: 'ghcr.io/zitadel/zitadel:latest'
+    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: cardapiogo
-      POSTGRES_PASSWORD: cardapiogo
-    command: >
-      sh -c "
-      export PGPASSWORD=$$POSTGRES_PASSWORD;
-      until pg_isready -h postgres -U cardapiogo; do
-        sleep 1;
-      done;
-      psql -h postgres -U cardapiogo -d postgres -c 'CREATE SCHEMA IF NOT EXISTS keycloak;'
-      "
+      ZITADEL_DATABASE_POSTGRES_HOST: postgres
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: postgres
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: cardapiogo
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+      ZITADEL_TLS_ENABLED: false
+      ZITADEL_EXTERNAL_DOMAIN: "192.168.18.5"
+      ZITADEL_EXTERNAL_SECURE: "false"
+    depends_on:
+      postgres:
+        condition: 'service_healthy'
+    ports:
+      - '8080:8080'
     networks:
       - observability
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0.4
-    container_name: cardapiogo-keycloak
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB_URL: jdbc:postgresql://postgres:5432/postgres
-      KC_DB: postgres
-      KC_DB_SCHEMA: keycloak
-      KC_DB_USERNAME: cardapiogo
-      KC_DB_PASSWORD: cardapiogo
-    ports:
-      - 8080:8080
-    command: ["start-dev"]
-    depends_on: 
-      - create-keycloak-schema
-    networks:
-      - observability  
   
   prometheus:
     image: bitnami/prometheus
-    container_name: cardapiogo-prometheus
+    container_name: flyfood-prometheus
     ports:
-      - 9090:9090
+      - "9090:9090"
     volumes:
       - ../configs/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -67,49 +59,23 @@ services:
     networks:
       - observability
 
-  promtail:
-    image: grafana/promtail
-    container_name: cardapiogo-promtail
-    ports:
-      - "9080:9080"
-    volumes:
-      - /var/log/journal:/var/log/journal
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro # Adicione esta linha
-      - ../configs/promtail.yml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - observability
-
-  loki:
-    image: grafana/loki
-    container_name: cardapiogo-loki
-    ports:
-      - "3100:3100"
-    command:
-      - -config.file=/etc/loki/local-config.yaml
-      - -print-config-stderr=true
-    networks:
-      - observability
-
   grafana:
     image: grafana/grafana
-    container_name: cardapiogo-grafana
+    container_name: flyfood-grafana
     ports:
-      - 3001:3000
+      - "3001:3000"
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
       - prometheus
-      - loki
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
       - observability
 
   localstack:
-    container_name: "cardapiogo-localstack"
+    container_name: "flyfood-localstack"
     image: localstack/localstack
     ports:
       - "127.0.0.1:4566:4566"            # LocalStack Gateway
@@ -118,6 +84,7 @@ services:
       # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEBUG=${DEBUG:-0}
       - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_API_KEY}
+      - PERSISTENCE=1
     volumes:
       - localstack_data:/var/lib/localstack"
       - localstack_data:/var/run/docker.sock"

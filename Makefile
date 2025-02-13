@@ -2,7 +2,7 @@ include .env
 export
 
 
-.PHONY: fmt lint install up down stop mock-database sqlc docs test test-integration migrate run
+.PHONY: fmt lint install up down stop mock-database sqlc docs migrate run test test-integration test-benchmark coverage
 
 lint:
 	@gofmt -s -w .
@@ -23,34 +23,42 @@ mock-db:
 	go run scripts/populate_local_db.go
 
 sqlc:
-	sqlc generate -f configs/sqlc.yaml
+	sqlc generate -f internal/infrastructure/database/sqlc/sqlc.yaml
 
 sqlc-vet:
-	sqlc vet -f configs/sqlc.yaml
+	sqlc vet -f internal/infrastructure/database/sqlc/sqlc.yaml
 
 docs:
 	make lint
+	swag fmt -d ./
 	swag init -g cmd/main.go -o api 
 
+# Executa somente testes unitários
 test:
-	go test ./... -v -cover -coverprofile=cover.out
+	go test ./internal... -v -count=1 -race -cover -coverprofile=./tmp/coverage.unit.out
 
-test-unit:
-	go test ./... -run Unit -v -cover -coverprofile=cover.out
-
+# Executa somente testes de integração
 test-integration:
-	go test ./... -run Integration -v -cover -coverprofile=cover.out
+	go test -tags=integration ./internal... -v -count=1 -race -cover -coverprofile=./tmp/coverage.integration.out
+#go test -tags=integration ./...
+# Executa benchmarks
+test-benchmark:
+	go test ./... -v -run=^$ -bench=. -benchmem
 
-test-cover:
-	go tool cover -html=cover.out
+# Gera relatório de cobertura em HTML
+coverage:
+	go tool cover -html=./tmp/coverage.integration.out -o ./tmp/coverage.html
+
+# Limpa arquivos de coverage
+clean:
+	rm -f ./tmp/coverage.*
 
 dev:
-	make docs
-	air 
+	air
 
 run:
 	make docs
-	go run cmd/main.go
+	go run -race cmd/main.go
 
 migrate:
 	@ migrate -source file://internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" up
@@ -60,11 +68,14 @@ migration:
 		migrate create -ext sql -dir internal/infrastructure/database/migrations -seq $$name
 
 migration-up: 
-	@ migrate -path internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
+	@ migrate -path internal/infrastructure/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
 
 migration-down: 
-	@ migrate -path internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose down
+	@ migrate -path internal/infrastructure/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose down
 
 migration-fix: 
 	@read -p "Enter migration version: " version; \
-	@ migrate -path internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
+	migrate -path internal/infrastructure/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
+
+infra:
+	go run scripts/create_infra.go

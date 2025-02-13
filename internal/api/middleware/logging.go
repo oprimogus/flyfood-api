@@ -1,52 +1,82 @@
 package middleware
 
 import (
-	"time"
-
-	"github.com/gin-gonic/gin"
+	"context"
 	"github.com/google/uuid"
-
 	logger "github.com/oprimogus/cardapiogo/pkg/log"
+	"log/slog"
+	"net/http"
+	"strings"
 )
 
-const (
-	TransactionIDLabel string = "transactionID"
-	UserIDLabel        string = "userID"
-)
+var paths []Path
 
-func LoggerMiddleware(logger *logger.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Início do request
-		t := time.Now()
-		transactionId := uuid.New().String()
-		c.Set(TransactionIDLabel, transactionId)
+type Path struct {
+	value    string
+	segments []string
+	params   map[int]int
+}
 
-		// Processa a próxima função no encadeamento
-		c.Next()
+func MakePath(route string) {
+	segments := strings.Split(strings.TrimPrefix(route, "/"), "/")
+	path := Path{
+		value:    route,
+		segments: segments,
+		params:   make(map[int]int),
+	}
 
-		// Após o request ser processado
-		latency := time.Since(t).String()
-		c.Set("latency", latency)
-		status := c.Writer.Status()
-		clientIP := c.ClientIP()
-		method := c.Request.Method
-		path := c.Request.URL.Path
-		userID, exists := c.Get("userID")
-		if !exists {
-			userID = ""
+	for i, segment := range segments {
+		if strings.HasPrefix(segment, "{") && strings.HasSuffix(segment, "}") {
+			path.params[i] = i
+		}
+	}
+
+	paths = append(paths, path)
+}
+
+func GetPath(route string) string {
+	segments := strings.Split(strings.TrimPrefix(route, "/"), "/")
+
+	for _, path := range paths {
+		if len(path.segments) != len(segments) {
+			continue
 		}
 
-		entry := logger.GetEntry()
+		matches := true
+		for i, segment := range segments {
+			if path.segments[i] != segment && !strings.HasPrefix(path.segments[i], "{") {
+				matches = false
+				break
+			}
+		}
 
-		// Loga os detalhes do request como campos estruturados
-		entry.With(
-			TransactionIDLabel, transactionId,
-			UserIDLabel, userID,
-			"client_ip", clientIP,
-			"method", method,
-			"path", path,
-			"status", status,
-			"latency", latency,
-		).Info("Request Handled")
+		if matches {
+			return path.value
+		}
 	}
+
+	return route
+}
+
+func GetRequestData(ctx context.Context) *logger.RequestData {
+	return ctx.Value(string(logger.RequestKey)).(*logger.RequestData)
+}
+
+func Logging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		traceID := uuid.New().String()
+
+		reqData := &logger.RequestData{
+			TraceID:  traceID,
+			Method:   r.Method,
+			Path:     r.URL.Path,
+			ClientIP: r.RemoteAddr,
+		}
+
+		ctx := context.WithValue(r.Context(), string(logger.RequestKey), reqData)
+		nr := r.WithContext(ctx)
+		next.ServeHTTP(w, nr)
+
+		slog.InfoContext(nr.Context(), "request handled")
+	})
 }

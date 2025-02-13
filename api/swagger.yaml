@@ -5,28 +5,41 @@ definitions:
   address.Address:
     properties:
       addressLine1:
+        example: 123 Main Street
         maxLength: 40
         type: string
       addressLine2:
+        example: Apt 4B
         maxLength: 20
         type: string
       city:
+        example: New York
         maxLength: 25
         type: string
       country:
+        example: United States
         maxLength: 15
         type: string
       latitude:
+        example: "40.7128"
         type: string
       longitude:
+        example: "-74.0060"
+        type: string
+      name:
+        example: Home
+        maxLength: 25
         type: string
       neighborhood:
+        example: Downtown
         maxLength: 25
         type: string
       postalCode:
+        example: "10001"
         maxLength: 15
         type: string
       state:
+        example: NY
         maxLength: 15
         type: string
     required:
@@ -38,71 +51,300 @@ definitions:
     - postalCode
     - state
     type: object
-  authentication.JWT:
+  controller.HealthResponse:
     properties:
-      accessToken:
+      status:
+        example: UP
         type: string
-      expiresIn:
-        type: integer
-      idToken:
-        type: string
-      notBeforePolicy:
-        type: integer
-      refreshExpiresIn:
-        type: integer
-      refreshToken:
-        type: string
-      scope:
-        type: string
-      sessionState:
-        type: string
-      tokenType:
+      timestamp:
+        example: "2024-03-15T10:30:15Z"
         type: string
     type: object
-  authentication.RefreshParams:
+  customer.Customer:
     properties:
-      refreshToken:
+      addresses:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      cpf:
+        example: "52024227090"
         type: string
-    required:
-    - refreshToken
-    type: object
-  authentication.SignInParams:
-    properties:
       email:
+        example: johndoe@example.com
         type: string
-      password:
+      id:
+        example: "295105940221919239"
+        type: string
+      lastName:
+        example: Doe
+        maxLength: 60
+        minLength: 3
+        type: string
+      name:
+        example: John
+        maxLength: 25
+        minLength: 3
+        type: string
+      ordersID:
+        items:
+          type: string
+        type: array
+      phone:
+        example: "+5513997590579"
         type: string
     required:
     - email
-    - password
+    - id
+    - lastName
+    - name
+    - phone
     type: object
-  controller.setFileOutput:
+  customer.UpdateProfileDTO:
     properties:
-      objectURL:
+      last_name:
+        example: Doe
+        maxLength: 60
+        minLength: 3
         type: string
+      name:
+        example: John
+        maxLength: 25
+        minLength: 3
+        type: string
+      phone:
+        example: "+5513997590579"
+        type: string
+    required:
+    - last_name
+    - name
+    - phone
     type: object
-  store.AddressOutput:
+  product.ChangeStockProductDTO:
     properties:
-      addressLine1:
+      id:
+        example: 0194900a-8909-755a-bd61-ec7a18224200
         type: string
-      addressLine2:
+      quantity:
+        type: integer
+      store_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      city:
-        type: string
-      country:
-        type: string
-      neighborhood:
-        type: string
-      state:
-        type: string
+    required:
+    - id
+    - store_id
     type: object
-  store.BusinessHoursParams:
+  product.CreateProductDTO:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      store_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/product.Type'
+        example: FOOD
+    required:
+    - description
+    - name
+    - price
+    - store_id
+    - tag
+    - type
+    type: object
+  product.Product:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      active:
+        type: boolean
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      promo_active:
+        type: boolean
+      promotional_price:
+        minimum: 0
+        type: integer
+      score:
+        type: integer
+      stock_quantity:
+        type: integer
+      store_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/product.Type'
+        example: FOOD
+    required:
+    - description
+    - id
+    - name
+    - price
+    - score
+    - store_id
+    - tag
+    - type
+    type: object
+  product.ProductDTO:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      promo_active:
+        type: boolean
+      score:
+        type: integer
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/product.Type'
+        example: FOOD
+    required:
+    - description
+    - id
+    - name
+    - price
+    - score
+    - tag
+    - type
+    type: object
+  product.Type:
+    enum:
+    - FOOD
+    - WATER
+    type: string
+    x-enum-varnames:
+    - Food
+    - Water
+  product.UpdateProductDTO:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      id:
+        example: 0194900a-8909-755a-bd61-ec7a18224200
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      store_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/product.Type'
+        example: FOOD
+    required:
+    - description
+    - id
+    - name
+    - price
+    - store_id
+    - tag
+    - type
+    type: object
+  store.AddOrDeleteBusinessHourDTO:
+    properties:
+      businessHour:
+        $ref: '#/definitions/store.BusinessHours'
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - id
+    type: object
+  store.AddOrDeletePaymentMethodDTO:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      paymentMethod:
+        $ref: '#/definitions/store.PaymentMethod'
+    required:
+    - id
+    - paymentMethod
+    type: object
+  store.BusinessHours:
     properties:
       closingTime:
+        example: "15:00"
         type: string
       openingTime:
+        example: "09:00"
         type: string
       weekDay:
+        example: 1
         maximum: 6
         minimum: 0
         type: integer
@@ -110,193 +352,326 @@ definitions:
     - closingTime
     - openingTime
     type: object
-  store.CreateParams:
+  store.CreateNewStoreDTO:
     properties:
       address:
         $ref: '#/definitions/address.Address'
-      cpfCnpj:
+      cnpj:
+        example: "12345678000190"
+        type: string
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
         type: string
       name:
+        example: Delicious Bakery
         maxLength: 25
+        minLength: 3
         type: string
       phone:
+        example: "+5511997590670"
         type: string
       type:
-        $ref: '#/definitions/store.ShopType'
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
     required:
     - address
-    - cpfCnpj
+    - cnpj
+    - description
     - name
     - phone
     - type
     type: object
-  store.CreatedStore:
-    properties:
-      id:
-        type: string
-    type: object
-  store.GetStoreByIdOutput:
-    properties:
-      address:
-        $ref: '#/definitions/store.AddressOutput'
-      businessHours:
-        items:
-          $ref: '#/definitions/store.BusinessHoursParams'
-        type: array
-      headerImage:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      paymentMethod:
-        items:
-          $ref: '#/definitions/store.PaymentMethod'
-        type: array
-      phone:
-        type: string
-      profileImage:
-        type: string
-      score:
-        type: integer
-      type:
-        $ref: '#/definitions/store.ShopType'
-    type: object
   store.PaymentMethod:
     enum:
-    - credit
-    - debit
-    - pix
-    - cash
+    - CREDIT
+    - DEBIT
+    - CASH
+    - PIX
+    - BTC
     type: string
     x-enum-varnames:
     - Credit
     - Debit
-    - Pix
     - Cash
-  store.ShopType:
-    enum:
-    - restaurant
-    - pharmacy
-    - tobbaco
-    - market
-    - convenience
-    - pub
-    type: string
-    x-enum-varnames:
-    - StoreShopRestaurant
-    - StoreShopPharmacy
-    - StoreShopTobbaco
-    - StoreShopMarket
-    - StoreShopConvenience
-    - StoreShopPub
-  store.StoreBusinessHoursParams:
-    properties:
-      businessHours:
-        items:
-          $ref: '#/definitions/store.BusinessHoursParams'
-        type: array
-      id:
-        type: string
-      timeZone:
-        type: string
-    required:
-    - id
-    - timeZone
-    type: object
-  store.UpdateParams:
+    - Pix
+    - Bitcoin
+  store.QueryOwnerStore:
     properties:
       address:
         $ref: '#/definitions/address.Address'
+      businessHours:
+        items:
+          $ref: '#/definitions/store.BusinessHours'
+        type: array
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      headerImage:
+        example: https://example.com/header.jpg
+        type: string
       id:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
+      isOpen:
+        example: false
+        type: boolean
       name:
+        example: Delicious Bakery
         maxLength: 25
+        minLength: 3
         type: string
-      paymentMethod:
+      paymentMethods:
         items:
           $ref: '#/definitions/store.PaymentMethod'
         type: array
       phone:
+        example: "+5511997590670"
         type: string
+      products:
+        items:
+          $ref: '#/definitions/product.Product'
+        type: array
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
       type:
-        $ref: '#/definitions/store.ShopType'
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
     required:
     - address
+    - businessHours
+    - description
+    - id
+    - name
+    - paymentMethods
+    - phone
+    - products
+    - score
+    - type
+    type: object
+  store.QueryOwnerStoreList:
+    properties:
+      active:
+        example: true
+        type: boolean
+      city:
+        example: New York
+        maxLength: 25
+        type: string
+      country:
+        example: United States
+        maxLength: 15
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      state:
+        example: NY
+        maxLength: 15
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
+    required:
+    - city
+    - country
+    - id
+    - name
+    - score
+    - state
+    - type
+    type: object
+  store.QueryStore:
+    properties:
+      address:
+        $ref: '#/definitions/address.Address'
+      businessHours:
+        items:
+          $ref: '#/definitions/store.BusinessHours'
+        type: array
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      headerImage:
+        example: https://example.com/header.jpg
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      paymentMethods:
+        items:
+          $ref: '#/definitions/store.PaymentMethod'
+        type: array
+      phone:
+        example: "+5511997590670"
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/product.ProductDTO'
+        type: array
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - businessHours
+    - description
+    - id
+    - name
+    - paymentMethods
+    - phone
+    - products
+    - score
+    - type
+    type: object
+  store.QueryStoreList:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      neighborhood:
+        example: Downtown
+        maxLength: 25
+        type: string
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
+    required:
+    - id
+    - name
+    - neighborhood
+    - score
+    - type
+    type: object
+  store.SetActiveDTO:
+    properties:
+      active:
+        example: true
+        type: boolean
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - id
+    type: object
+  store.SetOpenStateDTO:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: true
+        type: boolean
+    required:
+    - id
+    type: object
+  store.Type:
+    enum:
+    - RESTAURANT
+    - PHARMACY
+    - TOBBACO
+    - MARKET
+    - CONVENIENCE
+    - PUB
+    type: string
+    x-enum-varnames:
+    - Restaurant
+    - Pharmacy
+    - Tobbaco
+    - Market
+    - Convenience
+    - Pub
+  store.UpdateStoreDTO:
+    properties:
+      address:
+        $ref: '#/definitions/address.Address'
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      phone:
+        example: "+5511997590670"
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - description
     - id
     - name
     - phone
     - type
     type: object
-  user.AddRolesParams:
-    properties:
-      roles:
-        items:
-          $ref: '#/definitions/user.Role'
-        type: array
-    required:
-    - roles
-    type: object
-  user.CreateParams:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-      profile:
-        $ref: '#/definitions/user.CreateProfileParams'
-    required:
-    - email
-    - password
-    - profile
-    type: object
-  user.CreateProfileParams:
-    properties:
-      lastName:
-        type: string
-      name:
-        type: string
-      phone:
-        type: string
-    required:
-    - lastName
-    - name
-    - phone
-    type: object
-  user.Role:
-    enum:
-    - consumer
-    - owner
-    - employee
-    - delivery_man
-    - admin
-    type: string
-    x-enum-varnames:
-    - RoleConsumer
-    - RoleOwner
-    - RoleEmployee
-    - RoleDeliveryMan
-    - RoleAdmin
-  user.UpdateProfileParams:
-    properties:
-      lastName:
-        type: string
-      name:
-        type: string
-      phone:
-        type: string
-    required:
-    - lastName
-    - name
-    - phone
-    type: object
-  xerrors.ErrorResponse:
+  xerrors.CustomError:
     properties:
       debug: {}
       details: {}
       error:
         type: string
-      transactionID:
+      traceID:
         type: string
     type: object
 host: localhost:3000
@@ -304,261 +679,403 @@ info:
   contact:
     email: gustavo081900@gmail.com
     name: Gustavo Ferreira de Jesus
-  description: Documentação da API de delivery Cardapiogo.
-  title: Cardapiogo API
+  description: Documentação da API de delivery FlyFood.
+  title: FlyFood API
   version: "1.0"
 paths:
-  /v1/auth/refresh:
-    post:
-      consumes:
-      - application/json
-      description: Refresh token when access token expires
-      parameters:
-      - description: RefreshParams
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/authentication.RefreshParams'
+  /health/liveness:
+    get:
+      description: Liveness Prob
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/authentication.JWT'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/controller.HealthResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Refresh token when access token expires
+            $ref: '#/definitions/controller.HealthResponse'
+      summary: Liveness Prob
       tags:
-      - Authentication
-  /v1/auth/sign-in:
-    post:
-      consumes:
-      - application/json
-      description: Authenticate a user using email and password and issue a JWT on
-        successful login.
-      parameters:
-      - description: SignInParams
-        in: body
-        name: request
-        schema:
-          $ref: '#/definitions/authentication.SignInParams'
+      - Health
+  /health/metrics:
+    get:
+      description: Prometheus Metrics
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.HealthResponse'
+      summary: Prometheus Metrics
+      tags:
+      - Health
+  /health/readiness:
+    get:
+      description: Readiness Prob
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/authentication.JWT'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/controller.HealthResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Sign-In with email and password
+            $ref: '#/definitions/controller.HealthResponse'
+      summary: Readiness Prob
       tags:
-      - Authentication
-  /v1/auth/sign-up:
-    post:
-      consumes:
-      - application/json
-      description: Sign-Up with local credentials and data
-      parameters:
-      - description: CreateUserParams
-        in: body
-        name: request
-        schema:
-          $ref: '#/definitions/user.CreateParams'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Sign-Up with local credentials and data
-      tags:
-      - Authentication
-  /v1/store:
+      - Health
+  /v1/customer:
     get:
       consumes:
       - application/json
-      description: Any user can view filtered stores.
-      parameters:
-      - description: Specify max range
-        in: query
-        name: range
-        type: integer
-      - description: Specify in score
-        in: query
-        name: score
-        type: integer
-      - description: Specify name like
-        in: query
-        name: name
-        type: string
-      - description: Specify city
-        in: query
-        name: city
-        type: string
-      - description: latitude of address selected
-        in: query
-        name: latitude
-        type: string
-      - description: longitude of address selected
-        in: query
-        name: longitude
-        type: string
-      - description: Specify store type
-        in: query
-        name: type
-        type: string
+      description: Register a comprehensive customer profile with full registration
+        details
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Customer
           schema:
-            items:
-              $ref: '#/definitions/store.GetStoreByIdOutput'
-            type: array
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Any user can view filtered stores.
-      tags:
-      - Store
-    post:
-      consumes:
-      - application/json
-      description: Owner user can create store
-      parameters:
-      - description: Params to create a store
-        in: body
-        name: Params
-        required: true
-        schema:
-          $ref: '#/definitions/store.CreateParams'
-      produces:
-      - application/json
-      responses:
+            $ref: '#/definitions/customer.Customer'
         "201":
-          description: Created
+          description: Customer
           schema:
-            $ref: '#/definitions/store.CreatedStore'
+            $ref: '#/definitions/customer.Customer'
         "400":
-          description: Bad Request
+          description: Invalid request data or malformed JSON
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "409":
-          description: Conflict
+          description: Conflict - customer may already exist
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid customer details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "502":
-          description: Bad Gateway
+          description: External service communication error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can create stores.
+            $ref: '#/definitions/xerrors.CustomError'
+      summary: Get a customer account
       tags:
-      - Store
+      - Customer Profile Management V1
     put:
       consumes:
       - application/json
-      description: Owner can update your stores.
+      description: Modify comprehensive customer account details with full profile
+        update
       parameters:
-      - description: Params to update a store
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updated customer profile information
         in: body
-        name: Params
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/store.UpdateParams'
+          $ref: '#/definitions/customer.UpdateProfileDTO'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Profile successfully updated
         "400":
-          description: Bad Request
+          description: Invalid request data or malformed JSON
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - authentication required
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "403":
-          description: Forbidden
+          description: Forbidden - insufficient permissions
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "409":
-          description: Conflict
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Customer profile not found
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update your stores.
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Update existing customer profile
       tags:
-      - Store
-  /v1/store/{id}:
-    get:
+      - Customer Profile Management V1
+  /v1/customer/address:
+    delete:
       consumes:
       - application/json
-      description: Any user can view a store.
+      description: Remove an address to customer
       parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Address Model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/address.Address'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Address removed from user
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden - insufficient permissions
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Customer profile not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Remove an address to customer
+      tags:
+      - Customer Profile Management V1
+    post:
+      consumes:
+      - application/json
+      description: Add new address to customer
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Address Model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/address.Address'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Address added to user
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "403":
+          description: Forbidden - insufficient permissions
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Customer profile not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Add new address to customer
+      tags:
+      - Customer Profile Management V1
+  /v1/owner:
+    post:
+      consumes:
+      - application/json
+      description: Register a customer as owner
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Store successfully created
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Owner: Create an owner'
+      tags:
+      - Owner V1
+  /v1/owner/store:
+    post:
+      consumes:
+      - application/json
+      description: Register a comprehensive store profile with all necessary details
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed store creation information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.CreateNewStoreDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Store successfully created
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Create a new store for an owner'
+      tags:
+      - Store Management V1
+    put:
+      consumes:
+      - application/json
+      description: Modify comprehensive store details including contact, operational,
+        and profile information
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updated store information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.UpdateStoreDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "404":
+          description: Store not found
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Update existing store profile'
+      tags:
+      - Store Management V1
+  /v1/owner/store/{id}:
+    get:
+      description: Get a store by ID
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Store ID
         in: path
         name: id
@@ -568,36 +1085,760 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: QueryOwnerStore model
           schema:
-            $ref: '#/definitions/store.GetStoreByIdOutput'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/store.QueryOwnerStore'
+        "400":
+          description: Invalid request data or malformed JSON
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Any user can view a store.
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Get a store by ID'
       tags:
-      - Store
+      - Store Management V1
+  /v1/owner/store/{id}/header-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change store header image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store header image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store header image'
+      tags:
+      - Store Management V1
+  /v1/owner/store/{id}/profile-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change store profile image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store profile image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store profile image'
+      tags:
+      - Store Management V1
+  /v1/owner/store/active:
+    post:
+      consumes:
+      - application/json
+      description: Activate or deactivate store to control product visibility and
+        order processing
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store activation status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.SetActiveDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store''s visibility and order acceptance status'
+      tags:
+      - Store Management V1
+  /v1/owner/store/all:
+    get:
+      description: Get all stores of an owner
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: store model for owner list
+          schema:
+            $ref: '#/definitions/store.QueryOwnerStoreList'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Get all stores of an owner'
+      tags:
+      - Store Management V1
+  /v1/owner/store/business-hour:
+    delete:
+      consumes:
+      - application/json
+      description: Delete specific business hours from store's operational schedule
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Business hours to remove
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.AddOrDeleteBusinessHourDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Business hours successfully removed
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid business hours
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Remove business operating hours for store'
+      tags:
+      - Store Management V1
+    post:
+      consumes:
+      - application/json
+      description: Register specific business hours for a store's operational schedule
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Business hours details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.AddOrDeleteBusinessHourDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Business hours successfully added
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid business hours
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Add business operating hours for store'
+      tags:
+      - Store Management V1
+  /v1/owner/store/open:
+    post:
+      consumes:
+      - application/json
+      description: Toggle store's availability to accept or stop accepting new orders
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store open/close status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.SetOpenStateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store operational status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store''s operational status for orders'
+      tags:
+      - Store Management V1
+  /v1/owner/store/payment-method:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a previously added payment method from store's accepted
+        methods
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Payment method to remove
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.AddOrDeletePaymentMethodDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment method successfully removed
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid payment method
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Remove payment method for store'
+      tags:
+      - Store Management V1
+    post:
+      consumes:
+      - application/json
+      description: Register a new payment method accepted by the store
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Payment method details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/store.AddOrDeletePaymentMethodDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment method successfully added
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid payment method
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Add payment method for store'
+      tags:
+      - Store Management V1
+  /v1/owner/store/product:
+    post:
+      consumes:
+      - application/json
+      description: Add a new product into store
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product creation information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.CreateProductDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Product successfully created
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Add a new product into store'
+      tags:
+      - Store Management V1
+    put:
+      consumes:
+      - application/json
+      description: Update a product of store
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.UpdateProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stock successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Update a product of store'
+      tags:
+      - Store Management V1
+  /v1/owner/store/product/decrease-stock:
+    post:
+      consumes:
+      - application/json
+      description: Decrease stock of a product
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.ChangeStockProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stock successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Decrease stock of a product'
+      tags:
+      - Store Management V1
+  /v1/owner/store/product/increase-stock:
+    post:
+      consumes:
+      - application/json
+      description: Increase stock of a product
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.ChangeStockProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stock successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Increase stock of a product'
+      tags:
+      - Store Management V1
+  /v1/store:
+    get:
+      description: Get a stores by Filter
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: IsOpen
+        in: query
+        name: isOpen
+        required: true
+        type: string
+      - description: Score
+        in: query
+        name: score
+        required: true
+        type: integer
+      - description: Store Type
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: City
+        in: query
+        name: city
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: Items per page
+        in: query
+        name: maxItems
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query Store model
+          schema:
+            items:
+              $ref: '#/definitions/store.QueryStoreList'
+            type: array
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Get a stores by Filter
+      tags:
+      - Store V1
+  /v1/store/:id:
+    get:
+      description: Get a store by ID
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query Store model
+          schema:
+            $ref: '#/definitions/store.QueryStore'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Get a store by ID
+      tags:
+      - Store V1
   /v1/store/{id}/header-image:
     post:
       consumes:
       - multipart/form-data
-      description: Owner can update header image of store.
+      description: Change product image
       parameters:
-      - description: Store ID
-        in: path
-        name: id
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
         required: true
         type: string
-      - description: jpeg/png image
+      - description: Store ID
+        in: path
+        name: store_id
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: string
+      - description: Product Image
         in: formData
         name: file
         required: true
@@ -606,239 +1847,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.setFileOutput'
+          description: Product image updated with success
         "400":
-          description: Bad Request
+          description: Invalid request data or malformed JSON
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "401":
-          description: Unauthorized
+          description: Unauthorized - authentication required
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "403":
-          description: Forbidden
+            $ref: '#/definitions/xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update header image of store.
-      tags:
-      - Store
-  /v1/store/{id}/profile-image:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Owner can update profile image of store.
-      parameters:
-      - description: Store ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: jpeg/png image
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.setFileOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update profile image of store.
-      tags:
-      - Store
-  /v1/store/business-hours:
-    delete:
-      consumes:
-      - application/json
-      description: Owner can delete business hours of store.
-      parameters:
-      - description: Params to delete business hours of store
-        in: body
-        name: Params
-        required: true
-        schema:
-          $ref: '#/definitions/store.StoreBusinessHoursParams'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can delete business hours of store.
-      tags:
-      - Store
-    put:
-      consumes:
-      - application/json
-      description: Owner can update business hours of store.
-      parameters:
-      - description: Params to update business hours of store
-        in: body
-        name: Params
-        required: true
-        schema:
-          $ref: '#/definitions/store.StoreBusinessHoursParams'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      summary: Owner can update business hours of store.
-      tags:
-      - Store
-  /v1/user:
-    put:
-      consumes:
-      - application/json
-      description: Update user profile
-      parameters:
-      - description: UpdateProfileParams
-        in: body
-        name: request
-        schema:
-          $ref: '#/definitions/user.UpdateProfileParams'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
+            $ref: '#/definitions/xerrors.CustomError'
       security:
-      - Bearer Token: []
-      summary: Update user profile
+      - BearerAuth: []
+      summary: 'Product: Change product image'
       tags:
-      - User
-  /v1/user/roles:
-    post:
-      consumes:
-      - application/json
-      description: Add a new role for user
-      parameters:
-      - description: AddRolesParams
-        in: body
-        name: request
-        schema:
-          $ref: '#/definitions/user.AddRolesParams'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/xerrors.ErrorResponse'
-      security:
-      - Bearer Token: []
-      summary: Add a new role for user
-      tags:
-      - User
+      - Store Management V1
 produces:
 - application/json
 securityDefinitions:

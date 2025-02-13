@@ -2,81 +2,33 @@ package middleware
 
 import (
 	"fmt"
-
-	"github.com/gin-gonic/gin"
+	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/cardapiogo/internal/infrastructure/observability"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
+	"net/http"
 )
 
-const service = "cardapiogo"
+func Prometheus(next http.Handler) http.Handler {
+	metrics := observability.GetPrometheusMetrics()
 
-// PrometheusMetrics estrutura que armazena as métricas que queremos registrar.
-type PrometheusMetrics struct {
-	Registry          *prometheus.Registry
-	RequestCounter    *prometheus.CounterVec
-	ResponseTime      *prometheus.HistogramVec
-	ErrorCounter      *prometheus.CounterVec
-	ActiveConnections prometheus.Gauge
-}
+	service := config.GetInstance().Api.ServiceName
 
-func NewPrometheusMetrics() *PrometheusMetrics {
-	reg := prometheus.NewRegistry()
-	reg.MustRegister(collectors.NewGoCollector())
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rw := NewResponseRecorder(w)
 
-	requestCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "metrics_requests_total",
-		Help: "Total de requisições recebidas.",
-	}, []string{"service", "path", "method", "status"})
+		path := GetPath(r.URL.Path)
+		method := r.Method
 
-	responseTime := prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "metrics_response_time_seconds",
-		Help:    "Tempo de resposta da API.",
-		Buckets: prometheus.DefBuckets, // Você pode personalizar os buckets
-	}, []string{"service", "path", "method", "status"})
-
-	errorCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "metrics_errors_total",
-		Help: "Total de erros da API por endpoint, método e código de status.",
-	}, []string{"service", "path", "method", "status"})
-
-	activeConnections := prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "metrics_active_connections",
-		Help: "Número atual de conexões ativas.",
-	})
-
-	reg.MustRegister(requestCounter, responseTime, errorCounter, activeConnections)
-
-	return &PrometheusMetrics{
-		Registry:          reg,
-		RequestCounter:    requestCounter,
-		ResponseTime:      responseTime,
-		ErrorCounter:      errorCounter,
-		ActiveConnections: activeConnections,
-	}
-}
-
-func PrometheusMiddleware(metrics *PrometheusMetrics) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		path := c.FullPath()
-		method := c.Request.Method
 		timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-			metrics.ResponseTime.WithLabelValues(service, path, method, fmt.Sprintf("%d", c.Writer.Status())).Observe(v)
+			metrics.ResponseTime.WithLabelValues(service, path, method, fmt.Sprintf("%d", rw.Status)).Observe(v)
 		}))
 		defer timer.ObserveDuration()
 
 		metrics.ActiveConnections.Inc()
 		defer metrics.ActiveConnections.Dec()
 
-		// Processa o request
-		c.Next()
+		next.ServeHTTP(rw, r)
 
-		// Incrementa o contador de requests
-		status := fmt.Sprintf("%d", c.Writer.Status())
-		metrics.RequestCounter.WithLabelValues(service, path, method, status).Inc()
-
-		// Incrementa o contador de erros, se necessário
-		if c.Writer.Status() >= 400 {
-			metrics.ErrorCounter.WithLabelValues(service, path, method, status).Inc()
-		}
-	}
+		metrics.RequestCounter.WithLabelValues(service, path, method, fmt.Sprintf("%d", rw.Status)).Inc()
+	})
 }

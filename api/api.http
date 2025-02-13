@@ -1,0 +1,17 @@
+GET http://localhost:3000/api/v1/customer/
+Content-Type: application/json
+Authorization: Bearer yDcSC_FkF0eaH0aZVVBWemZl0wn8AZXIVXcvDTjursMGVUbSUeZDA3O9nb0MsFMy99eMn3A
+
+###
+
+POST http://localhost:3000/api/v1/store
+Content-Type: application/json
+Authorization: Bearer LEAGIYzWHzPQuKbRi9hRKn5ICxPuloItly83TIQUJnSNzNg5GDUh1T67qjWJixkvxZrfoF4
+
+{
+
+}
+
+
+
+
