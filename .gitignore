@@ -24,9 +24,6 @@ go.work
 #dotenv
 .env
 
-# Air
-/tmp
-
 # IDE JetBrains
 .idea
 
