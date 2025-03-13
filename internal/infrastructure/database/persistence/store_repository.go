@@ -76,6 +76,7 @@ func (r StoreRepository) FindStoreByID(ctx context.Context, id string) (store.St
 		HeaderImage:  st.HeaderImage.String,
 		Score:        int(st.Score),
 		Type:         store.Type(st.Type),
+		DeliveryTime: converters.Int4ToInt(st.DeliveryTime),
 		Address: address.Address{
 			AddressLine1: st.AddressLine1,
 			AddressLine2: st.AddressLine2,
@@ -217,6 +218,7 @@ func (r StoreRepository) SaveStore(ctx context.Context, st store.Store) error {
 		Phone:        st.Phone,
 		Score:        int32(st.Score),
 		Type:         sqlc.StoreType(st.Type),
+		DeliveryTime: pgtype.Int4{Int32: int32(st.DeliveryTime), Valid: true},
 		ProfileImage: profileImage,
 		HeaderImage:  headerImage,
 		AddressLine1: st.Address.AddressLine1,

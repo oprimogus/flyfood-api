@@ -39,12 +39,13 @@ type CreateNewStoreDTO struct {
 }
 
 type UpdateStoreDTO struct {
-	ID          string          `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Name        string          `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
-	Description string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
-	Phone       string          `json:"phone" validate:"required,phone" example:"+5511997590670"`
-	Address     address.Address `json:"address" validate:"required"`
-	Type        Type            `json:"type" validate:"required,storeType" example:"RESTAURANT"`
+	ID           string          `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Name         string          `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
+	Description  string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
+	Phone        string          `json:"phone" validate:"required,phone" example:"+5511997590670"`
+	Address      address.Address `json:"address" validate:"required"`
+	Type         Type            `json:"type" validate:"required,storeType" example:"RESTAURANT"`
+	DeliveryTime int             `json:"deliveryTime" validate:"number" example:"40"`
 }
 
 type AddOrDeleteBusinessHourDTO struct {
@@ -71,11 +72,4 @@ type UploadStoreImageDTO struct {
 	StoreID string `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Image   []byte `json:"image"`
 	Ext     string `json:"ext"`
-}
-
-type UploadProductImageDTO struct {
-	StoreID   string `json:"store_id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ProductID string `json:"product_id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Image     []byte `json:"image"`
-	Ext       string `json:"ext"`
 }

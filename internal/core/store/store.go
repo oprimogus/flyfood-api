@@ -20,15 +20,17 @@ func init() {
 }
 
 type Store struct {
-	ID             string          `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OwnerID        string          `json:"ownerID" validate:"required" example:"5692562784252"`
-	CNPJ           string          `json:"cnpj" validate:"required,cnpj" example:"12345678000190"`
-	Name           string          `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
-	Description    string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
-	Active         bool            `json:"active" validate:"boolean" example:"true"`
-	IsOpen         bool            `json:"isOpen" validate:"boolean" example:"false"`
-	Phone          string          `json:"phone" validate:"required,phone" example:"+5511997590670"`
-	Score          int             `json:"score" validate:"required,number" example:"500"`
+	ID          string `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OwnerID     string `json:"ownerID" validate:"required" example:"5692562784252"`
+	CNPJ        string `json:"cnpj" validate:"required,cnpj" example:"12345678000190"`
+	Name        string `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
+	Description string `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
+	Active      bool   `json:"active" validate:"boolean" example:"true"`
+	IsOpen      bool   `json:"isOpen" validate:"boolean" example:"false"`
+	Phone       string `json:"phone" validate:"required,phone" example:"+5511997590670"`
+	Score       int    `json:"score" validate:"required,number" example:"500"`
+	// DeliveryTime is defined in minutes
+	DeliveryTime   int             `json:"deliveryTime" validate:"number" example:"40"`
 	Address        address.Address `json:"address" validate:"required"`
 	Type           Type            `json:"type" validate:"required,storeType" example:"RESTAURANT"`
 	ProfileImage   string          `json:"profileImage" example:"https://example.com/profile.jpg"`
@@ -86,12 +88,13 @@ func (st *Store) CloseStore() {
 }
 
 func (st *Store) UpdateStoreProfile(name, description,
-	phone string, address address.Address, types Type) error {
+	phone string, address address.Address, types Type, deliveryTime int) error {
 	st.Name = name
 	st.Description = description
 	st.Phone = phone
 	st.Address = address
 	st.Type = types
+	st.DeliveryTime = deliveryTime
 	return st.Validate()
 }
 

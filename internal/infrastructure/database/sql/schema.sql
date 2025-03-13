@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS "store" (
                                        "score" int NOT NULL,
                                        "is_open" boolean NOT NULL,
                                        "type" "StoreType" NOT NULL,
+                                       "delivery_time" integer,
                                        "profile_image" text,
                                        "header_image" text,
                                        "address_line_1" text NOT NULL,

@@ -21,6 +21,13 @@ type UpdateProductDTO struct {
 	Type        Type   `json:"type" validate:"required,productType" example:"FOOD"`
 }
 
+type UploadProductImageDTO struct {
+	StoreID   string `json:"store_id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ProductID string `json:"product_id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Image     []byte `json:"image"`
+	Ext       string `json:"ext"`
+}
+
 type ChangeStockProductDTO struct {
 	ID       string `json:"id" validate:"required,uuid" example:"0194900a-8909-755a-bd61-ec7a18224200"`
 	StoreID  string `json:"store_id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`

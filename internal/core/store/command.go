@@ -43,7 +43,7 @@ func (s Command) Update(ctx context.Context, ownerID string, params UpdateStoreD
 		return owner.ErrNotOwner
 	}
 
-	err = st.UpdateStoreProfile(params.Name, params.Description, params.Phone, params.Address, params.Type)
+	err = st.UpdateStoreProfile(params.Name, params.Description, params.Phone, params.Address, params.Type, params.DeliveryTime)
 	if err != nil {
 		return err
 	}
@@ -320,7 +320,7 @@ func (s Command) DecreaseStock(ctx context.Context, ownerId string, input produc
 	return s.r.SaveProduct(ctx, p)
 }
 
-func (s Command) ChangeProductImage(ctx context.Context, ownerID string, params UploadProductImageDTO) error {
+func (s Command) ChangeProductImage(ctx context.Context, ownerID string, params product.UploadProductImageDTO) error {
 	st, err := s.r.FindStoreByID(ctx, params.StoreID)
 	if err != nil {
 		return err

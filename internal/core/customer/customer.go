@@ -11,7 +11,7 @@ type Customer struct {
 	LastName  string            `json:"lastName" validate:"required,gte=3,lte=60" example:"Doe"`
 	CPF       string            `json:"cpf" validate:"cpf" example:"52024227090"`
 	Email     string            `json:"email" validate:"required,email" example:"johndoe@example.com"`
-	Phone     string            `json:"phone" validate:"required,phone" example:"+5513997590579"`
+	Phone     string            `json:"phone" validate:"phone" example:"+5513997590579"`
 	Addresses []address.Address `json:"addresses" validate:"dive"`
 	OrdersID  []string          `json:"ordersID"`
 }

@@ -1927,8 +1927,7 @@ const docTemplate = `{
                 "email",
                 "id",
                 "lastName",
-                "name",
-                "phone"
+                "name"
             ],
             "properties": {
                 "addresses": {
@@ -1977,8 +1976,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "last_name",
-                "name",
-                "phone"
+                "name"
             ],
             "properties": {
                 "last_name": {
@@ -2406,6 +2404,11 @@ const docTemplate = `{
                         "$ref": "#/definitions/store.BusinessHours"
                     }
                 },
+                "deliveryTime": {
+                    "description": "DeliveryTime is defined in minutes",
+                    "type": "integer",
+                    "example": 40
+                },
                 "description": {
                     "type": "string",
                     "maxLength": 255,
@@ -2489,6 +2492,11 @@ const docTemplate = `{
                     "maxLength": 15,
                     "example": "United States"
                 },
+                "deliveryTime": {
+                    "description": "DeliveryTime is defined in minutes",
+                    "type": "integer",
+                    "example": 40
+                },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -2549,6 +2557,11 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/store.BusinessHours"
                     }
+                },
+                "deliveryTime": {
+                    "description": "DeliveryTime is defined in minutes",
+                    "type": "integer",
+                    "example": 40
                 },
                 "description": {
                     "type": "string",
@@ -2617,6 +2630,11 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "deliveryTime": {
+                    "description": "DeliveryTime is defined in minutes",
+                    "type": "integer",
+                    "example": 40
+                },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -2718,6 +2736,10 @@ const docTemplate = `{
             "properties": {
                 "address": {
                     "$ref": "#/definitions/address.Address"
+                },
+                "deliveryTime": {
+                    "type": "integer",
+                    "example": 40
                 },
                 "description": {
                     "type": "string",
