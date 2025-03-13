@@ -1775,7 +1775,7 @@ paths:
       summary: Get a stores by Filter
       tags:
       - Store V1
-  /v1/store/:id:
+  /v1/store/{id}:
     get:
       description: Get a store by ID
       parameters:
@@ -1785,7 +1785,7 @@ paths:
         required: true
         type: string
       - description: Store ID
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -1817,7 +1817,7 @@ paths:
       summary: Get a store by ID
       tags:
       - Store V1
-  /v1/store/{id}/header-image:
+  /v1/store/{store_id}/product/{product_id}/header-image:
     post:
       consumes:
       - multipart/form-data

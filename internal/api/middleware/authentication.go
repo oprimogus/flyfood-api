@@ -1,9 +1,10 @@
 package middleware
 
 import (
+	"net/http"
+
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/zitadel"
 	"github.com/zitadel/zitadel-go/v3/pkg/authorization"
-	"net/http"
 )
 
 func Authentication(next http.Handler) http.Handler {

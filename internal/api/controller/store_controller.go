@@ -29,13 +29,13 @@ func newStoreController(validator *xvalidator.Validator, command store.Command, 
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Param			Authorization	header		string				true	"Bearer authentication token"
-//	@Param			id				query		string				true	"Store ID"
+//	@Param			id				path		string				true	"Store ID"
 //	@Success		200				{object}	store.QueryStore	"Query Store model"
 //	@Failure		400				{object}	xerrors.CustomError	"Invalid request data or malformed JSON"
 //	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
 //	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid status"
 //	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
-//	@Router			/v1/store/:id [get]
+//	@Router			/v1/store/{id} [get]
 func (c storeController) getQueryStoreByID(w http.ResponseWriter, r *http.Request) {
 	stID := chi.URLParam(r, "id")
 

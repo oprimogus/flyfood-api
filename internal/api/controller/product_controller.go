@@ -217,7 +217,7 @@ func (c productController) decreaseProductStock(w http.ResponseWriter, r *http.R
 //	@Failure		401				{object}	xerrors.CustomError	"Unauthorized - authentication required"
 //	@Failure		422				{object}	xerrors.CustomError	"Validation error - invalid status"
 //	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
-//	@Router			/v1/store/{id}/header-image [post]
+//	@Router			/v1/store/{store_id}/product/{product_id}/header-image [post]
 func (c productController) changeProductImage(w http.ResponseWriter, r *http.Request) {
 	file, _, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png"})
 	if err != nil {

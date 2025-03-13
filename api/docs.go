@@ -1700,7 +1700,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/store/:id": {
+        "/v1/store/{id}": {
             "get": {
                 "security": [
                     {
@@ -1727,7 +1727,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Store ID",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -1765,7 +1765,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/store/{id}/header-image": {
+        "/v1/store/{store_id}/product/{product_id}/header-image": {
             "post": {
                 "security": [
                     {

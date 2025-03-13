@@ -15,7 +15,6 @@ const (
 )
 
 type RequestData struct {
-	UserID   string `json:"user_id"`
 	TraceID  string `json:"trace_id"`
 	Method   string `json:"method"`
 	Path     string `json:"path"`
