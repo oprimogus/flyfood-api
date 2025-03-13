@@ -158,6 +158,7 @@ func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) ([
 			IsOpen:       st.IsOpen,
 			Score:        int(st.Score),
 			Type:         Type(st.Type),
+			DeliveryTime: converters.Int4ToInt(st.DeliveryTime),
 			ProfileImage: st.ProfileImage.String,
 			Neighborhood: st.Neighborhood,
 		}

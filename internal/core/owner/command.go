@@ -11,11 +11,6 @@ func NewCommand(r Repository) Command {
 }
 
 func (c Command) NewOwner(ctx context.Context, customerID string) error {
-	_, err := c.r.FindOwnerByID(ctx, customerID)
-	if err != nil {
-		return err
-	}
-
 	isOwner, err := c.r.IsOwner(ctx, customerID)
 	if err != nil {
 		return err

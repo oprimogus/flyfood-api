@@ -97,7 +97,7 @@ WITH relevant_business_hours AS (
     )
 SELECT
     s.owner_id, s.cnpj, s.name, s.description,
-    s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+    s.active, s.phone, s.score, s.is_open, s.type, s.delivery_time, s.profile_image,
     s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
     s.city, s.state, s.postal_code, s.latitude, s.longitude,
     s.country, s.created_at, s.updated_at, s.deleted_at,
@@ -120,7 +120,7 @@ FROM store s
 WHERE s.id = $1
 GROUP BY
     s.owner_id, s.cnpj, s.name, s.description,
-    s.active, s.phone, s.score, s.is_open, s.type, s.profile_image,
+    s.active, s.phone, s.score, s.is_open, s.type, s.delivery_time, s.profile_image,
     s.header_image, s.address_line_1, s.address_line_2, s.neighborhood,
     s.city, s.state, s.postal_code, s.latitude, s.longitude,
     s.country, s.created_at, s.updated_at, s.deleted_at;
@@ -132,6 +132,7 @@ SELECT
     s.score,
     s.is_open,
     s.type,
+    s.delivery_time,
     s.neighborhood,
     s.latitude,
     s.longitude,
@@ -178,12 +179,12 @@ WHERE p.store_id = $1;
 
 -- name: SaveStore :exec
 INSERT INTO store (id, owner_id, cnpj, name, description, active, phone, score, is_open, type,
-                   profile_image, header_image, address_line_1, address_line_2,
+                   delivery_time, profile_image, header_image, address_line_1, address_line_2,
                    neighborhood, city, state, postal_code, country, latitude, longitude,
                    created_at, updated_at, deleted_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
         $11, $12, $13, $14, $15, $16,
-        $17, $18, $19, $20, $21,
+        $17, $18, $19, $20, $21, $22,
         NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC', null)
 ON CONFLICT (id) DO UPDATE
     SET
@@ -195,6 +196,7 @@ ON CONFLICT (id) DO UPDATE
         score = excluded.score,
         is_open = excluded.is_open,
         type = excluded.type,
+        delivery_time = excluded.delivery_time,
         profile_image = excluded.profile_image,
         header_image = excluded.header_image,
         address_line_1 = excluded.address_line_1,

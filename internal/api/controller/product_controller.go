@@ -236,7 +236,7 @@ func (c productController) changeProductImage(w http.ResponseWriter, r *http.Req
 		HandleError(w, r, err)
 	}
 
-	params := store.UploadProductImageDTO{
+	params := product.UploadProductImageDTO{
 		StoreID:   storeID,
 		ProductID: productID,
 		Image:     fileBytes,

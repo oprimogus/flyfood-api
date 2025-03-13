@@ -97,7 +97,6 @@ definitions:
     - id
     - lastName
     - name
-    - phone
     type: object
   customer.UpdateProfileDTO:
     properties:
@@ -117,7 +116,6 @@ definitions:
     required:
     - last_name
     - name
-    - phone
     type: object
   product.ChangeStockProductDTO:
     properties:
@@ -405,6 +403,10 @@ definitions:
         items:
           $ref: '#/definitions/store.BusinessHours'
         type: array
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
       description:
         example: Best bakery in town with fresh pastries
         maxLength: 255
@@ -469,6 +471,10 @@ definitions:
         example: United States
         maxLength: 15
         type: string
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -511,6 +517,10 @@ definitions:
         items:
           $ref: '#/definitions/store.BusinessHours'
         type: array
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
       description:
         example: Best bakery in town with fresh pastries
         maxLength: 255
@@ -564,6 +574,10 @@ definitions:
     type: object
   store.QueryStoreList:
     properties:
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -638,6 +652,9 @@ definitions:
     properties:
       address:
         $ref: '#/definitions/address.Address'
+      deliveryTime:
+        example: 40
+        type: integer
       description:
         example: Best bakery in town with fresh pastries
         maxLength: 255
