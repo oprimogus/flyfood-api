@@ -182,7 +182,7 @@ func (q *Queries) FindOwnerByID(ctx context.Context, id string) (FindOwnerByIDRo
 }
 
 const findOwnerStores = `-- name: FindOwnerStores :many
-SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+SELECT id, name, active, type, delivery_time, score, is_open, profile_image, city, state, country
 FROM store
 WHERE owner_id = $1
 `
@@ -192,6 +192,7 @@ type FindOwnerStoresRow struct {
 	Name         string      `db:"name" json:"name"`
 	Active       bool        `db:"active" json:"active"`
 	Type         StoreType   `db:"type" json:"type"`
+	DeliveryTime pgtype.Int4 `db:"delivery_time" json:"delivery_time"`
 	Score        int32       `db:"score" json:"score"`
 	IsOpen       bool        `db:"is_open" json:"is_open"`
 	ProfileImage pgtype.Text `db:"profile_image" json:"profile_image"`
@@ -202,7 +203,7 @@ type FindOwnerStoresRow struct {
 
 // FindOwnerStores
 //
-//	SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+//	SELECT id, name, active, type, delivery_time, score, is_open, profile_image, city, state, country
 //	FROM store
 //	WHERE owner_id = $1
 func (q *Queries) FindOwnerStores(ctx context.Context, ownerID string) ([]FindOwnerStoresRow, error) {
@@ -219,6 +220,7 @@ func (q *Queries) FindOwnerStores(ctx context.Context, ownerID string) ([]FindOw
 			&i.Name,
 			&i.Active,
 			&i.Type,
+			&i.DeliveryTime,
 			&i.Score,
 			&i.IsOpen,
 			&i.ProfileImage,

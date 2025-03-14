@@ -185,6 +185,7 @@ func (q Query) GetOwnerStores(ctx context.Context, ownerID string) ([]QueryOwner
 			IsOpen:       st.IsOpen,
 			Score:        int(st.Score),
 			Type:         Type(st.Type),
+			DeliveryTime: converters.Int4ToInt(st.DeliveryTime),
 			ProfileImage: st.ProfileImage.String,
 			City:         st.City,
 			State:        st.State,
