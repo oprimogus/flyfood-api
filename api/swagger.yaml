@@ -610,6 +610,25 @@ definitions:
     - score
     - type
     type: object
+  store.QueryStoreListPagination:
+    properties:
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/store.QueryStoreList'
+        type: array
+      hasNextPage:
+        type: boolean
+      hasPreviousPage:
+        type: boolean
+      pageSize:
+        type: integer
+      totalItems:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
   store.SetActiveDTO:
     properties:
       active:
@@ -1768,9 +1787,7 @@ paths:
         "200":
           description: Query Store model
           schema:
-            items:
-              $ref: '#/definitions/store.QueryStoreList'
-            type: array
+            $ref: '#/definitions/store.QueryStoreListPagination'
         "400":
           description: Invalid request data or malformed JSON
           schema:

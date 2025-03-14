@@ -1667,10 +1667,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Query Store model",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/store.QueryStoreList"
-                            }
+                            "$ref": "#/definitions/store.QueryStoreListPagination"
                         }
                     },
                     "400": {
@@ -2669,6 +2666,35 @@ const docTemplate = `{
                         }
                     ],
                     "example": "RESTAURANT"
+                }
+            }
+        },
+        "store.QueryStoreListPagination": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.QueryStoreList"
+                    }
+                },
+                "hasNextPage": {
+                    "type": "boolean"
+                },
+                "hasPreviousPage": {
+                    "type": "boolean"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalItems": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
                 }
             }
         },
