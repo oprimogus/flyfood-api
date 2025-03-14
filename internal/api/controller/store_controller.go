@@ -54,19 +54,19 @@ func (c storeController) getQueryStoreByID(w http.ResponseWriter, r *http.Reques
 //	@Tags			Store V1
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			Authorization	header		string					true	"Bearer authentication token"
-//	@Param			name			query		string					true	"Name"
-//	@Param			isOpen			query		string					true	"IsOpen"
-//	@Param			score			query		int						true	"Score"
-//	@Param			type			query		string					true	"Store Type"
-//	@Param			city			query		string					true	"City"
-//	@Param			page			query		string					true	"Page"
-//	@Param			maxItems		query		string					true	"Items per page"
-//	@Success		200				{object}	[]store.QueryStoreList	"Query Store model"
-//	@Failure		400				{object}	xerrors.CustomError		"Invalid request data or malformed JSON"
-//	@Failure		401				{object}	xerrors.CustomError		"Unauthorized - authentication required"
-//	@Failure		422				{object}	xerrors.CustomError		"Validation error - invalid status"
-//	@Failure		500				{object}	xerrors.CustomError		"Internal server error"
+//	@Param			Authorization	header		string							true	"Bearer authentication token"
+//	@Param			name			query		string							true	"Name"
+//	@Param			isOpen			query		string							true	"IsOpen"
+//	@Param			score			query		int								true	"Score"
+//	@Param			type			query		string							true	"Store Type"
+//	@Param			city			query		string							true	"City"
+//	@Param			page			query		string							true	"Page"
+//	@Param			maxItems		query		string							true	"Items per page"
+//	@Success		200				{object}	store.QueryStoreListPagination	"Query Store model"
+//	@Failure		400				{object}	xerrors.CustomError				"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError				"Unauthorized - authentication required"
+//	@Failure		422				{object}	xerrors.CustomError				"Validation error - invalid status"
+//	@Failure		500				{object}	xerrors.CustomError				"Internal server error"
 //	@Router			/v1/store [get]
 func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *http.Request) {
 	var params store.QueryStoresInput

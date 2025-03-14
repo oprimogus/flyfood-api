@@ -586,7 +586,8 @@ SELECT
     s.neighborhood,
     s.latitude,
     s.longitude,
-    s.profile_image
+    s.profile_image,
+    COUNT(*) OVER () AS total_items
 FROM store s
 WHERE 1 = 1
   AND (
@@ -630,6 +631,7 @@ type FindStoresByFilterRow struct {
 	Latitude     pgtype.Text `db:"latitude" json:"latitude"`
 	Longitude    pgtype.Text `db:"longitude" json:"longitude"`
 	ProfileImage pgtype.Text `db:"profile_image" json:"profile_image"`
+	TotalItems   int64       `db:"total_items" json:"total_items"`
 }
 
 // FindStoresByFilter
@@ -644,7 +646,8 @@ type FindStoresByFilterRow struct {
 //	    s.neighborhood,
 //	    s.latitude,
 //	    s.longitude,
-//	    s.profile_image
+//	    s.profile_image,
+//	    COUNT(*) OVER () AS total_items
 //	FROM store s
 //	WHERE 1 = 1
 //	  AND (
@@ -693,6 +696,7 @@ func (q *Queries) FindStoresByFilter(ctx context.Context, arg FindStoresByFilter
 			&i.Latitude,
 			&i.Longitude,
 			&i.ProfileImage,
+			&i.TotalItems,
 		); err != nil {
 			return nil, err
 		}

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/oprimogus/cardapiogo/internal/core"
 	"github.com/oprimogus/cardapiogo/internal/core/store/product"
 	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
 	"github.com/oprimogus/cardapiogo/pkg/converters"
@@ -110,7 +111,7 @@ func (q Query) GetQueryOwnerStoreByID(ctx context.Context, id string) (QueryOwne
 	return st.ToQueryOwnerStore(ps), nil
 }
 
-func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) ([]QueryStoreList, error) {
+func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) (core.Pagination[QueryStoreList], error) {
 	offset := (params.Page - 1) * params.MaxItems
 	args := sqlc.FindStoresByFilterParams{
 		LimitItems:  int32(params.MaxItems),
@@ -118,12 +119,10 @@ func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) ([
 	}
 
 	if params.City != nil {
-		//args.City = pgtype.Text{String: *params.City, Valid: true}
 		args.City = *params.City
 	}
 
 	if params.Name != nil {
-		//args.Name = pgtype.Text{String: *params.Name, Valid: true}
 		args.Name = *params.Name
 	}
 
@@ -144,13 +143,13 @@ func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) ([
 
 	sts, err := q.q.FindStoresByFilter(ctx, args)
 	if err != nil {
-		return nil, err
+		return core.Pagination[QueryStoreList]{}, err
 	}
 	stsOut := make([]QueryStoreList, len(sts))
 	for i, st := range sts {
 		idConv, err := converters.UuidToString(st.ID)
 		if err != nil {
-			return nil, err
+			return core.Pagination[QueryStoreList]{}, err
 		}
 		stsOut[i] = QueryStoreList{
 			ID:           *idConv,
@@ -164,7 +163,7 @@ func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) ([
 		}
 	}
 
-	return stsOut, nil
+	return core.Paginate(stsOut, params.Page, params.MaxItems, int(sts[0].TotalItems)), nil
 }
 
 func (q Query) GetOwnerStores(ctx context.Context, ownerID string) ([]QueryOwnerStoreList, error) {

@@ -167,7 +167,8 @@ type Querier interface {
 	//      s.neighborhood,
 	//      s.latitude,
 	//      s.longitude,
-	//      s.profile_image
+	//      s.profile_image,
+	//      COUNT(*) OVER () AS total_items
 	//  FROM store s
 	//  WHERE 1 = 1
 	//    AND (
