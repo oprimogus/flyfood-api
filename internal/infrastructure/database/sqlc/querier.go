@@ -79,7 +79,7 @@ type Querier interface {
 	FindOwnerByID(ctx context.Context, id string) (FindOwnerByIDRow, error)
 	//FindOwnerStores
 	//
-	//  SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+	//  SELECT id, name, active, type, delivery_time, score, is_open, profile_image, city, state, country
 	//  FROM store
 	//  WHERE owner_id = $1
 	FindOwnerStores(ctx context.Context, ownerID string) ([]FindOwnerStoresRow, error)

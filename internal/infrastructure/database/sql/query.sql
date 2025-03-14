@@ -160,7 +160,7 @@ OFFSET sqlc.arg('offset_value')
     LIMIT sqlc.arg('limit_items');
 
 -- name: FindOwnerStores :many
-SELECT id, name, active, type, score, is_open, profile_image, city, state, country
+SELECT id, name, active, type, delivery_time, score, is_open, profile_image, city, state, country
 FROM store
 WHERE owner_id = $1;
 
