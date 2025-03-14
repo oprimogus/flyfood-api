@@ -3,10 +3,10 @@ package persistence
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/oprimogus/cardapiogo/internal/core/owner"
-	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
-	"github.com/oprimogus/cardapiogo/pkg/converters"
+	"github.com/oprimogus/flyfood-api/internal/core/owner"
+	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/sqlc"
+	"github.com/oprimogus/flyfood-api/pkg/converters"
 )
 
 type OwnerRepository struct {

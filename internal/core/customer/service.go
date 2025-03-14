@@ -2,7 +2,7 @@ package customer
 
 import (
 	"context"
-	"github.com/oprimogus/cardapiogo/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
 )
 
 type Service struct {

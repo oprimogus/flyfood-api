@@ -3,15 +3,15 @@ package api
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/api/controller"
-	"github.com/oprimogus/cardapiogo/internal/api/middleware"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/persistence"
-	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
+	"github.com/oprimogus/flyfood-api/internal/api/controller"
+	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
+	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
 	"log/slog"
 	"net/http"
 
-	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/config"
 )
 
 func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFactory,

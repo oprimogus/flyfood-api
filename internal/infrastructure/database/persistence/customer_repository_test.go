@@ -4,10 +4,10 @@ package persistence
 
 import (
 	"context"
-	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/core/customer"
-	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/cardapiogo/test/integration"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/customer"
+	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/flyfood-api/test/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"

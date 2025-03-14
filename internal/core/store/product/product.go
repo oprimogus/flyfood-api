@@ -3,7 +3,7 @@ package product
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 )
 
 const defaultScore = 500

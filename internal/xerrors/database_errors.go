@@ -9,7 +9,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/config"
 )
 
 const (

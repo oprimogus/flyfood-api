@@ -4,13 +4,13 @@ package persistence
 
 //
 //import (
-//	"github.com/oprimogus/cardapiogo/internal/core/address"
-//	"github.com/oprimogus/cardapiogo/internal/core/customer"
-//	"github.com/oprimogus/cardapiogo/internal/core/owner"
-//	"github.com/oprimogus/cardapiogo/internal/core/store"
-//	"github.com/oprimogus/cardapiogo/internal/core/store/product"
-//	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
-//	"github.com/oprimogus/cardapiogo/test/integration"
+//	"github.com/oprimogus/flyfood-api/internal/core/address"
+//	"github.com/oprimogus/flyfood-api/internal/core/customer"
+//	"github.com/oprimogus/flyfood-api/internal/core/owner"
+//	"github.com/oprimogus/flyfood-api/internal/core/store"
+//	"github.com/oprimogus/flyfood-api/internal/core/store/product"
+//	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+//	"github.com/oprimogus/flyfood-api/test/integration"
 //	"github.com/stretchr/testify/assert"
 //	"github.com/stretchr/testify/suite"
 //	"golang.org/x/net/context"

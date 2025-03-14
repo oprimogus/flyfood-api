@@ -3,13 +3,13 @@ package controller
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/api/middleware"
-	"github.com/oprimogus/cardapiogo/internal/config"
-	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/core/customer"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/persistence"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/zitadel"
-	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/customer"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/zitadel"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 	"net/http"
 )
 

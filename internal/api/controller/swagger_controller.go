@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/config"
 	"net/http"
 )
 

@@ -2,10 +2,10 @@ package store
 
 import (
 	"context"
-	"github.com/oprimogus/cardapiogo/internal/core/owner"
-	"github.com/oprimogus/cardapiogo/internal/core/store/product"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter/storage"
+	"github.com/oprimogus/flyfood-api/internal/core/owner"
+	"github.com/oprimogus/flyfood-api/internal/core/store/product"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter/storage"
 )
 
 type Command struct {

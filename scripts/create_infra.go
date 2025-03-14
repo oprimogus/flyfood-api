@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/oprimogus/cardapiogo/internal/config"
-	"github.com/oprimogus/cardapiogo/internal/core/store"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter/storage"
+	"github.com/oprimogus/flyfood-api/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/core/store"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter/storage"
 	"log"
 )
 

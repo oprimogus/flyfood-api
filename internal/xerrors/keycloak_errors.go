@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Nerzal/gocloak/v13"
-	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/config"
 )
 
 var ErrInvalidCredentials = fmt.Errorf("invalid email or password")

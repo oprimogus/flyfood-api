@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
+	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/sqlc"
 )
 
 type RepositoryFactory struct {

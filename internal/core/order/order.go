@@ -1,7 +1,7 @@
 package order
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
 )
 
 type State string

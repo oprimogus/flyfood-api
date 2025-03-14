@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
-	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/config"
 )
 
 type Region string

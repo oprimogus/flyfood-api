@@ -2,7 +2,7 @@ package xerrors
 
 import (
 	"errors"
-	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 	"net/http"
 )
 

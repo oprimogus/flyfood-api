@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"github.com/oprimogus/cardapiogo/internal/core/store/product"
+	"github.com/oprimogus/flyfood-api/internal/core/store/product"
 )
 
 type Repository interface {

@@ -3,8 +3,8 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oprimogus/cardapiogo/internal/xerrors"
-	logger "github.com/oprimogus/cardapiogo/pkg/log"
+	"github.com/oprimogus/flyfood-api/internal/xerrors"
+	logger "github.com/oprimogus/flyfood-api/pkg/log"
 	"log/slog"
 	"net/http"
 	"runtime/debug"

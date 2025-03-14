@@ -1,8 +1,8 @@
 package store
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/core/store/product"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/store/product"
 )
 
 type QueryStore struct {

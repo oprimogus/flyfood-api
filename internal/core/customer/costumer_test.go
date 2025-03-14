@@ -1,7 +1,7 @@
 package customer
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/oprimogus/cardapiogo/internal/config"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/observability"
+	"github.com/oprimogus/flyfood-api/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/observability"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 )

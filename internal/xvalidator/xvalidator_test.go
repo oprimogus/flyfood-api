@@ -2,7 +2,7 @@ package xvalidator_test
 
 // import (
 // 	"fmt"
-// 	"github.com/oprimogus/cardapiogo/internal/services/validator"
+// 	"github.com/oprimogus/flyfood-api/internal/services/validator"
 // 	"testing"
 
 // 	"github.com/stretchr/testify/assert"

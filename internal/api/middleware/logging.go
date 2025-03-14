@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"github.com/google/uuid"
-	logger "github.com/oprimogus/cardapiogo/pkg/log"
+	logger "github.com/oprimogus/flyfood-api/pkg/log"
 	"log/slog"
 	"net/http"
 	"strings"

@@ -2,9 +2,9 @@ package controller
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/cardapiogo/internal/config"
-	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/observability"
+	"github.com/oprimogus/flyfood-api/internal/config"
+	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/observability"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"time"

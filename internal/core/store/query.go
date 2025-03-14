@@ -3,10 +3,10 @@ package store
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/oprimogus/cardapiogo/internal/core"
-	"github.com/oprimogus/cardapiogo/internal/core/store/product"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/database/sqlc"
-	"github.com/oprimogus/cardapiogo/pkg/converters"
+	"github.com/oprimogus/flyfood-api/internal/core"
+	"github.com/oprimogus/flyfood-api/internal/core/store/product"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/sqlc"
+	"github.com/oprimogus/flyfood-api/pkg/converters"
 )
 
 type Query struct {

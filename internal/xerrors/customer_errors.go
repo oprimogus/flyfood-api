@@ -2,7 +2,7 @@ package xerrors
 
 import (
 	"errors"
-	"github.com/oprimogus/cardapiogo/internal/core/customer"
+	"github.com/oprimogus/flyfood-api/internal/core/customer"
 	"net/http"
 )
 

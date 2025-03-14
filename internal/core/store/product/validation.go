@@ -2,7 +2,7 @@ package product
 
 import (
 	"github.com/go-playground/validator/v10"
-	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 )
 
 var validationsMap = map[string]xvalidator.PersonalizedValidation{

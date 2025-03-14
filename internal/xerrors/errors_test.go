@@ -4,7 +4,7 @@ package xerrors
 //	"net/http"
 //	"testing"
 //
-//	"github.com/oprimogus/cardapiogo/internal/config"
+//	"github.com/oprimogus/flyfood-api/internal/config"
 //	"github.com/stretchr/testify/assert"
 //	"github.com/stretchr/testify/suite"
 //)

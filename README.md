@@ -1,30 +1,44 @@
-# Cardapiogo-api
+# Flyfood-api
 
-Repositório da API do Cardápio em Golang
+Repositório da API do FlyFood
 
 ## Sobre o Projeto
 
-A API do Cardapiogo é uma solução desenvolvida em Golang que serve como o backend para o aplicativo Cardapiogo. Este aplicativo tem como objetivo facilitar a descoberta de restaurantes e lojas na região dos usuários. Ele fornece informações básicas sobre estabelecimentos, como disponibilidade, e permite que os usuários façam pedidos de delivery ou optem por ir ao local. Além disso, o aplicativo oferece uma funcionalidade de avaliação para que os consumidores possam compartilhar suas experiências.
+A API do FlyFood é uma solução desenvolvida em Golang que serve como o backend para o aplicativo 
+FlyFood. Este aplicativo visa facilitar a descoberta de restaurantes e lojas na região dos usuários. 
+Ele fornece informações básicas sobre estabelecimentos, como disponibilidade, e permite que os usuários façam 
+pedidos de delivery ou optem por ir ao local. Além disso, o aplicativo oferece uma funcionalidade de avaliação 
+para que os consumidores possam compartilhar suas experiências.
 
 Os principais atores do sistema são:
 
-- **Consumidor:** O usuário final que utiliza o aplicativo para conhecer restaurantes e lojas, fazer pedidos (delivery ou ir ao local) e obter informações como disponibilidade dos estabelecimentos.
+- **Consumidor:** O usuário final que utiliza o aplicativo para conhecer restaurantes e lojas, fazer 
+- pedidos (delivery ou ir ao local) e obter informações como disponibilidade dos estabelecimentos.
   
-- **Dono da Loja:** O proprietário do estabelecimento que utiliza a plataforma para receber pedidos, fazer marketing e gerenciar informações do seu negócio.
+- **Dono da Loja:** O proprietário do estabelecimento que utiliza a plataforma para receber pedidos, 
+- fazer marketing e gerenciar informações do seu negócio.
 
-- **Futuro Motoboy:** A API está projetada para, futuramente, incluir funcionalidades para motoboys, que poderão receber informações sobre entregas a serem realizadas.
+- **Futuro Motoboy:** A API está projetada para, futuramente, incluir funcionalidades para motoboys, 
+- que poderão receber informações sobre entregas a serem realizadas.
 
-Esta API é a espinha dorsal da aplicação Cardapiogo, garantindo uma integração eficiente e escalável entre os diferentes componentes do sistema e seus usuários.
+Esta API é a espinha dorsal da aplicação FlyFood, garantindo uma integração eficiente e escalável 
+entre os diferentes componentes do sistema e seus usuários.
 
 ## Funcionalidades
 
-- **Consulta de Estabelecimentos:** Permite aos consumidores buscar e visualizar informações sobre restaurantes e lojas na sua região.
-- **Pedidos e Entregas:** Facilita a realização de pedidos de delivery e fornece informações sobre a disponibilidade dos estabelecimentos.
-- **Avaliações:** Permite que os consumidores avaliem e comentem sobre suas experiências em diferentes locais.
-- **Gerenciamento de Pedidos:** Oferece uma plataforma para donos de lojas gerenciarem pedidos e realizar atividades de marketing.
+- **Consulta de Estabelecimentos:** Permite aos consumidores buscar e visualizar informações sobre 
+restaurantes e lojas na sua região.
+- **Pedidos e Entregas:** Facilita a realização de pedidos de delivery e fornece informações 
+sobre a disponibilidade dos estabelecimentos.
+- **Avaliações:** Permite que os consumidores avaliem e comentem sobre suas experiências em 
+diferentes locais.
+- **Gerenciamento de Pedidos:** Oferece uma plataforma para donos de lojas 
+gerenciarem pedidos e realizar atividades de marketing.
 
 
 ## Depêndencias
+
+Obs: Configuradas como `tool` usando a nova feature do `go1.24.0`
 
 ### 1. Migrate CLI
 
@@ -93,7 +107,7 @@ Documentação disponível [aqui](https://github.com/go-playground/validator)
 5. Mockar dados no banco local
 
     ```bash
-    make mock-database
+    make mock-db
     ```
 
 6. Rodar a API
@@ -103,9 +117,3 @@ Documentação disponível [aqui](https://github.com/go-playground/validator)
     ```
 
 7. Acessar swagger [aqui](http://localhost:8080/api/v1/swagger/index.html#/)
-
-
-# Sobre testes:
-
-- Funções que executem testes de integração devem possuir a palavra `Integration` no nome.
-- Funções que executem testes de integração devem possuir a palavra `Unit` no nome.

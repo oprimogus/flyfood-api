@@ -1,6 +1,6 @@
 package store
 
-import "github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter/storage"
+import "github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter/storage"
 
 func GetBuckets() []storage.Bucket {
 	return []storage.Bucket{

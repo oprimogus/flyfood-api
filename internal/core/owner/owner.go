@@ -1,7 +1,7 @@
 package owner
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 )
 
 type Owner struct {

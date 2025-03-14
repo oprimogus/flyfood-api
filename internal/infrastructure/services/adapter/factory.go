@@ -2,8 +2,8 @@ package adapter
 
 import (
 	"context"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/adapter/storage"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/services/aws"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter/storage"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/aws"
 )
 
 type Factory interface {

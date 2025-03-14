@@ -1,8 +1,8 @@
 package store
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/core/owner"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/owner"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

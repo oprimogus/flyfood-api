@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/utils"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/utils"
 	"log/slog"
 	"os"
 

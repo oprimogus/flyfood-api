@@ -3,8 +3,8 @@ package integration
 import (
 	"context"
 	"fmt"
-	postgresDB "github.com/oprimogus/cardapiogo/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/cardapiogo/internal/infrastructure/utils"
+	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/utils"
 	"log/slog"
 	"strings"
 
@@ -14,16 +14,16 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/config"
 )
 
 func MakePostgres(ctx context.Context) (*Container, error) {
 	_ = utils.SetWorkingDirToProjectRoot()
 	configInstance := config.GetInstance().Database
 	configInstance.Host = "localhost"
-	configInstance.User = "cardapiogo"
+	configInstance.User = "flyfood-api"
 	configInstance.Name = "postgres"
-	configInstance.Password = "cardapiogo"
+	configInstance.Password = "flyfood-api"
 	postgresContainer, err := postgres.Run(ctx,
 		"docker.io/postgres:16-alpine",
 		postgres.WithDatabase(configInstance.Name),

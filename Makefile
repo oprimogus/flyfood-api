@@ -29,6 +29,7 @@ sqlc-vet:
 	sqlc vet -f internal/infrastructure/database/sqlc/sqlc.yaml
 
 docs:
+	make install
 	make lint
 	swag fmt -d ./
 	swag init -g cmd/main.go -o api 

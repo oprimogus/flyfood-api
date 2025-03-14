@@ -3,15 +3,15 @@ package zitadel
 import (
 	"context"
 	"fmt"
-	"github.com/oprimogus/cardapiogo/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
-	"github.com/zitadel/oidc/v3/pkg/strings"
 	"github.com/zitadel/zitadel-go/v3/pkg/authorization"
 	"github.com/zitadel/zitadel-go/v3/pkg/authorization/oauth"
 	"github.com/zitadel/zitadel-go/v3/pkg/client"
 	"github.com/zitadel/zitadel-go/v3/pkg/client/zitadel/management"
 	"github.com/zitadel/zitadel-go/v3/pkg/http/middleware"
 	"github.com/zitadel/zitadel-go/v3/pkg/zitadel"
+	"slices"
 )
 
 var Instance *ServiceZitadel
@@ -82,7 +82,7 @@ func (s *ServiceZitadel) SetRole(ctx context.Context, userID string, role Role) 
 	for _, grant := range userGrants.Result {
 		if grant.ProjectId == conf.ProjectID && grant.UserId == userID {
 			grantID = grant.Id
-			if strings.Contains(grant.RoleKeys, string(role)) {
+			if slices.Contains(grant.RoleKeys, string(role)) {
 				return nil
 			}
 			break

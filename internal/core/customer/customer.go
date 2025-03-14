@@ -1,8 +1,8 @@
 package customer
 
 import (
-	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 )
 
 type Customer struct {

@@ -3,8 +3,8 @@ package store
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/oprimogus/cardapiogo/internal/core/address"
-	"github.com/oprimogus/cardapiogo/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 )
 
 const (
