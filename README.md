@@ -38,7 +38,7 @@ gerenciarem pedidos e realizar atividades de marketing.
 
 ## Depêndencias
 
-Obs: Configuradas como `tool` usando a nova feature do `go1.24.0`
+Obs: Configuradas como `tool` usando a nova feature do `go1.24.0`. Migrate ainda precisa instalar local devido ao uso de tags
 
 ### 1. Migrate CLI
 

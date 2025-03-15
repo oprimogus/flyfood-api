@@ -23,16 +23,16 @@ mock-db:
 	go run scripts/populate_local_db.go
 
 sqlc:
-	sqlc generate -f internal/infrastructure/database/sqlc/sqlc.yaml
+	go tool sqlc generate -f internal/infrastructure/database/sqlc/sqlc.yaml
 
 sqlc-vet:
-	sqlc vet -f internal/infrastructure/database/sqlc/sqlc.yaml
+	go tool sqlc vet -f internal/infrastructure/database/sqlc/sqlc.yaml
 
 docs:
 	make install
 	make lint
-	swag fmt -d ./
-	swag init -g cmd/main.go -o api 
+	go tool swag fmt -d ./
+	go tool swag init -g cmd/main.go -o api
 
 # Executa somente testes unitários
 test:
@@ -55,7 +55,7 @@ clean:
 	rm -f ./tmp/coverage.*
 
 dev:
-	air
+	go tool air
 
 run:
 	make docs
