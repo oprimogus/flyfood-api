@@ -54,7 +54,7 @@ func (s *Service) AddAddress(ctx context.Context, id string, addr address.Addres
 		Country:    addr.Country,
 		PostalCode: addr.PostalCode,
 	})
-	if err != nil {
+	if err == nil {
 		addr.Latitude = geoData[0].Latitude
 		addr.Longitude = geoData[0].Longitude
 	}
