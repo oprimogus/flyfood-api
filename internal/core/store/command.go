@@ -6,6 +6,7 @@ import (
 	"github.com/oprimogus/flyfood-api/internal/core/store/product"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter/storage"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/nominatim"
 )
 
 type Command struct {
@@ -28,6 +29,18 @@ func (s Command) CreateNewStore(ctx context.Context, ownerID string, params Crea
 	st, err := NewStore(ow.ID, params.CNPJ, params.Name, params.Description, params.Phone, params.Address, params.Type)
 	if err != nil {
 		return err
+	}
+
+	geoData, err := nominatim.Search(ctx, nominatim.Query{
+		Street:     params.Address.AddressLine1,
+		City:       params.Address.City,
+		State:      params.Address.State,
+		Country:    params.Address.Country,
+		PostalCode: params.Address.PostalCode,
+	})
+	if err == nil {
+		st.Address.Latitude = geoData[0].Latitude
+		st.Address.Longitude = geoData[0].Longitude
 	}
 
 	return s.r.SaveStore(ctx, st)

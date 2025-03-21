@@ -153,6 +153,10 @@ WHERE 1 = 1
         OR s.city = @city
     )
   AND (
+      NULLIF(@score::integer, 0) = 0
+        or s.score >= @score
+    )
+  AND (
     sqlc.narg(is_open)::boolean IS NULL
         OR s.is_open = sqlc.narg(is_open)::boolean
     )

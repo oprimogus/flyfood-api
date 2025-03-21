@@ -47,11 +47,15 @@ type QueryStoreList struct {
 	IsOpen       bool   `json:"isOpen" validate:"boolean" example:"false"`
 	Score        int    `json:"score" validate:"required,number" example:"500"`
 	Neighborhood string `json:"neighborhood" validate:"required,lte=25" example:"Downtown"`
+	Latitude     string `json:"latitude" example:"40.7128"`
+	Longitude    string `json:"longitude" example:"-74.0060"`
 	Type         Type   `json:"type" validate:"required,storeType" example:"RESTAURANT"`
 	// DeliveryTime is defined in minutes
 	DeliveryTime int    `json:"deliveryTime" validate:"number" example:"40"`
 	ProfileImage string `json:"profileImage" example:"https://example.com/profile.jpg"`
 }
+
+//type QueryStoreListPagination = core.Pagination[QueryStoreList]
 
 type QueryStoreListPagination struct {
 	Data            []QueryStoreList `json:"data"`

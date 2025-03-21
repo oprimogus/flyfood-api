@@ -184,12 +184,16 @@ type Querier interface {
 	//          OR s.city = $3
 	//      )
 	//    AND (
-	//      $4::boolean IS NULL
-	//          OR s.is_open = $4::boolean
+	//        NULLIF($4::integer, 0) = 0
+	//          or s.score >= $4
+	//      )
+	//    AND (
+	//      $5::boolean IS NULL
+	//          OR s.is_open = $5::boolean
 	//      )
 	//  ORDER BY s.score DESC, s.type
-	//  OFFSET $5
-	//      LIMIT $6
+	//  OFFSET $6
+	//      LIMIT $7
 	FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error)
 	//IsOwner
 	//

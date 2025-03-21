@@ -106,13 +106,22 @@ func (a *aws) SessionKey() string {
 	return a.sessionKey
 }
 
+type ExternalService struct {
+	BaseURL string
+}
+
+type Nominatim struct {
+	ExternalService
+}
+
 type Config struct {
-	Database *DBConf
-	Api      *APIConf
-	Keycloak *keycloakConfig
-	Zitadel  *zitadelConfig
-	Resend   *resendConfig
-	Aws      *aws
+	Database  *DBConf
+	Api       *APIConf
+	Keycloak  *keycloakConfig
+	Zitadel   *zitadelConfig
+	Resend    *resendConfig
+	Aws       *aws
+	Nominatim *Nominatim
 }
 
 func newConfig() *Config {
@@ -164,6 +173,11 @@ func newConfig() *Config {
 			region:          os.Getenv("AWS_REGION"),
 			accessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
 			secretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		},
+		Nominatim: &Nominatim{
+			ExternalService: ExternalService{
+				BaseURL: os.Getenv("NOMINATIM_BASE_URL"),
+			},
 		},
 	}
 }

@@ -3,6 +3,7 @@ package customer
 import (
 	"context"
 	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/nominatim"
 )
 
 type Service struct {
@@ -44,6 +45,18 @@ func (s *Service) AddAddress(ctx context.Context, id string, addr address.Addres
 	c, err := s.r.FindByID(ctx, id)
 	if err != nil {
 		return err
+	}
+
+	geoData, err := nominatim.Search(ctx, nominatim.Query{
+		Street:     addr.AddressLine1,
+		City:       addr.City,
+		State:      addr.State,
+		Country:    addr.Country,
+		PostalCode: addr.PostalCode,
+	})
+	if err != nil {
+		addr.Latitude = geoData[0].Latitude
+		addr.Longitude = geoData[0].Longitude
 	}
 
 	err = c.SaveNewAddress(addr)
