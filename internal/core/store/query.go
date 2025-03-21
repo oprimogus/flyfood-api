@@ -49,17 +49,18 @@ func (q Query) GetQueryStoreByID(ctx context.Context, id string) (QueryStore, er
 		}
 
 		ps[i] = product.ProductDTO{
-			ID:          *pID,
-			SKU:         p.Sku.String,
-			PromoActive: p.PromoActive,
-			Type:        product.Type(p.Type),
-			Tag:         p.Tag,
-			Name:        p.Name,
-			Description: p.Description,
-			Score:       int(p.Score),
-			Image:       p.ImageUrl.String,
-			Details:     nil,
-			Price:       int(p.Price),
+			ID:               *pID,
+			SKU:              p.Sku.String,
+			PromoActive:      p.PromoActive,
+			Type:             product.Type(p.Type),
+			Tag:              p.Tag,
+			Name:             p.Name,
+			Description:      p.Description,
+			Score:            int(p.Score),
+			Image:            p.ImageUrl.String,
+			Details:          nil,
+			Price:            int(p.Price),
+			PromotionalPrice: converters.Int4ToInt(p.PromotionalPrice),
 		}
 	}
 
@@ -104,7 +105,7 @@ func (q Query) GetQueryOwnerStoreByID(ctx context.Context, id string) (QueryOwne
 			Image:            p.ImageUrl.String,
 			Details:          nil,
 			Price:            int(p.Price),
-			PromotionalPrice: int(p.PromotionalPrice.Int32),
+			PromotionalPrice: converters.Int4ToInt(p.PromotionalPrice),
 		}
 	}
 
@@ -126,19 +127,16 @@ func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) (c
 		args.Name = *params.Name
 	}
 
-	//if params.Score != nil {
-	//	args.Name = pgtype.Text{String: *params.Name, Valid: true}
-	//}
+	if params.Score != nil {
+		args.Score = int32(*params.Score)
+	}
 
 	if params.IsOpen != nil {
 		args.IsOpen = pgtype.Bool{Bool: *params.IsOpen, Valid: true}
-		//args.IsOpen = *params.IsOpen
 	}
 
 	if params.Type != nil {
-		typeConv := string(*params.Type)
-		//args.Type = pgtype.Text{String: typeConv, Valid: true}
-		args.Type = typeConv
+		args.Type = string(*params.Type)
 	}
 
 	sts, err := q.q.FindStoresByFilter(ctx, args)
@@ -160,10 +158,18 @@ func (q Query) GetStoreByFilter(ctx context.Context, params QueryStoresInput) (c
 			DeliveryTime: converters.Int4ToInt(st.DeliveryTime),
 			ProfileImage: st.ProfileImage.String,
 			Neighborhood: st.Neighborhood,
+			Latitude:     st.Latitude.String,
+			Longitude:    st.Longitude.String,
 		}
 	}
+	var totalItems int
+	if len(sts) > 0 {
+		totalItems = int(sts[0].TotalItems)
+	} else {
+		totalItems = 0
+	}
 
-	return core.Paginate(stsOut, params.Page, params.MaxItems, int(sts[0].TotalItems)), nil
+	return core.Paginate(stsOut, params.Page, params.MaxItems, totalItems), nil
 }
 
 func (q Query) GetOwnerStores(ctx context.Context, ownerID string) ([]QueryOwnerStoreList, error) {

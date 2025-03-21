@@ -14,7 +14,10 @@ type Pagination[T any] struct {
 
 func Paginate[T any](items []T, currentPage, pageSize, totalItems int) Pagination[T] {
 	if totalItems == 0 {
-		return Pagination[T]{}
+		return Pagination[T]{
+			Data:        make([]T, 0),
+			CurrentPage: 1,
+		}
 	}
 
 	totalPages := int(math.Ceil(float64(totalItems) / float64(pageSize)))

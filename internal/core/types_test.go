@@ -68,7 +68,9 @@ func TestPaginate(t *testing.T) {
 			currentPage: 1,
 			pageSize:    2,
 			totalItems:  0,
-			expected:    Pagination[int]{},
+			expected: Pagination[int]{
+				CurrentPage: 1,
+			},
 		},
 	}
 

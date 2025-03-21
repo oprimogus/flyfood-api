@@ -26,6 +26,6 @@ type Order struct {
 	Status         State           `json:"status" validate:"required,orderStatus"`
 	Items          []Item          `json:"items" validate:"required,dive"`
 	Amount         int             `json:"amount" validate:"required,gt=0"`
-	ShippingAmount int             `json:"shipping_amount" validate:"required,gte=0"`
+	DeliveryAmount int             `json:"deliveryAmount" validate:"required,gte=0"`
 	Address        address.Address `json:"address" validate:"required,address"`
 }

@@ -124,12 +124,12 @@ definitions:
         type: string
       quantity:
         type: integer
-      store_id:
+      storeID:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
     required:
     - id
-    - store_id
+    - storeID
     type: object
   product.CreateProductDTO:
     properties:
@@ -148,7 +148,7 @@ definitions:
       price:
         example: 5990
         type: integer
-      store_id:
+      storeID:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       tag:
@@ -162,7 +162,7 @@ definitions:
     - description
     - name
     - price
-    - store_id
+    - storeID
     - tag
     - type
     type: object
@@ -192,16 +192,16 @@ definitions:
       price:
         example: 5990
         type: integer
-      promo_active:
+      promoActive:
         type: boolean
-      promotional_price:
+      promotionalPrice:
         minimum: 0
         type: integer
       score:
         type: integer
-      stock_quantity:
+      stockQuantity:
         type: integer
-      store_id:
+      storeID:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       tag:
@@ -217,7 +217,7 @@ definitions:
     - name
     - price
     - score
-    - store_id
+    - storeID
     - tag
     - type
     type: object
@@ -245,8 +245,11 @@ definitions:
       price:
         example: 5990
         type: integer
-      promo_active:
+      promoActive:
         type: boolean
+      promotionalPrice:
+        minimum: 0
+        type: integer
       score:
         type: integer
       tag:
@@ -293,7 +296,7 @@ definitions:
       price:
         example: 5990
         type: integer
-      store_id:
+      storeID:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       tag:
@@ -308,7 +311,7 @@ definitions:
     - id
     - name
     - price
-    - store_id
+    - storeID
     - tag
     - type
     type: object
@@ -584,6 +587,12 @@ definitions:
       isOpen:
         example: false
         type: boolean
+      latitude:
+        example: "40.7128"
+        type: string
+      longitude:
+        example: "-74.0060"
+        type: string
       name:
         example: Delicious Bakery
         maxLength: 25

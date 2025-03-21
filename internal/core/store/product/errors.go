@@ -1,12 +1,15 @@
 package product
 
-import "fmt"
+import (
+	"errors"
+)
 
 var (
-	ErrInvalidStockQuantity       = fmt.Errorf("A soma do estoque atual com a entrada de itens no estoque não pode ser menor que o estoque atual")
-	ErrStockLessThanZero          = fmt.Errorf("o estoque não pode ser menor que 0")
-	ErrQuantityGreaterThanZero    = fmt.Errorf("a quantidade adicionada ao estoque deve ser maior que 0")
-	ErrPriceLessThanPromoPrice    = fmt.Errorf("o preço normal precisa ser maior que o preço promocional")
-	ErrPromoPriceGreaterThanPrice = fmt.Errorf("o preço promocional precisa ser menor que o preço normal")
-	ErrPriceZero                  = fmt.Errorf("o preço não pode ser menor ou igual a zero")
+	ErrInvalidStockQuantity       = errors.New("A soma do estoque atual com a entrada de itens no estoque não pode ser menor que o estoque atual")
+	ErrStockLessThanZero          = errors.New("o estoque não pode ser menor que 0")
+	ErrQuantityGreaterThanZero    = errors.New("a quantidade adicionada ao estoque deve ser maior que 0")
+	ErrPriceLessThanPromoPrice    = errors.New("o preço normal precisa ser maior que o preço promocional")
+	ErrPromoPriceGreaterThanPrice = errors.New("o preço promocional precisa ser menor que o preço normal")
+	ErrPriceZero                  = errors.New("o preço não pode ser menor ou igual a zero")
+	ErrPriceZeroWhenEnableProduct = errors.New("para habilitar o produto, seu preço deve ser definido como > 0")
 )

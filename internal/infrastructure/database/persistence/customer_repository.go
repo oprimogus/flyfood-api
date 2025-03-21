@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/oprimogus/flyfood-api/internal/core/address"
 	"github.com/oprimogus/flyfood-api/internal/core/customer"
@@ -60,6 +61,8 @@ func (r CustomerRepository) FindByID(ctx context.Context, id string) (*customer.
 			City:         addr.City,
 			State:        addr.State,
 			PostalCode:   addr.PostalCode,
+			Latitude:     addr.Latitude.String,
+			Longitude:    addr.Longitude.String,
 			Country:      addr.Country,
 		}
 	}
@@ -151,6 +154,8 @@ func (r CustomerRepository) syncAddresses(ctx context.Context,
 			State:        v.State,
 			PostalCode:   v.PostalCode,
 			Country:      v.Country,
+			Latitude:     pgtype.Text{String: v.Latitude, Valid: v.Latitude != ""},
+			Longitude:    pgtype.Text{String: v.Longitude, Valid: v.Longitude != ""},
 		}
 	}
 

@@ -603,18 +603,23 @@ WHERE 1 = 1
         OR s.city = $3
     )
   AND (
-    $4::boolean IS NULL
-        OR s.is_open = $4::boolean
+      NULLIF($4::integer, 0) = 0
+        or s.score >= $4
+    )
+  AND (
+    $5::boolean IS NULL
+        OR s.is_open = $5::boolean
     )
 ORDER BY s.score DESC, s.type
-OFFSET $5
-    LIMIT $6
+OFFSET $6
+    LIMIT $7
 `
 
 type FindStoresByFilterParams struct {
 	Name        string      `db:"name" json:"name"`
 	Type        string      `db:"type" json:"type"`
 	City        string      `db:"city" json:"city"`
+	Score       int32       `db:"score" json:"score"`
 	IsOpen      pgtype.Bool `db:"is_open" json:"is_open"`
 	OffsetValue int32       `db:"offset_value" json:"offset_value"`
 	LimitItems  int32       `db:"limit_items" json:"limit_items"`
@@ -663,17 +668,22 @@ type FindStoresByFilterRow struct {
 //	        OR s.city = $3
 //	    )
 //	  AND (
-//	    $4::boolean IS NULL
-//	        OR s.is_open = $4::boolean
+//	      NULLIF($4::integer, 0) = 0
+//	        or s.score >= $4
+//	    )
+//	  AND (
+//	    $5::boolean IS NULL
+//	        OR s.is_open = $5::boolean
 //	    )
 //	ORDER BY s.score DESC, s.type
-//	OFFSET $5
-//	    LIMIT $6
+//	OFFSET $6
+//	    LIMIT $7
 func (q *Queries) FindStoresByFilter(ctx context.Context, arg FindStoresByFilterParams) ([]FindStoresByFilterRow, error) {
 	rows, err := q.db.Query(ctx, findStoresByFilter,
 		arg.Name,
 		arg.Type,
 		arg.City,
+		arg.Score,
 		arg.IsOpen,
 		arg.OffsetValue,
 		arg.LimitItems,

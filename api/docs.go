@@ -1998,7 +1998,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "id",
-                "store_id"
+                "storeID"
             ],
             "properties": {
                 "id": {
@@ -2008,7 +2008,7 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer"
                 },
-                "store_id": {
+                "storeID": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
@@ -2020,7 +2020,7 @@ const docTemplate = `{
                 "description",
                 "name",
                 "price",
-                "store_id",
+                "storeID",
                 "tag",
                 "type"
             ],
@@ -2044,7 +2044,7 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5990
                 },
-                "store_id": {
+                "storeID": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
@@ -2070,7 +2070,7 @@ const docTemplate = `{
                 "name",
                 "price",
                 "score",
-                "store_id",
+                "storeID",
                 "tag",
                 "type"
             ],
@@ -2107,20 +2107,20 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5990
                 },
-                "promo_active": {
+                "promoActive": {
                     "type": "boolean"
                 },
-                "promotional_price": {
+                "promotionalPrice": {
                     "type": "integer",
                     "minimum": 0
                 },
                 "score": {
                     "type": "integer"
                 },
-                "stock_quantity": {
+                "stockQuantity": {
                     "type": "integer"
                 },
-                "store_id": {
+                "storeID": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
@@ -2179,8 +2179,12 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5990
                 },
-                "promo_active": {
+                "promoActive": {
                     "type": "boolean"
+                },
+                "promotionalPrice": {
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "score": {
                     "type": "integer"
@@ -2217,7 +2221,7 @@ const docTemplate = `{
                 "id",
                 "name",
                 "price",
-                "store_id",
+                "storeID",
                 "tag",
                 "type"
             ],
@@ -2245,7 +2249,7 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5990
                 },
-                "store_id": {
+                "storeID": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
@@ -2639,6 +2643,14 @@ const docTemplate = `{
                 "isOpen": {
                     "type": "boolean",
                     "example": false
+                },
+                "latitude": {
+                    "type": "string",
+                    "example": "40.7128"
+                },
+                "longitude": {
+                    "type": "string",
+                    "example": "-74.0060"
                 },
                 "name": {
                     "type": "string",
