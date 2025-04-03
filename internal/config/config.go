@@ -127,11 +127,7 @@ type Config struct {
 }
 
 func newConfig() *Config {
-	err := utils.SetWorkingDirToProjectRoot()
-	if err != nil {
-		panic(fmt.Sprintf("fail on set project root as workdir: %s", err))
-	}
-	err = gotenv.Load(".env")
+	err := gotenv.Load(".env")
 	if err != nil {
 		slog.Error("fail on load env vars: %s", "err", err)
 		panic("fail on load env vars")

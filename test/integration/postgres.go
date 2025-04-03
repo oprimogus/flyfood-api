@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/utils"
 	"log/slog"
 	"strings"
 
@@ -18,7 +17,6 @@ import (
 )
 
 func MakePostgres(ctx context.Context) (*Container, error) {
-	_ = utils.SetWorkingDirToProjectRoot()
 	configInstance := config.GetInstance().Database
 	configInstance.Host = "localhost"
 	configInstance.User = "flyfood-api"
