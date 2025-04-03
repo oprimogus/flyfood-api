@@ -1,11 +1,8 @@
 package config
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
-
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/utils"
 
 	"github.com/subosito/gotenv"
 )

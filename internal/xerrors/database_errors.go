@@ -52,7 +52,6 @@ func handleDatabaseError(err error, traceID string) *CustomError {
 	return nil
 }
 
-// Utils
 func isDatabaseError(err error) bool {
 	var pgErr *pgconn.PgError
 	return errors.As(err, &pgErr) ||
