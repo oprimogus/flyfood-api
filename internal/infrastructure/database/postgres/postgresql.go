@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -16,6 +17,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/oprimogus/flyfood-api/internal/config"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
 
 var (
@@ -108,26 +110,26 @@ func (d Database) Close() {
 	d.pool.Close()
 }
 
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
+
 func (d Database) Migrate() error {
-	sourceURL := "file://internal/infrastructure/database/migrations"
+	source, err := iofs.New(migrationsFS, "migrations")
+	if err != nil {
+		return fmt.Errorf("database: could not create migration source: %w", err)
+	}
 	dbName := os.Getenv("DB_NAME")
-	slog.Info("starting migration execution")
 	driver, err := postgres.WithInstance(d.sqlDB, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("database: could not create migration driver: %w", err)
 	}
-	migrator, err := migrate.NewWithDatabaseInstance(sourceURL, dbName, driver)
+	migrator, err := migrate.NewWithInstance("iofs", source, dbName, driver)
 	if err != nil {
 		return fmt.Errorf("database: Could not create migrator: %w", err)
 	}
 	err = migrator.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("database: Could not apply migrations: %w", err)
-	}
-	if errors.Is(err, migrate.ErrNoChange) {
-		slog.Info("No migrations to run.")
-	} else {
-		slog.Info("Migrations applied successfully.")
 	}
 	return nil
 }

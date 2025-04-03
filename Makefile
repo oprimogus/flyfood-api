@@ -62,21 +62,21 @@ run:
 	go run -race cmd/main.go
 
 migrate:
-	@ migrate -source file://internal/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" up
+	@ migrate -source file://internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" up
 
 migration:
 	@read -p "Enter migration name: " name; \
-		migrate create -ext sql -dir internal/infrastructure/database/migrations -seq $$name
+		migrate create -ext sql -dir internal/infrastructure/database/postgres/migrations -seq $$name
 
 migration-up: 
-	@ migrate -path internal/infrastructure/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
+	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
 
 migration-down: 
-	@ migrate -path internal/infrastructure/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose down
+	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose down
 
 migration-fix: 
 	@read -p "Enter migration version: " version; \
-	migrate -path internal/infrastructure/database/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
+	migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
 
 infra:
 	go run scripts/create_infra.go
