@@ -1,9 +1,11 @@
 package config
 
 import (
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/utils"
+	"fmt"
 	"log/slog"
 	"os"
+
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/utils"
 
 	"github.com/subosito/gotenv"
 )
@@ -127,7 +129,7 @@ type Config struct {
 func newConfig() *Config {
 	err := utils.SetWorkingDirToProjectRoot()
 	if err != nil {
-		panic("fail on set project root as workdir")
+		panic(fmt.Sprintf("fail on set project root as workdir: %s", err))
 	}
 	err = gotenv.Load(".env")
 	if err != nil {
