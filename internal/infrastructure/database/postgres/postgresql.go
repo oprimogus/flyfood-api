@@ -59,6 +59,7 @@ func GetTestInstance(port string) *Database {
 func createInstance(conf config.DBConf) *Database {
 	database := &Database{}
 	strConnection := database.createStringConn(conf)
+	slog.Debug("DEBUG PGX CONNECTION", "Value", strConnection)
 
 	var err error
 	database.pool, err = database.getPgxConnection(strConnection)
@@ -76,6 +77,7 @@ func createInstance(conf config.DBConf) *Database {
 }
 
 func (d Database) createStringConn(conf config.DBConf) string {
+	slog.Debug("DEBUG PGX CONNECTION", "Value port", conf.Port)
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable search_path=public",
 		conf.Host,
