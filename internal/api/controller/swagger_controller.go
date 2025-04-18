@@ -14,7 +14,7 @@ func swaggerHandler(w http.ResponseWriter, r *http.Request) {
 func docsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
-		SpecURL: "./api/swagger.json",
+		SpecURL: ".//swagger.json",
 		CustomOptions: scalar.CustomOptions{
 			PageTitle: "FlyFood",
 		},

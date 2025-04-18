@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
-	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
@@ -151,10 +150,7 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 }
 
 func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
-	basePath := config.GetInstance().Api.BasePath
-
 	validator := xvalidator.GetPtInstance()
-
 	command := store.NewCommand(
 		repoFactory.NewStoreRepository(),
 		repoFactory.NewOwnerRepository(),
@@ -162,7 +158,7 @@ func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, ser
 	query := store.NewQueryService(repoFactory.NewStoreRepository(), repoFactory.NewSQLC())
 	c := newStoreController(validator, command, query)
 
-	r.Route(basePath+"/v1", func(r chi.Router) {
+	r.Route("/v1", func(r chi.Router) {
 		r.
 			With(middleware.Authentication).
 			Get("/store/{id}", c.getQueryStoreByID)

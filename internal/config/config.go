@@ -39,13 +39,6 @@ type APIConf struct {
 	Consts      map[string]string
 }
 
-type keycloakConfig struct {
-	BaseURL      string
-	Realm        string
-	ClientID     string
-	ClientSecret string
-}
-
 type zitadelConfig struct {
 	Issuer                string
 	Api                   string
@@ -55,15 +48,6 @@ type zitadelConfig struct {
 	KeyPath               string
 	ServiceAccountKeyPath string
 	ProjectID             string
-}
-
-func (d *keycloakConfig) LogValue() slog.Value {
-	return slog.GroupValue(
-		slog.String("BaseURL", d.BaseURL),
-		slog.String("Realm", d.Realm),
-		slog.String("ClientID", "redacted"),
-		slog.String("ClientSecret", "redacted"),
-	)
 }
 
 type resendConfig struct {
@@ -116,7 +100,6 @@ type Nominatim struct {
 type Config struct {
 	Database  *DBConf
 	Api       *APIConf
-	Keycloak  *keycloakConfig
 	Zitadel   *zitadelConfig
 	Resend    *resendConfig
 	Aws       *aws
@@ -143,12 +126,6 @@ func newConfig() *Config {
 			GinMode:     os.Getenv("GIN_MODE"),
 			Environment: os.Getenv("ENVIRONMENT"),
 			sqlcDebug:   os.Getenv("SQLCDEBUG"),
-		},
-		Keycloak: &keycloakConfig{
-			BaseURL:      os.Getenv("KEYCLOAK_BASE_URL"),
-			Realm:        os.Getenv("KEYCLOAK_REALM"),
-			ClientID:     os.Getenv("KEYCLOAK_CLIENT_ID"),
-			ClientSecret: os.Getenv("KEYCLOAK_CLIENT_SECRET"),
 		},
 		Zitadel: &zitadelConfig{
 			Issuer:                os.Getenv("ZITADEL_ISSUER"),
