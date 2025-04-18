@@ -2,7 +2,6 @@ package zitadel
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"slices"
 	"strconv"
