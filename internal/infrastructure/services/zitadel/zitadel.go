@@ -2,7 +2,11 @@ package zitadel
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"slices"
+	"strconv"
+
 	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"github.com/zitadel/zitadel-go/v3/pkg/authorization"
@@ -11,7 +15,6 @@ import (
 	"github.com/zitadel/zitadel-go/v3/pkg/client/zitadel/management"
 	"github.com/zitadel/zitadel-go/v3/pkg/http/middleware"
 	"github.com/zitadel/zitadel-go/v3/pkg/zitadel"
-	"slices"
 )
 
 var Instance *ServiceZitadel
@@ -32,7 +35,12 @@ func NewZitadel() (*ServiceZitadel, error) {
 	ctx := context.Background()
 	conf := config.GetInstance().Zitadel
 
-	zitadelConf := zitadel.New(conf.Domain, zitadel.WithInsecure(conf.Port))
+	port, err := strconv.ParseUint(conf.Port, 10, 16)
+	if err != nil {
+		return nil, fmt.Errorf("invalid port to connect with zitadel: %s", conf.Port)
+	}
+
+	zitadelConf := zitadel.New(conf.Domain, zitadel.WithPort(uint16(port)))
 
 	authZ, err := authorization.New(ctx, zitadelConf, oauth.DefaultAuthorization(conf.KeyPath))
 	if err != nil {
