@@ -23,6 +23,7 @@ WORKDIR /root/
 
 # Copie o binário compilado do estágio de construção
 COPY --from=builder /app/cmd .
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Exponha a porta que sua aplicação utiliza
 EXPOSE 3000
