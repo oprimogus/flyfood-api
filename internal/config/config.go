@@ -109,8 +109,8 @@ type Config struct {
 func newConfig() *Config {
 	err := gotenv.Load(".env")
 	if err != nil {
-        slog.Info("arquivo .env não encontrado, usando variáveis de ambiente")
-    }
+		slog.Info("arquivo .env não encontrado, usando variáveis de ambiente")
+	}
 	return &Config{
 		Database: &DBConf{
 			Host:     os.Getenv("DB_HOST"),

@@ -16,8 +16,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 
-	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/oprimogus/flyfood-api/internal/config"
 )
 
 var (

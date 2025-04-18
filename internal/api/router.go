@@ -37,7 +37,7 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 		port = "3000"
 	}
 
-	slog.Info(fmt.Sprintf("Docs available in http://localhost:%s/api/docs", port))
+	slog.Info(fmt.Sprintf("Docs available in http://localhost:%s/docs", port))
 	slog.Info(fmt.Sprintf("Listening and serving in 0.0.0.0:%v", port))
 
 	_ = chi.Walk(r, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {

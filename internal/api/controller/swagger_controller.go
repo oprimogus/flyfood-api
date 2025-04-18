@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/flyfood-api/internal/config"
-	"net/http"
+	"github.com/oprimogus/flyfood-api/api"
 )
 
 func swaggerHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +15,7 @@ func swaggerHandler(w http.ResponseWriter, r *http.Request) {
 func docsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
-		SpecURL: ".//swagger.json",
+		SpecContent: api.SwaggerInfo.ReadDoc(),
 		CustomOptions: scalar.CustomOptions{
 			PageTitle: "FlyFood",
 		},
@@ -29,11 +30,8 @@ func docsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SetupSwaggerRoutes(r chi.Router) {
-	api := config.GetInstance().Api
-
-	r.Route(api.BasePath, func(r chi.Router) {
+	r.Route("/", func(r chi.Router) {
 		r.Get("/swagger.json", swaggerHandler)
 		r.Get("/docs", docsHandler)
-
 	})
 }
