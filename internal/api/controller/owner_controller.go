@@ -2,16 +2,19 @@ package controller
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/oprimogus/flyfood-api/internal/core/owner"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/zitadel"
+	_ "github.com/oprimogus/flyfood-api/internal/xerrors"
 	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 	"github.com/oprimogus/flyfood-api/pkg/converters"
-	"net/http"
 )
 
 type ownerController struct {
@@ -543,6 +546,7 @@ func (c ownerController) getOwnerStores(w http.ResponseWriter, r *http.Request) 
 }
 
 func SetupOwnerRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
+	basePath := config.GetInstance().Api.BasePath
 	validator := xvalidator.GetPtInstance()
 	command := owner.NewCommand(repoFactory.NewOwnerRepository())
 	stCommand := store.NewCommand(
@@ -552,7 +556,7 @@ func SetupOwnerRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, ser
 	stQuery := store.NewQueryService(repoFactory.NewStoreRepository(), repoFactory.NewSQLC())
 	c := newOwnerController(validator, command, stCommand, stQuery)
 
-	r.Route("/v1/owner", func(r chi.Router) {
+	r.Route(basePath+"/v1/owner", func(r chi.Router) {
 		r.
 			With(middleware.Authentication).
 			Post("/", c.createOwner)

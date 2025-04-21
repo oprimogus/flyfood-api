@@ -6,11 +6,10 @@ import (
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/api"
+	_ "github.com/oprimogus/flyfood-api/api"
+	"github.com/oprimogus/flyfood-api/internal/config"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
-
-func swaggerHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./api/swaggerHandler.json")
-}
 
 func docsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -30,8 +29,12 @@ func docsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SetupSwaggerRoutes(r chi.Router) {
-	r.Route("/", func(r chi.Router) {
-		r.Get("/swagger.json", swaggerHandler)
+	basePath := config.GetInstance().Api.BasePath
+	if basePath == "" {
+		basePath = "/"
+	}
+	r.Route(basePath, func(r chi.Router) {
 		r.Get("/docs", docsHandler)
+		r.Get("/swagger/*", httpSwagger.WrapHandler)
 	})
 }

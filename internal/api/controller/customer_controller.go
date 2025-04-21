@@ -2,14 +2,17 @@ package controller
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/oprimogus/flyfood-api/internal/core/address"
 	"github.com/oprimogus/flyfood-api/internal/core/customer"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/zitadel"
+	_ "github.com/oprimogus/flyfood-api/internal/xerrors"
 	"github.com/oprimogus/flyfood-api/internal/xvalidator"
-	"net/http"
 )
 
 type customerController struct {
@@ -203,11 +206,12 @@ func (c customerController) removeAddress(w http.ResponseWriter, r *http.Request
 }
 
 func SetupCustomerRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory) {
+	basePath := config.GetInstance().Api.BasePath
 	validator := xvalidator.GetPtInstance()
 	service := customer.NewService(repoFactory.NewCustomerRepository())
 	c := newCustomerController(validator, service)
 
-	r.Route("/v1/customer", func(r chi.Router) {
+	r.Route(basePath+"/v1/customer", func(r chi.Router) {
 		r.
 			With(middleware.Authentication).
 			Get("/", c.getCustomer)

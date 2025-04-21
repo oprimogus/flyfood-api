@@ -1,13 +1,17 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/config"
+	_ "github.com/oprimogus/flyfood-api/internal/core"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
+	_ "github.com/oprimogus/flyfood-api/internal/xerrors"
 	"github.com/oprimogus/flyfood-api/internal/xvalidator"
-	"net/http"
 )
 
 type storeController struct {
@@ -53,19 +57,19 @@ func (c storeController) getQueryStoreByID(w http.ResponseWriter, r *http.Reques
 //	@Tags			Store V1
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			Authorization	header		string							true	"Bearer authentication token"
-//	@Param			name			query		string							true	"Name"
-//	@Param			isOpen			query		string							true	"IsOpen"
-//	@Param			score			query		int								true	"Score"
-//	@Param			type			query		string							true	"Store Type"
-//	@Param			city			query		string							true	"City"
-//	@Param			page			query		string							true	"Page"
-//	@Param			maxItems		query		string							true	"Items per page"
-//	@Success		200				{object}	store.QueryStoreListPagination	"Query Store model"
-//	@Failure		400				{object}	xerrors.CustomError				"Invalid request data or malformed JSON"
-//	@Failure		401				{object}	xerrors.CustomError				"Unauthorized - authentication required"
-//	@Failure		422				{object}	xerrors.CustomError				"Validation error - invalid status"
-//	@Failure		500				{object}	xerrors.CustomError				"Internal server error"
+//	@Param			Authorization	header		string									true	"Bearer authentication token"
+//	@Param			name			query		string									true	"Name"
+//	@Param			isOpen			query		string									true	"IsOpen"
+//	@Param			score			query		int										true	"Score"
+//	@Param			type			query		string									true	"Store Type"
+//	@Param			city			query		string									true	"City"
+//	@Param			page			query		string									true	"Page"
+//	@Param			maxItems		query		string									true	"Items per page"
+//	@Success		200				{object}	core.Pagination[store.QueryStoreList]	"Query Store model"
+//	@Failure		400				{object}	xerrors.CustomError						"Invalid request data or malformed JSON"
+//	@Failure		401				{object}	xerrors.CustomError						"Unauthorized - authentication required"
+//	@Failure		422				{object}	xerrors.CustomError						"Validation error - invalid status"
+//	@Failure		500				{object}	xerrors.CustomError						"Internal server error"
 //	@Router			/v1/store [get]
 func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *http.Request) {
 	var params store.QueryStoresInput
@@ -150,6 +154,7 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 }
 
 func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
+	basePath := config.GetInstance().Api.BasePath
 	validator := xvalidator.GetPtInstance()
 	command := store.NewCommand(
 		repoFactory.NewStoreRepository(),
@@ -158,7 +163,7 @@ func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, ser
 	query := store.NewQueryService(repoFactory.NewStoreRepository(), repoFactory.NewSQLC())
 	c := newStoreController(validator, command, query)
 
-	r.Route("/v1", func(r chi.Router) {
+	r.Route(basePath+"/v1", func(r chi.Router) {
 		r.
 			With(middleware.Authentication).
 			Get("/store/{id}", c.getQueryStoreByID)

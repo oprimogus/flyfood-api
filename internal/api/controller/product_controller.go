@@ -2,16 +2,19 @@ package controller
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
 	"github.com/oprimogus/flyfood-api/internal/core/store/product"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/zitadel"
+	_ "github.com/oprimogus/flyfood-api/internal/xerrors"
 	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 	"github.com/oprimogus/flyfood-api/pkg/converters"
-	"net/http"
 )
 
 type productController struct {
@@ -256,6 +259,7 @@ func (c productController) changeProductImage(w http.ResponseWriter, r *http.Req
 }
 
 func SetupProductRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
+	basePath := config.GetInstance().Api.BasePath
 	validator := xvalidator.GetPtInstance()
 	command := store.NewCommand(
 		repoFactory.NewStoreRepository(),
@@ -266,9 +270,9 @@ func SetupProductRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, s
 
 	r.
 		With(middleware.Authorization(string(zitadel.Owner))).
-		Post("/v1/owner/store/{store_id}/product/{product_id}/image", c.changeProductImage)
+		Post(basePath+"/v1/owner/store/{store_id}/product/{product_id}/image", c.changeProductImage)
 
-	r.Route("/v1/owner/store/product", func(r chi.Router) {
+	r.Route(basePath+"/v1/owner/store/product", func(r chi.Router) {
 		r.
 			With(middleware.Authorization(string(zitadel.Owner))).
 			Post("/", c.addNewProduct)

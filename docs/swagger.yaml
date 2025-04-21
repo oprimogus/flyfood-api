@@ -1,0 +1,1921 @@
+definitions:
+  github_com_oprimogus_flyfood-api_internal_core.Pagination-github_com_oprimogus_flyfood-api_internal_core_store_QueryStoreList:
+    properties:
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.QueryStoreList'
+        type: array
+      hasNextPage:
+        type: boolean
+      hasPreviousPage:
+        type: boolean
+      pageSize:
+        type: integer
+      totalItems:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_address.Address:
+    properties:
+      addressLine1:
+        example: 123 Main Street
+        maxLength: 40
+        type: string
+      addressLine2:
+        example: Apt 4B
+        maxLength: 20
+        type: string
+      city:
+        example: New York
+        maxLength: 25
+        type: string
+      country:
+        example: United States
+        maxLength: 15
+        type: string
+      latitude:
+        example: "40.7128"
+        type: string
+      longitude:
+        example: "-74.0060"
+        type: string
+      name:
+        example: Home
+        maxLength: 25
+        type: string
+      neighborhood:
+        example: Downtown
+        maxLength: 25
+        type: string
+      postalCode:
+        example: "10001"
+        maxLength: 15
+        type: string
+      state:
+        example: NY
+        maxLength: 15
+        type: string
+    required:
+    - addressLine1
+    - addressLine2
+    - city
+    - country
+    - neighborhood
+    - postalCode
+    - state
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_customer.Customer:
+    properties:
+      addresses:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_address.Address'
+        type: array
+      cpf:
+        example: "52024227090"
+        type: string
+      email:
+        example: johndoe@example.com
+        type: string
+      id:
+        example: "295105940221919239"
+        type: string
+      lastName:
+        example: Doe
+        maxLength: 60
+        minLength: 3
+        type: string
+      name:
+        example: John
+        maxLength: 25
+        minLength: 3
+        type: string
+      ordersID:
+        items:
+          type: string
+        type: array
+      phone:
+        example: "+5513997590579"
+        type: string
+    required:
+    - email
+    - id
+    - lastName
+    - name
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_customer.UpdateProfileDTO:
+    properties:
+      last_name:
+        example: Doe
+        maxLength: 60
+        minLength: 3
+        type: string
+      name:
+        example: John
+        maxLength: 25
+        minLength: 3
+        type: string
+      phone:
+        example: "+5513997590579"
+        type: string
+    required:
+    - last_name
+    - name
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.AddOrDeleteBusinessHourDTO:
+    properties:
+      businessHour:
+        $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.BusinessHours'
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - id
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.AddOrDeletePaymentMethodDTO:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      paymentMethod:
+        $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.PaymentMethod'
+    required:
+    - id
+    - paymentMethod
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.BusinessHours:
+    properties:
+      closingTime:
+        example: "15:00"
+        type: string
+      openingTime:
+        example: "09:00"
+        type: string
+      weekDay:
+        example: 1
+        maximum: 6
+        minimum: 0
+        type: integer
+    required:
+    - closingTime
+    - openingTime
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.CreateNewStoreDTO:
+    properties:
+      address:
+        $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_address.Address'
+      cnpj:
+        example: "12345678000190"
+        type: string
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      phone:
+        example: "+5511997590670"
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - cnpj
+    - description
+    - name
+    - phone
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.PaymentMethod:
+    enum:
+    - CREDIT
+    - DEBIT
+    - CASH
+    - PIX
+    - BTC
+    type: string
+    x-enum-varnames:
+    - Credit
+    - Debit
+    - Cash
+    - Pix
+    - Bitcoin
+  github_com_oprimogus_flyfood-api_internal_core_store.QueryOwnerStore:
+    properties:
+      address:
+        $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_address.Address'
+      businessHours:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.BusinessHours'
+        type: array
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      headerImage:
+        example: https://example.com/header.jpg
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      paymentMethods:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.PaymentMethod'
+        type: array
+      phone:
+        example: "+5511997590670"
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.Product'
+        type: array
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - businessHours
+    - description
+    - id
+    - name
+    - paymentMethods
+    - phone
+    - products
+    - score
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.QueryOwnerStoreList:
+    properties:
+      active:
+        example: true
+        type: boolean
+      city:
+        example: New York
+        maxLength: 25
+        type: string
+      country:
+        example: United States
+        maxLength: 15
+        type: string
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      state:
+        example: NY
+        maxLength: 15
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.Type'
+        example: RESTAURANT
+    required:
+    - city
+    - country
+    - id
+    - name
+    - score
+    - state
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.QueryStore:
+    properties:
+      address:
+        $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_address.Address'
+      businessHours:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.BusinessHours'
+        type: array
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      headerImage:
+        example: https://example.com/header.jpg
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      paymentMethods:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.PaymentMethod'
+        type: array
+      phone:
+        example: "+5511997590670"
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.ProductDTO'
+        type: array
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - businessHours
+    - description
+    - id
+    - name
+    - paymentMethods
+    - phone
+    - products
+    - score
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.QueryStoreList:
+    properties:
+      deliveryTime:
+        description: DeliveryTime is defined in minutes
+        example: 40
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: false
+        type: boolean
+      latitude:
+        example: "40.7128"
+        type: string
+      longitude:
+        example: "-74.0060"
+        type: string
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      neighborhood:
+        example: Downtown
+        maxLength: 25
+        type: string
+      profileImage:
+        example: https://example.com/profile.jpg
+        type: string
+      score:
+        example: 500
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.Type'
+        example: RESTAURANT
+    required:
+    - id
+    - name
+    - neighborhood
+    - score
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.SetActiveDTO:
+    properties:
+      active:
+        example: true
+        type: boolean
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - id
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.SetOpenStateDTO:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOpen:
+        example: true
+        type: boolean
+    required:
+    - id
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store.Type:
+    enum:
+    - RESTAURANT
+    - PHARMACY
+    - TOBBACO
+    - MARKET
+    - CONVENIENCE
+    - PUB
+    type: string
+    x-enum-varnames:
+    - Restaurant
+    - Pharmacy
+    - Tobbaco
+    - Market
+    - Convenience
+    - Pub
+  github_com_oprimogus_flyfood-api_internal_core_store.UpdateStoreDTO:
+    properties:
+      address:
+        $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_address.Address'
+      deliveryTime:
+        example: 40
+        type: integer
+      description:
+        example: Best bakery in town with fresh pastries
+        maxLength: 255
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Delicious Bakery
+        maxLength: 25
+        minLength: 3
+        type: string
+      phone:
+        example: "+5511997590670"
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.Type'
+        example: RESTAURANT
+    required:
+    - address
+    - description
+    - id
+    - name
+    - phone
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store_product.ChangeStockProductDTO:
+    properties:
+      id:
+        example: 0194900a-8909-755a-bd61-ec7a18224200
+        type: string
+      quantity:
+        type: integer
+      storeID:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - id
+    - storeID
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store_product.CreateProductDTO:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      storeID:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.Type'
+        example: FOOD
+    required:
+    - description
+    - name
+    - price
+    - storeID
+    - tag
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store_product.Product:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      active:
+        type: boolean
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      promoActive:
+        type: boolean
+      promotionalPrice:
+        minimum: 0
+        type: integer
+      score:
+        type: integer
+      stockQuantity:
+        type: integer
+      storeID:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.Type'
+        example: FOOD
+    required:
+    - description
+    - id
+    - name
+    - price
+    - score
+    - storeID
+    - tag
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store_product.ProductDTO:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      promoActive:
+        type: boolean
+      promotionalPrice:
+        minimum: 0
+        type: integer
+      score:
+        type: integer
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.Type'
+        example: FOOD
+    required:
+    - description
+    - id
+    - name
+    - price
+    - score
+    - tag
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_core_store_product.Type:
+    enum:
+    - FOOD
+    - WATER
+    type: string
+    x-enum-varnames:
+    - Food
+    - Water
+  github_com_oprimogus_flyfood-api_internal_core_store_product.UpdateProductDTO:
+    properties:
+      SKU:
+        example: XBOO168
+        type: string
+      description:
+        example: Pizza com queijo, azeitona, presunto
+        maxLength: 255
+        type: string
+      id:
+        example: 0194900a-8909-755a-bd61-ec7a18224200
+        type: string
+      name:
+        example: Pizza Portuguesa
+        maxLength: 25
+        minLength: 3
+        type: string
+      price:
+        example: 5990
+        type: integer
+      storeID:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      tag:
+        example: Promotional 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.Type'
+        example: FOOD
+    required:
+    - description
+    - id
+    - name
+    - price
+    - storeID
+    - tag
+    - type
+    type: object
+  github_com_oprimogus_flyfood-api_internal_xerrors.CustomError:
+    properties:
+      debug: {}
+      details: {}
+      error:
+        type: string
+      traceID:
+        type: string
+    type: object
+  internal_api_controller.HealthResponse:
+    properties:
+      status:
+        example: UP
+        type: string
+      timestamp:
+        example: "2024-03-15T10:30:15Z"
+        type: string
+    type: object
+info:
+  contact:
+    email: gustavo081900@gmail.com
+    name: Gustavo Ferreira de Jesus
+  description: Documentação da API de delivery FlyFood.
+  title: FlyFood API
+  version: "1.0"
+paths:
+  /health/liveness:
+    get:
+      description: Liveness Prob
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_controller.HealthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_controller.HealthResponse'
+      summary: Liveness Prob
+      tags:
+      - Health
+  /health/metrics:
+    get:
+      description: Prometheus Metrics
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_controller.HealthResponse'
+      summary: Prometheus Metrics
+      tags:
+      - Health
+  /health/readiness:
+    get:
+      description: Readiness Prob
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_controller.HealthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_controller.HealthResponse'
+      summary: Readiness Prob
+      tags:
+      - Health
+  /v1/customer:
+    get:
+      consumes:
+      - application/json
+      description: Register a comprehensive customer profile with full registration
+        details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Customer
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_customer.Customer'
+        "201":
+          description: Customer
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_customer.Customer'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "409":
+          description: Conflict - customer may already exist
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid customer details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      summary: Get a customer account
+      tags:
+      - Customer Profile Management V1
+    put:
+      consumes:
+      - application/json
+      description: Modify comprehensive customer account details with full profile
+        update
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updated customer profile information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_customer.UpdateProfileDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "403":
+          description: Forbidden - insufficient permissions
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "404":
+          description: Customer profile not found
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Update existing customer profile
+      tags:
+      - Customer Profile Management V1
+  /v1/customer/address:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an address to customer
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Address Model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_address.Address'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Address removed from user
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "403":
+          description: Forbidden - insufficient permissions
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "404":
+          description: Customer profile not found
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Remove an address to customer
+      tags:
+      - Customer Profile Management V1
+    post:
+      consumes:
+      - application/json
+      description: Add new address to customer
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Address Model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_address.Address'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Address added to user
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "403":
+          description: Forbidden - insufficient permissions
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "404":
+          description: Customer profile not found
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid profile details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Add new address to customer
+      tags:
+      - Customer Profile Management V1
+  /v1/owner:
+    post:
+      consumes:
+      - application/json
+      description: Register a customer as owner
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Store successfully created
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Owner: Create an owner'
+      tags:
+      - Owner V1
+  /v1/owner/store:
+    post:
+      consumes:
+      - application/json
+      description: Register a comprehensive store profile with all necessary details
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed store creation information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.CreateNewStoreDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Store successfully created
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Create a new store for an owner'
+      tags:
+      - Store Management V1
+    put:
+      consumes:
+      - application/json
+      description: Modify comprehensive store details including contact, operational,
+        and profile information
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updated store information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.UpdateStoreDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "404":
+          description: Store not found
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Update existing store profile'
+      tags:
+      - Store Management V1
+  /v1/owner/store/{id}:
+    get:
+      description: Get a store by ID
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: QueryOwnerStore model
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.QueryOwnerStore'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Get a store by ID'
+      tags:
+      - Store Management V1
+  /v1/owner/store/{id}/header-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change store header image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store header image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store header image'
+      tags:
+      - Store Management V1
+  /v1/owner/store/{id}/profile-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change store profile image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Store profile image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store profile image'
+      tags:
+      - Store Management V1
+  /v1/owner/store/active:
+    post:
+      consumes:
+      - application/json
+      description: Activate or deactivate store to control product visibility and
+        order processing
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store activation status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.SetActiveDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store activation status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store''s visibility and order acceptance status'
+      tags:
+      - Store Management V1
+  /v1/owner/store/all:
+    get:
+      description: Get all stores of an owner
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: store model for owner list
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.QueryOwnerStoreList'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Get all stores of an owner'
+      tags:
+      - Store Management V1
+  /v1/owner/store/business-hour:
+    delete:
+      consumes:
+      - application/json
+      description: Delete specific business hours from store's operational schedule
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Business hours to remove
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.AddOrDeleteBusinessHourDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Business hours successfully removed
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid business hours
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Remove business operating hours for store'
+      tags:
+      - Store Management V1
+    post:
+      consumes:
+      - application/json
+      description: Register specific business hours for a store's operational schedule
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Business hours details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.AddOrDeleteBusinessHourDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Business hours successfully added
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid business hours
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Add business operating hours for store'
+      tags:
+      - Store Management V1
+  /v1/owner/store/open:
+    post:
+      consumes:
+      - application/json
+      description: Toggle store's availability to accept or stop accepting new orders
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store open/close status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.SetOpenStateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Store operational status updated successfully
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Change store''s operational status for orders'
+      tags:
+      - Store Management V1
+  /v1/owner/store/payment-method:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a previously added payment method from store's accepted
+        methods
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Payment method to remove
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.AddOrDeletePaymentMethodDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment method successfully removed
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid payment method
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Remove payment method for store'
+      tags:
+      - Store Management V1
+    post:
+      consumes:
+      - application/json
+      description: Register a new payment method accepted by the store
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Payment method details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.AddOrDeletePaymentMethodDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment method successfully added
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid payment method
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Store: Add payment method for store'
+      tags:
+      - Store Management V1
+  /v1/owner/store/product:
+    post:
+      consumes:
+      - application/json
+      description: Add a new product into store
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product creation information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.CreateProductDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Product successfully created
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Add a new product into store'
+      tags:
+      - Store Management V1
+    put:
+      consumes:
+      - application/json
+      description: Update a product of store
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.UpdateProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stock successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Update a product of store'
+      tags:
+      - Store Management V1
+  /v1/owner/store/product/decrease-stock:
+    post:
+      consumes:
+      - application/json
+      description: Decrease stock of a product
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.ChangeStockProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stock successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Decrease stock of a product'
+      tags:
+      - Store Management V1
+  /v1/owner/store/product/increase-stock:
+    post:
+      consumes:
+      - application/json
+      description: Increase stock of a product
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Detailed product information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store_product.ChangeStockProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Stock successfully updated
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "409":
+          description: Conflict - store may already exist
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid store details
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "502":
+          description: External service communication error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Increase stock of a product'
+      tags:
+      - Store Management V1
+  /v1/store:
+    get:
+      description: Get a stores by Filter
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: IsOpen
+        in: query
+        name: isOpen
+        required: true
+        type: string
+      - description: Score
+        in: query
+        name: score
+        required: true
+        type: integer
+      - description: Store Type
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: City
+        in: query
+        name: city
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: Items per page
+        in: query
+        name: maxItems
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query Store model
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core.Pagination-github_com_oprimogus_flyfood-api_internal_core_store_QueryStoreList'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Get a stores by Filter
+      tags:
+      - Store V1
+  /v1/store/{id}:
+    get:
+      description: Get a store by ID
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Query Store model
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_core_store.QueryStore'
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: Get a store by ID
+      tags:
+      - Store V1
+  /v1/store/{store_id}/product/{product_id}/header-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change product image
+      parameters:
+      - description: Bearer authentication token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Store ID
+        in: path
+        name: store_id
+        required: true
+        type: string
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: string
+      - description: Product Image
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product image updated with success
+        "400":
+          description: Invalid request data or malformed JSON
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "401":
+          description: Unauthorized - authentication required
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "422":
+          description: Validation error - invalid status
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_oprimogus_flyfood-api_internal_xerrors.CustomError'
+      security:
+      - BearerAuth: []
+      summary: 'Product: Change product image'
+      tags:
+      - Store Management V1
+securityDefinitions:
+  OAuth2AccessCode:
+    authorizationUrl: https://auth.flyfood.com.br/oauth/v2/authorize
+    flow: accessCode
+    scopes:
+      email: Access to user's email
+      openid: OpenID Connect basic login
+      profile: Access to user's profile
+    tokenUrl: https://auth.flyfood.com.br/oauth/v2/token
+    type: oauth2
+swagger: "2.0"

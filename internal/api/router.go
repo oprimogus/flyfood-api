@@ -2,14 +2,15 @@ package api
 
 import (
 	"fmt"
+	"log/slog"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/controller"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
-	"log/slog"
-	"net/http"
 
 	"github.com/oprimogus/flyfood-api/internal/config"
 )
@@ -37,7 +38,7 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 		port = "3000"
 	}
 
-	slog.Info(fmt.Sprintf("Docs available in http://localhost:%s/docs", port))
+	slog.Info(fmt.Sprintf("Docs available in http://localhost:%s%s/docs", port, configInstance.BasePath))
 	slog.Info(fmt.Sprintf("Listening and serving in 0.0.0.0:%v", port))
 
 	_ = chi.Walk(r, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {

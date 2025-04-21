@@ -3,12 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/oprimogus/flyfood-api/internal/api"
-	"github.com/oprimogus/flyfood-api/internal/config"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
-	logger "github.com/oprimogus/flyfood-api/pkg/log"
 	"log"
 	"log/slog"
 	"net/http"
@@ -16,6 +10,13 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/oprimogus/flyfood-api/internal/api"
+	"github.com/oprimogus/flyfood-api/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
+	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
+	logger "github.com/oprimogus/flyfood-api/pkg/log"
 )
 
 //	@title			FlyFood API
@@ -24,14 +25,22 @@ import (
 //	@contact.name	Gustavo Ferreira de Jesus
 //	@contact.email	gustavo081900@gmail.com
 
-//	@host		localhost:3000
-//	@BasePath	/api
-//	@accept		json
-//	@produce	json
+//	@servers.url			https://flyfood.com.br/api
+//	@servers.description	Production API
 
-// @securityDefinitions.apikey BearerToken
-// @in							header
-// @name						Authorization
+//	@servers.url			https://dev.flyfood.com.br/api
+//	@servers.description	Staging API
+
+//	@servers.url			http://localhost:3000/api
+//	@servers.description	Dev API
+
+// @securitydefinitions.oauth2.accessCode OAuth2AccessCode
+// @tokenUrl								https://auth.flyfood.com.br/oauth/v2/token
+// @authorizationurl						https://auth.flyfood.com.br/oauth/v2/authorize
+// @in										header
+// @scope.openid							OpenID Connect basic login
+// @scope.email							Access to user's email
+// @scope.profile							Access to user's profile
 func main() {
 	if err := run(); err != nil {
 		log.Fatal("deu ruim")

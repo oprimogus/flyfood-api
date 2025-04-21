@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/oprimogus/flyfood-api/internal/config"
 	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/observability"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
-	"time"
 )
 
 type healthController struct {
@@ -81,9 +83,10 @@ func (h *healthController) prometheusMetrics(w http.ResponseWriter, r *http.Requ
 }
 
 func SetupHealthRoutes(r chi.Router, db *postgresDB.Database) {
+	basePath := config.GetInstance().Api.BasePath
 	handler := newHealthHandler(db)
 
-	r.Route("/health", func(r chi.Router) {
+	r.Route(basePath+"/health", func(r chi.Router) {
 		r.Get("/liveness", handler.livenessProbe)
 		r.Get("/readiness", handler.readinessProbe)
 		r.Get("/metrics", handler.prometheusMetrics)

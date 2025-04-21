@@ -55,18 +55,6 @@ type QueryStoreList struct {
 	ProfileImage string `json:"profileImage" example:"https://example.com/profile.jpg"`
 }
 
-//type QueryStoreListPagination = core.Pagination[QueryStoreList]
-
-type QueryStoreListPagination struct {
-	Data            []QueryStoreList `json:"data"`
-	CurrentPage     int              `json:"currentPage"`
-	PageSize        int              `json:"pageSize"`
-	TotalPages      int              `json:"totalPages"`
-	TotalItems      int              `json:"totalItems"`
-	HasNextPage     bool             `json:"hasNextPage"`
-	HasPreviousPage bool             `json:"hasPreviousPage"`
-}
-
 type QueryStoresInput struct {
 	Name           *string          `json:"name" example:"Delicious Bakery"`
 	IsOpen         *bool            `json:"isOpen" example:"false"`
