@@ -45,7 +45,15 @@ test:
 .PHONY: test-integration
 test-integration:
 	go test -tags=integration ./internal... -v -count=1 -race -cover -coverprofile=./tmp/coverage.integration.out
-#go test -tags=integration ./...
+
+.PHONY: test-ci
+test-ci:
+	go test ./internal/... -v -count=1 -race
+
+.PHONY: test-integration-ci
+test-integration:
+	go test -tags=integration ./internal... -v -count=1 -race
+
 # Executa benchmarks
 .PHONY: test-benchmark
 test-benchmark:

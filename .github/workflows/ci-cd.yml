@@ -24,10 +24,10 @@ jobs:
           cat .env
 
       - name: Run Unit Tests
-        run: make test
+        run: make test-ci
 
       - name: Run Integration Tests
-        run: make test-integration
+        run: make test-integration-ci
 
   deploy:
     name: Deploy
