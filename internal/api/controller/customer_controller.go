@@ -29,7 +29,6 @@ func newCustomerController(validator *xvalidator.Validator, customerService cust
 //	@Summary		Get a customer account
 //	@Description	Register a comprehensive customer profile with full registration details
 //	@Tags			Customer Profile Management V1
-//	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	customer.Customer	"Customer"
 //	@Success		201	{object}	customer.Customer	"Customer"
