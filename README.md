@@ -1,6 +1,6 @@
 # Flyfood-api
 
-Repositório da API do FlyFood
+Repositório da API do FlyFood (keel test)
 
 ## Sobre o Projeto
 
