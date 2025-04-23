@@ -25,13 +25,13 @@ import (
 //	@contact.name	Gustavo Ferreira de Jesus
 //	@contact.email	gustavo081900@gmail.com
 
-//	@servers.url			https://flyfood.com.br/api
+//	@servers.url			https://flyfood.com.br/flyfood-api
 //	@servers.description	Production API
 
-//	@servers.url			https://dev.flyfood.com.br/api
+//	@servers.url			https://dev.flyfood.com.br/flyfood-api
 //	@servers.description	Staging API
 
-//	@servers.url			http://localhost:3000/api
+//	@servers.url			http://localhost:3000/flyfood-api
 //	@servers.description	Dev API
 
 // @securitydefinitions.oauth2.accessCode OAuth2AccessCode
