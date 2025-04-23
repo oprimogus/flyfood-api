@@ -67,13 +67,13 @@ func createInstance(conf config.DBConf) *Database {
 		panic(err)
 	}
 
-	err = database.Migrate()
+	database.sqlDB, err = database.getSQLDBConnection(strConnection)
 	if err != nil {
 		slog.Error(err.Error())
 		panic(err)
 	}
 
-	database.sqlDB, err = database.getSQLDBConnection(strConnection)
+	err = database.Migrate()
 	if err != nil {
 		slog.Error(err.Error())
 		panic(err)
