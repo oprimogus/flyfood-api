@@ -32,23 +32,29 @@ type ServiceZitadel struct {
 
 func NewZitadel() (*ServiceZitadel, error) {
 	ctx := context.Background()
-	conf := config.GetInstance().Zitadel
+	conf := config.GetInstance()
+	confZ := conf.Zitadel
 
-	port, err := strconv.ParseUint(conf.Port, 10, 16)
+	port, err := strconv.ParseUint(confZ.Port, 10, 16)
 	if err != nil {
-		return nil, fmt.Errorf("invalid port to connect with zitadel: %s", conf.Port)
+		return nil, fmt.Errorf("invalid port to connect with zitadel: %s", confZ.Port)
 	}
 
-	zitadelConf := zitadel.New(conf.Domain, zitadel.WithPort(uint16(port)))
+	var zitadelConf *zitadel.Zitadel
+	if conf.Api.Environment == string(config.Production) {
+		zitadelConf = zitadel.New(confZ.Domain, zitadel.WithPort(uint16(port)))
+	} else {
+		zitadelConf = zitadel.New(confZ.Domain, zitadel.WithInsecure(string(confZ.Port)))
+	}
 
-	authZ, err := authorization.New(ctx, zitadelConf, oauth.DefaultAuthorization(conf.KeyPath))
+	authZ, err := authorization.New(ctx, zitadelConf, oauth.DefaultAuthorization(confZ.KeyPath))
 	if err != nil {
 		return nil, fmt.Errorf("could not create auth zitadel: %w", err)
 	}
 	mw := middleware.New(authZ)
 
 	c, err := client.New(ctx, zitadelConf,
-		client.WithAuth(client.DefaultServiceUserAuthentication(conf.ServiceAccountKeyPath, oidc.ScopeOpenID, client.ScopeZitadelAPI())),
+		client.WithAuth(client.DefaultServiceUserAuthentication(confZ.ServiceAccountKeyPath, oidc.ScopeOpenID, client.ScopeZitadelAPI())),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("zitadel sdk could not initialize client: %w", err)

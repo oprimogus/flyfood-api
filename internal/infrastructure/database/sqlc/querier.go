@@ -211,18 +211,22 @@ type Querier interface {
 	//SaveCustomer
 	//
 	//  INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
-	//  VALUES ($1, $2, $3, $4, $5, $6,
-	//          NOW() AT TIME ZONE 'UTC',
-	//          NOW() AT TIME ZONE 'UTC',
-	//          NULL)
+	//  VALUES (
+	//      $1, $2, $3,
+	//      NULLIF($4::TEXT, ''),  -- converte string vazia em NULL
+	//      $5, $6,
+	//      NOW() AT TIME ZONE 'UTC',
+	//      NOW() AT TIME ZONE 'UTC',
+	//      NULL
+	//  )
 	//  ON CONFLICT (id) DO UPDATE
-	//      SET
-	//          name = EXCLUDED.name,
-	//          last_name = EXCLUDED.last_name,
-	//          cpf = EXCLUDED.cpf,
-	//          email = EXCLUDED.email,
-	//          phone = EXCLUDED.phone
-	//      WHERE customer.id = $1
+	//  SET
+	//      name = EXCLUDED.name,
+	//      last_name = EXCLUDED.last_name,
+	//      cpf = EXCLUDED.cpf,
+	//      email = EXCLUDED.email,
+	//      phone = EXCLUDED.phone
+	//  WHERE customer.id = $1
 	SaveCustomer(ctx context.Context, arg SaveCustomerParams) error
 	//SaveCustomerAddress
 	//

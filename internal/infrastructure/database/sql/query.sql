@@ -28,18 +28,23 @@ WHERE id = $1;
 
 -- name: SaveCustomer :exec
 INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
-VALUES ($1, $2, $3, $4, $5, $6,
-        NOW() AT TIME ZONE 'UTC',
-        NOW() AT TIME ZONE 'UTC',
-        NULL)
+VALUES (
+    @id, @name, @last_name,
+    NULLIF(@cpf::TEXT, ''),  -- converte string vazia em NULL
+    @email, @phone,
+    NOW() AT TIME ZONE 'UTC',
+    NOW() AT TIME ZONE 'UTC',
+    NULL
+)
 ON CONFLICT (id) DO UPDATE
-    SET
-        name = EXCLUDED.name,
-        last_name = EXCLUDED.last_name,
-        cpf = EXCLUDED.cpf,
-        email = EXCLUDED.email,
-        phone = EXCLUDED.phone
-    WHERE customer.id = $1;
+SET
+    name = EXCLUDED.name,
+    last_name = EXCLUDED.last_name,
+    cpf = EXCLUDED.cpf,
+    email = EXCLUDED.email,
+    phone = EXCLUDED.phone
+WHERE customer.id = @id;
+
 
 -- name: SaveCustomerAddress :exec
 INSERT INTO address (customer_id, name, address_line_1, address_line_2, neighborhood, city, state,

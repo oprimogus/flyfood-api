@@ -215,7 +215,7 @@ type Customer struct {
 	ID        string           `db:"id" json:"id"`
 	Name      string           `db:"name" json:"name"`
 	LastName  string           `db:"last_name" json:"last_name"`
-	Cpf       string           `db:"cpf" json:"cpf"`
+	Cpf       pgtype.Text      `db:"cpf" json:"cpf"`
 	Email     string           `db:"email" json:"email"`
 	Phone     string           `db:"phone" json:"phone"`
 	CreatedAt pgtype.Timestamp `db:"created_at" json:"created_at"`

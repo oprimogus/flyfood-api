@@ -46,8 +46,8 @@ func PopulateLocalDatabase() error {
 func createStringConn() string {
 	dbHost := "localhost"
 	dbPort := "5432"
-	dbUsername := "flyfood-api"
-	dbPassword := "flyfood-api"
+	dbUsername := "cardapiogo"
+	dbPassword := "cardapiogo"
 	dbName := "postgres"
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",

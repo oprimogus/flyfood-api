@@ -51,7 +51,7 @@ test-ci:
 	go test ./internal/... -v -count=1 -race
 
 .PHONY: test-integration-ci
-test-integration:
+test-integration-ci:
 	go test -tags=integration ./internal... -v -count=1 -race
 
 # Executa benchmarks

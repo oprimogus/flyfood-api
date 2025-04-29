@@ -71,7 +71,7 @@ func (r CustomerRepository) FindByID(ctx context.Context, id string) (*customer.
 		ID:       id,
 		Name:     customerRepo.Name,
 		LastName: customerRepo.LastName,
-		CPF:      customerRepo.Cpf,
+		CPF:      customerRepo.Cpf.String,
 		Email:    customerRepo.Email,
 		Phone:    customerRepo.Phone,
 	}

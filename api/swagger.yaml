@@ -95,11 +95,6 @@ components:
           maxLength: 25
           minLength: 3
           type: string
-        ordersID:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
         phone:
           example: "+5513997590579"
           type: string
@@ -837,11 +832,6 @@ paths:
     get:
       description: Register a comprehensive customer profile with full registration
         details
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
       responses:
         "200":
           content:
@@ -2231,8 +2221,8 @@ paths:
       - Store Management V1
 servers:
 - description: Production API
-  url: https://flyfood.com.br/api
+  url: https://flyfood.com.br/flyfood-api
 - description: Staging API
-  url: https://dev.flyfood.com.br/api
+  url: https://dev.flyfood.com.br/flyfood-api
 - description: Dev API
-  url: http://localhost:3000/api
+  url: http://localhost:3000/flyfood-api

@@ -115,12 +115,12 @@ LIMIT 1
 `
 
 type FindCustomerByIDRow struct {
-	ID       string `db:"id" json:"id"`
-	Name     string `db:"name" json:"name"`
-	LastName string `db:"last_name" json:"last_name"`
-	Cpf      string `db:"cpf" json:"cpf"`
-	Email    string `db:"email" json:"email"`
-	Phone    string `db:"phone" json:"phone"`
+	ID       string      `db:"id" json:"id"`
+	Name     string      `db:"name" json:"name"`
+	LastName string      `db:"last_name" json:"last_name"`
+	Cpf      pgtype.Text `db:"cpf" json:"cpf"`
+	Email    string      `db:"email" json:"email"`
+	Phone    string      `db:"phone" json:"phone"`
 }
 
 // FindCustomerByID
@@ -767,18 +767,22 @@ func (q *Queries) RemoveOwner(ctx context.Context, id string) error {
 
 const saveCustomer = `-- name: SaveCustomer :exec
 INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
-VALUES ($1, $2, $3, $4, $5, $6,
-        NOW() AT TIME ZONE 'UTC',
-        NOW() AT TIME ZONE 'UTC',
-        NULL)
+VALUES (
+    $1, $2, $3,
+    NULLIF($4::TEXT, ''),  -- converte string vazia em NULL
+    $5, $6,
+    NOW() AT TIME ZONE 'UTC',
+    NOW() AT TIME ZONE 'UTC',
+    NULL
+)
 ON CONFLICT (id) DO UPDATE
-    SET
-        name = EXCLUDED.name,
-        last_name = EXCLUDED.last_name,
-        cpf = EXCLUDED.cpf,
-        email = EXCLUDED.email,
-        phone = EXCLUDED.phone
-    WHERE customer.id = $1
+SET
+    name = EXCLUDED.name,
+    last_name = EXCLUDED.last_name,
+    cpf = EXCLUDED.cpf,
+    email = EXCLUDED.email,
+    phone = EXCLUDED.phone
+WHERE customer.id = $1
 `
 
 type SaveCustomerParams struct {
@@ -793,18 +797,22 @@ type SaveCustomerParams struct {
 // SaveCustomer
 //
 //	INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at, updated_at, deleted_at)
-//	VALUES ($1, $2, $3, $4, $5, $6,
-//	        NOW() AT TIME ZONE 'UTC',
-//	        NOW() AT TIME ZONE 'UTC',
-//	        NULL)
+//	VALUES (
+//	    $1, $2, $3,
+//	    NULLIF($4::TEXT, ''),  -- converte string vazia em NULL
+//	    $5, $6,
+//	    NOW() AT TIME ZONE 'UTC',
+//	    NOW() AT TIME ZONE 'UTC',
+//	    NULL
+//	)
 //	ON CONFLICT (id) DO UPDATE
-//	    SET
-//	        name = EXCLUDED.name,
-//	        last_name = EXCLUDED.last_name,
-//	        cpf = EXCLUDED.cpf,
-//	        email = EXCLUDED.email,
-//	        phone = EXCLUDED.phone
-//	    WHERE customer.id = $1
+//	SET
+//	    name = EXCLUDED.name,
+//	    last_name = EXCLUDED.last_name,
+//	    cpf = EXCLUDED.cpf,
+//	    email = EXCLUDED.email,
+//	    phone = EXCLUDED.phone
+//	WHERE customer.id = $1
 func (q *Queries) SaveCustomer(ctx context.Context, arg SaveCustomerParams) error {
 	_, err := q.db.Exec(ctx, saveCustomer,
 		arg.ID,
