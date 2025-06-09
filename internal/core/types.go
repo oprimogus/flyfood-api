@@ -27,12 +27,6 @@ func Paginate[T any](items []T, currentPage, pageSize, totalItems int) Paginatio
 		currentPage = 1
 	}
 
-	startIndex := (currentPage - 1) * pageSize
-	endIndex := startIndex + pageSize
-	if endIndex > totalPages {
-		endIndex = totalPages
-	}
-
 	return Pagination[T]{
 		Data:            items,
 		CurrentPage:     currentPage,

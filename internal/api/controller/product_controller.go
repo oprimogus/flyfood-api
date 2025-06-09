@@ -22,8 +22,8 @@ type productController struct {
 	command   store.Command
 }
 
-func newProductController(validator *xvalidator.Validator, command store.Command) productController {
-	return productController{validator: validator, command: command}
+func newProductController(command store.Command) productController {
+	return productController{command: command}
 }
 
 // addNewProduct godoc
@@ -55,7 +55,7 @@ func (c productController) addNewProduct(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -99,7 +99,7 @@ func (c productController) updateProduct(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -143,7 +143,7 @@ func (c productController) increaseProductStock(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -187,7 +187,7 @@ func (c productController) decreaseProductStock(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -244,7 +244,7 @@ func (c productController) changeProductImage(w http.ResponseWriter, r *http.Req
 		Image:     fileBytes,
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -260,13 +260,12 @@ func (c productController) changeProductImage(w http.ResponseWriter, r *http.Req
 
 func SetupProductRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
 	basePath := config.GetInstance().Api.BasePath
-	validator := xvalidator.GetPtInstance()
 	command := store.NewCommand(
 		repoFactory.NewStoreRepository(),
 		repoFactory.NewOwnerRepository(),
 		services)
 
-	c := newProductController(validator, command)
+	c := newProductController(command)
 
 	r.
 		With(middleware.Authorization(string(zitadel.Owner))).

@@ -18,16 +18,13 @@ import (
 )
 
 type ownerController struct {
-	validator    *xvalidator.Validator
 	command      owner.Command
 	storeCommand store.Command
 	storeQuery   store.Query
 }
 
-func newOwnerController(validator *xvalidator.Validator,
-	command owner.Command, storeCommand store.Command, storeQuery store.Query) ownerController {
+func newOwnerController(command owner.Command, storeCommand store.Command, storeQuery store.Query) ownerController {
 	return ownerController{
-		validator:    validator,
 		command:      command,
 		storeCommand: storeCommand,
 		storeQuery:   storeQuery,
@@ -97,7 +94,7 @@ func (c ownerController) createStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -137,7 +134,7 @@ func (c ownerController) updateStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -176,7 +173,7 @@ func (c ownerController) addBusinessHour(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -215,7 +212,7 @@ func (c ownerController) removeBusinessHour(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -254,7 +251,7 @@ func (c ownerController) addPaymentMethod(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -293,7 +290,7 @@ func (c ownerController) removePaymentMethod(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -332,7 +329,7 @@ func (c ownerController) openOrClose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -371,7 +368,7 @@ func (c ownerController) activatedOrDeactivate(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -425,7 +422,7 @@ func (c ownerController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 		Ext:     ext,
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -479,7 +476,7 @@ func (c ownerController) changeHeaderImage(w http.ResponseWriter, r *http.Reques
 		Image:   fileBytes,
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -547,14 +544,13 @@ func (c ownerController) getOwnerStores(w http.ResponseWriter, r *http.Request) 
 
 func SetupOwnerRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
 	basePath := config.GetInstance().Api.BasePath
-	validator := xvalidator.GetPtInstance()
 	command := owner.NewCommand(repoFactory.NewOwnerRepository())
 	stCommand := store.NewCommand(
 		repoFactory.NewStoreRepository(),
 		repoFactory.NewOwnerRepository(),
 		services)
 	stQuery := store.NewQueryService(repoFactory.NewStoreRepository(), repoFactory.NewSQLC())
-	c := newOwnerController(validator, command, stCommand, stQuery)
+	c := newOwnerController(command, stCommand, stQuery)
 
 	r.Route(basePath+"/v1/owner", func(r chi.Router) {
 		r.

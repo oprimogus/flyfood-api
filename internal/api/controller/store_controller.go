@@ -15,13 +15,12 @@ import (
 )
 
 type storeController struct {
-	validator      *xvalidator.Validator
 	commandService store.Command
 	queryService   store.Query
 }
 
-func newStoreController(validator *xvalidator.Validator, command store.Command, query store.Query) storeController {
-	return storeController{validator: validator, commandService: command, queryService: query}
+func newStoreController(command store.Command, query store.Query) storeController {
+	return storeController{commandService: command, queryService: query}
 }
 
 // getQueryStoreByID godoc
@@ -155,13 +154,12 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 
 func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {
 	basePath := config.GetInstance().Api.BasePath
-	validator := xvalidator.GetPtInstance()
 	command := store.NewCommand(
 		repoFactory.NewStoreRepository(),
 		repoFactory.NewOwnerRepository(),
 		services)
 	query := store.NewQueryService(repoFactory.NewStoreRepository(), repoFactory.NewSQLC())
-	c := newStoreController(validator, command, query)
+	c := newStoreController(command, query)
 
 	r.Route(basePath+"/v1", func(r chi.Router) {
 		r.

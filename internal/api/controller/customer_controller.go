@@ -16,12 +16,11 @@ import (
 )
 
 type customerController struct {
-	validator       *xvalidator.Validator
 	customerService customer.Service
 }
 
-func newCustomerController(validator *xvalidator.Validator, customerService customer.Service) customerController {
-	return customerController{validator: validator, customerService: customerService}
+func newCustomerController(customerService customer.Service) customerController {
+	return customerController{customerService: customerService}
 }
 
 // getCustomer godoc
@@ -52,7 +51,7 @@ func (c customerController) getCustomer(w http.ResponseWriter, r *http.Request) 
 			Phone:    authCtx.PhoneNumber,
 		}
 
-		err = c.validator.Validate(params)
+		err = xvalidator.Validate(params)
 		if err != nil {
 			HandleError(w, r, err)
 			return
@@ -101,7 +100,7 @@ func (c customerController) updateCustomerProfile(w http.ResponseWriter, r *http
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -145,7 +144,7 @@ func (c customerController) addAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -189,7 +188,7 @@ func (c customerController) removeAddress(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = c.validator.Validate(params)
+	err = xvalidator.Validate(params)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -206,9 +205,8 @@ func (c customerController) removeAddress(w http.ResponseWriter, r *http.Request
 
 func SetupCustomerRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory) {
 	basePath := config.GetInstance().Api.BasePath
-	validator := xvalidator.GetPtInstance()
 	service := customer.NewService(repoFactory.NewCustomerRepository())
-	c := newCustomerController(validator, service)
+	c := newCustomerController(service)
 
 	r.Route(basePath+"/v1/customer", func(r chi.Router) {
 		r.
