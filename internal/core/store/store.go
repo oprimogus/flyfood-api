@@ -12,8 +12,7 @@ const (
 )
 
 func init() {
-	validator := xvalidator.GetPtInstance()
-	err := validator.AddValidations(validationsMap)
+	err := xvalidator.AddValidations(validationsMap)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +67,7 @@ func NewStore(ownerID, cnpj, name, description,
 }
 
 func (st *Store) Validate() error {
-	return xvalidator.GetPtInstance().Validate(st)
+	return xvalidator.Validate(st)
 }
 
 func (st *Store) Activate() {

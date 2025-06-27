@@ -19,5 +19,5 @@ func NewOwner(customerID string) Owner {
 }
 
 func (o *Owner) Validate() error {
-	return xvalidator.GetPtInstance().Validate(o)
+	return xvalidator.Validate(o)
 }

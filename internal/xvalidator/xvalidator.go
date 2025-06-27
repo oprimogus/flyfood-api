@@ -3,16 +3,16 @@ package xvalidator
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
+
 	"github.com/go-playground/locales/en"
 	"github.com/go-playground/locales/pt"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 	ptTranslations "github.com/go-playground/validator/v10/translations/pt"
-	"strings"
 )
-
-var validatorService *Validator
 
 type Validator struct {
 	Validator  *validator.Validate
@@ -20,22 +20,22 @@ type Validator struct {
 	locale     string
 }
 
-func (v *Validator) AddValidations(validations map[string]PersonalizedValidation) error {
-	for i, validation := range validations {
-		err := v.Validator.RegisterValidation(i, validation.ValidationFn)
-		if err != nil {
-			return fmt.Errorf("could not create validator for type %s: %v", i, err)
-		}
-		err = v.Validator.RegisterTranslation(i, v.translator,
-			validation.RegisterTranslationsFn, validation.TranslationFn)
-		if err != nil {
-			return fmt.Errorf("could not create translation for type %s: %v", i, err)
-		}
+var (
+	once             sync.Once
+	validatorService *Validator
+)
+
+func init() {
+	if err := getInstance("pt"); err != nil {
+		panic(err)
 	}
-	return nil
 }
 
-func NewValidator(locale string) (*Validator, error) {
+func newValidator(locale string) (*Validator, error) {
+	if locale == "" {
+		locale = "pt"
+	}
+
 	v := validator.New(validator.WithRequiredStructEnabled())
 
 	enLocale := en.New()
@@ -46,47 +46,73 @@ func NewValidator(locale string) (*Validator, error) {
 	if !found {
 		return nil, fmt.Errorf("locale %s not found", locale)
 	}
+
 	switch locale {
 	case "en":
-		err := enTranslations.RegisterDefaultTranslations(v, translator)
-		if err != nil {
-			panic(fmt.Sprintf("Could not register locale %v translation: %v", locale, err))
+		if err := enTranslations.RegisterDefaultTranslations(v, translator); err != nil {
+			return nil, fmt.Errorf("error registering en translations: %w", err)
 		}
 	case "pt":
-		err := ptTranslations.RegisterDefaultTranslations(v, translator)
-		if err != nil {
-			panic(fmt.Sprintf("Could not register locale %v translation: %v", locale, err))
+		if err := ptTranslations.RegisterDefaultTranslations(v, translator); err != nil {
+			return nil, fmt.Errorf("error registering pt translations: %w", err)
 		}
 	default:
 		return nil, fmt.Errorf("unsupported locale: %s", locale)
 	}
 
-	validatorInstance := &Validator{
+	validatorService = &Validator{
 		Validator:  v,
 		translator: translator,
 		locale:     locale,
 	}
 
-	err := validatorInstance.AddValidations(personalizedValidations)
+	err := AddValidations(personalizedValidations)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error adding personalized validations: %w", err)
 	}
-	return validatorInstance, nil
+
+	return validatorService, nil
 }
 
-func GetPtInstance() *Validator {
+func getInstance(locale string) error {
+	var err error
+	once.Do(func() {
+		validatorService, err = newValidator(locale)
+	})
+	return err
+}
+
+func AddValidations(validations map[string]PersonalizedValidation) error {
 	if validatorService == nil {
-		v, err := NewValidator("pt")
+		err := getInstance("pt")
 		if err != nil {
-			panic(err)
+			return err
 		}
-		validatorService = v
 	}
-	return validatorService
+
+	for i, validation := range validations {
+		err := validatorService.Validator.RegisterValidation(i, validation.ValidationFn)
+		if err != nil {
+			return fmt.Errorf("could not create validator for type %s: %v", i, err)
+		}
+		err = validatorService.Validator.RegisterTranslation(i, validatorService.translator,
+			validation.RegisterTranslationsFn, validation.TranslationFn)
+		if err != nil {
+			return fmt.Errorf("could not create translation for type %s: %v", i, err)
+		}
+	}
+	return nil
 }
 
-func (v *Validator) Validate(i interface{}) error {
-	if err := v.Validator.Struct(i); err != nil {
+func Validate(i any) error {
+	if validatorService == nil {
+		err := getInstance("pt")
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := validatorService.Validator.Struct(i); err != nil {
 		var errs validator.ValidationErrors
 		if errors.As(err, &errs) {
 			mapErrFields := make([]FieldError, len(errs))
@@ -98,7 +124,7 @@ func (v *Validator) Validate(i interface{}) error {
 				mapErrFields[i] = FieldError{
 					Field:   value.Field(),
 					Input:   input,
-					Message: strings.Replace(value.Translate(v.translator), value.Field()+" ", "", 1),
+					Message: strings.Replace(value.Translate(validatorService.translator), value.Field()+" ", "", 1),
 				}
 			}
 			return NewValidationError(mapErrFields)

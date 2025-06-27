@@ -16,7 +16,7 @@ type Customer struct {
 }
 
 func (c *Customer) Validate() error {
-	return xvalidator.GetPtInstance().Validate(c)
+	return xvalidator.Validate(c)
 }
 
 func NewCustomer(id, name, lastName, cpf, email, phone string) (*Customer, error) {

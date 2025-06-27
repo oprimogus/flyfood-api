@@ -9,8 +9,7 @@ import (
 const defaultScore = 500
 
 func init() {
-	validator := xvalidator.GetPtInstance()
-	err := validator.AddValidations(validationsMap)
+	err := xvalidator.AddValidations(validationsMap)
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +74,7 @@ func NewProduct(storeID, name, tag, description, sku string, price int, productT
 }
 
 func (p *Product) Validate() error {
-	return xvalidator.GetPtInstance().Validate(p)
+	return xvalidator.Validate(p)
 }
 
 func (p *Product) IncreaseStock(quantity int) error {

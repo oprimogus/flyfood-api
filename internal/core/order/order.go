@@ -1,7 +1,11 @@
 package order
 
 import (
+	"fmt"
+
+	"github.com/google/uuid"
 	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/xvalidator"
 )
 
 type State string
@@ -28,4 +32,32 @@ type Order struct {
 	Amount         int             `json:"amount" validate:"required,gt=0"`
 	DeliveryAmount int             `json:"deliveryAmount" validate:"required,gte=0"`
 	Address        address.Address `json:"address" validate:"required,address"`
+}
+
+func (o *Order) Validate() error {
+	return xvalidator.Validate(o)
+}
+
+func NewOrder(storeID, customerID string, items []Item, amount, deliveryAmount int, address address.Address) (*Order, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, fmt.Errorf("não foi possível gerar ID único para essa ordem: %w", err)
+	}
+
+	o := Order{
+		ID:             id.String(),
+		StoreID:        storeID,
+		CustomerID:     customerID,
+		Status:         Created,
+		Items:          items,
+		Amount:         amount,
+		DeliveryAmount: deliveryAmount,
+		Address:        address,
+	}
+
+	if err := o.Validate(); err != nil {
+		return nil, err
+	}
+
+	return &o, nil
 }
