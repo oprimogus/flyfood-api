@@ -1,9 +1,11 @@
-package customer
+package customer_test
 
 import (
-	"github.com/oprimogus/flyfood-api/internal/core/address"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/oprimogus/flyfood-api/internal/core/address"
+	"github.com/oprimogus/flyfood-api/internal/core/customer"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCustomer_SaveNewAddress(t *testing.T) {
@@ -19,7 +21,7 @@ func TestCustomer_SaveNewAddress(t *testing.T) {
 		Country:      "BR",
 	}
 
-	customer := &Customer{
+	c := &customer.Customer{
 		ID:        "34876876358756",
 		Name:      "John",
 		LastName:  "Doe",
@@ -31,14 +33,14 @@ func TestCustomer_SaveNewAddress(t *testing.T) {
 
 	testcases := []struct {
 		name          string
-		customer      *Customer
+		customer      *customer.Customer
 		actualAddress []address.Address
 		newAddress    address.Address
 		expected      error
 	}{
 		{
 			name:     "Shoud add new address with success",
-			customer: customer,
+			customer: c,
 			actualAddress: []address.Address{
 				mockAddress,
 				mockAddress,
@@ -57,7 +59,7 @@ func TestCustomer_SaveNewAddress(t *testing.T) {
 		},
 		{
 			name:     "Shoud return err when try add more than 5 address",
-			customer: customer,
+			customer: c,
 			actualAddress: []address.Address{
 				mockAddress,
 				mockAddress,
@@ -75,7 +77,7 @@ func TestCustomer_SaveNewAddress(t *testing.T) {
 				PostalCode:   "11470-180",
 				Country:      "BR",
 			},
-			expected: ErrMaxAddresses,
+			expected: customer.ErrMaxAddresses,
 		},
 	}
 
@@ -98,7 +100,7 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 		Country:      "BR",
 	}
 
-	customerWithAddress := &Customer{
+	customerWithAddress := &customer.Customer{
 		ID:       "257547567254247245",
 		Name:     "John",
 		LastName: "Doe",
@@ -110,7 +112,7 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 		},
 	}
 
-	customerWithoutAddress := &Customer{
+	customerWithoutAddress := &customer.Customer{
 		ID:        "2547724254724575472",
 		Name:      "John",
 		LastName:  "Doe",
@@ -122,7 +124,7 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 
 	testcases := []struct {
 		name              string
-		customer          *Customer
+		customer          *customer.Customer
 		addressToRemove   address.Address
 		expectedAddresses []address.Address
 		expectedError     error
@@ -139,7 +141,7 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 			customer:          customerWithoutAddress,
 			addressToRemove:   mockAddress,
 			expectedAddresses: nil,
-			expectedError:     ErrThereIsNoAddresses,
+			expectedError:     customer.ErrThereIsNoAddresses,
 		},
 	}
 
@@ -152,5 +154,4 @@ func TestCustomer_RemoveAddress(t *testing.T) {
 			assert.Equal(t, test.expectedError, err, test.name)
 		}
 	}
-
 }

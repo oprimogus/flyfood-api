@@ -21,6 +21,10 @@ type RequestData struct {
 	ClientIP string `json:"client_ip"`
 }
 
+func GetRequestContext(ctx context.Context) *RequestData {
+	return ctx.Value(string(RequestKey)).(*RequestData)
+}
+
 type ContextualHandler struct {
 	out  io.Writer
 	opts slog.HandlerOptions
@@ -38,7 +42,7 @@ func NewContextualHandler(out io.Writer, opts *slog.HandlerOptions) *ContextualH
 }
 
 func (h *ContextualHandler) Handle(ctx context.Context, r slog.Record) error {
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 
 	// Adiciona campos padrão
 	m["time"] = r.Time.Format(time.RFC3339)
@@ -49,7 +53,7 @@ func (h *ContextualHandler) Handle(ctx context.Context, r slog.Record) error {
 		m["request"] = reqData
 	}
 
-	attrs := make(map[string]interface{})
+	attrs := make(map[string]any)
 	r.Attrs(func(a slog.Attr) bool {
 		attrs[a.Key] = a.Value.Any()
 		return true

@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/core"
 	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/observability"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -38,7 +39,7 @@ func (h *healthController) livenessProbe(w http.ResponseWriter, r *http.Request)
 		Status:    "UP",
 		Timestamp: time.Now().Format(time.RFC3339),
 	}
-	JSONResponse(w, http.StatusOK, response)
+	core.JSONResponse(w, http.StatusOK, response)
 }
 
 // readinessProbe godoc
@@ -56,7 +57,7 @@ func (h *healthController) readinessProbe(w http.ResponseWriter, r *http.Request
 			Status:    "DOWN",
 			Timestamp: time.Now().Format(time.RFC3339),
 		}
-		JSONResponse(w, http.StatusServiceUnavailable, response)
+		core.JSONResponse(w, http.StatusServiceUnavailable, response)
 		return
 	}
 
@@ -64,7 +65,7 @@ func (h *healthController) readinessProbe(w http.ResponseWriter, r *http.Request
 		Status:    "UP",
 		Timestamp: time.Now().Format(time.RFC3339),
 	}
-	JSONResponse(w, http.StatusOK, response)
+	core.JSONResponse(w, http.StatusOK, response)
 }
 
 // prometheusMetrics godoc

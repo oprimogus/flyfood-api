@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
 	"github.com/oprimogus/flyfood-api/internal/config"
-	_ "github.com/oprimogus/flyfood-api/internal/core"
+	"github.com/oprimogus/flyfood-api/internal/core"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
@@ -43,10 +43,10 @@ func (c storeController) getQueryStoreByID(w http.ResponseWriter, r *http.Reques
 
 	st, err := c.queryService.GetQueryStoreByID(r.Context(), stID)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
-	JSONResponse(w, http.StatusOK, st)
+	core.JSONResponse(w, http.StatusOK, st)
 }
 
 // getQueryStoreListByFilter godoc
@@ -91,17 +91,17 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 			params.Type = &value
 		} else {
 			xerror := xvalidator.NewFieldError("type", storeType)
-			HandleError(w, r, xerror)
+			core.HandleApiError(w, r, xerror)
 			return
 		}
 	}
 
 	isOpenParam := queryParams.Get("isOpen")
 	if isOpenParam != "" {
-		isOpen, err := IsValidBool(isOpenParam)
+		isOpen, err := core.IsValidBool(isOpenParam)
 		if err != nil {
 			xerror := xvalidator.NewFieldError("isOpen", isOpenParam)
-			HandleError(w, r, xerror)
+			core.HandleApiError(w, r, xerror)
 			return
 		} else {
 			params.IsOpen = &isOpen
@@ -110,10 +110,10 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 
 	scoreParam := queryParams.Get("score")
 	if scoreParam != "" {
-		score, err := isValidInt(scoreParam)
+		score, err := core.IsValidInt(scoreParam)
 		if err != nil {
 			xerror := xvalidator.NewFieldError("score", scoreParam)
-			HandleError(w, r, xerror)
+			core.HandleApiError(w, r, xerror)
 			return
 		} else {
 			params.Score = &score
@@ -121,20 +121,20 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 	}
 
 	pageParam := queryParams.Get("page")
-	page, err := isValidInt(pageParam)
+	page, err := core.IsValidInt(pageParam)
 	if err != nil {
 		xerror := xvalidator.NewFieldError("page", pageParam)
-		HandleError(w, r, xerror)
+		core.HandleApiError(w, r, xerror)
 		return
 	} else {
 		params.Page = page
 	}
 
 	maxItemsParam := queryParams.Get("maxItems")
-	maxItems, err := isValidInt(maxItemsParam)
+	maxItems, err := core.IsValidInt(maxItemsParam)
 	if err != nil {
 		xerror := xvalidator.NewFieldError("maxItems", maxItemsParam)
-		HandleError(w, r, xerror)
+		core.HandleApiError(w, r, xerror)
 		return
 	} else {
 		if maxItems > 50 {
@@ -146,10 +146,10 @@ func (c storeController) getQueryStoreListByFilter(w http.ResponseWriter, r *htt
 
 	st, err := c.queryService.GetStoreByFilter(r.Context(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
-	JSONResponse(w, http.StatusOK, st)
+	core.JSONResponse(w, http.StatusOK, st)
 }
 
 func SetupStoreRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {

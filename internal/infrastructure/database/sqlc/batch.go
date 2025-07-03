@@ -53,7 +53,7 @@ type AddNewCustomerAddressesParams struct {
 func (q *Queries) AddNewCustomerAddresses(ctx context.Context, arg []AddNewCustomerAddressesParams) *AddNewCustomerAddressesBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.CustomerID,
 			a.Name,
 			a.AddressLine1,
@@ -139,7 +139,7 @@ type DeleteCustomerAddressesParams struct {
 func (q *Queries) DeleteCustomerAddresses(ctx context.Context, arg []DeleteCustomerAddressesParams) *DeleteCustomerAddressesBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.CustomerID,
 			a.Name,
 			a.AddressLine1,
@@ -208,7 +208,7 @@ type DeleteStoreBusinessHourParams struct {
 func (q *Queries) DeleteStoreBusinessHour(ctx context.Context, arg []DeleteStoreBusinessHourParams) *DeleteStoreBusinessHourBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.ID,
 			a.Weekday,
 			a.OpenHour,
@@ -264,7 +264,7 @@ type DeleteStorePaymentMethodsParams struct {
 func (q *Queries) DeleteStorePaymentMethods(ctx context.Context, arg []DeleteStorePaymentMethodsParams) *DeleteStorePaymentMethodsBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.ID,
 			a.PaymentMethod,
 		}
@@ -320,7 +320,7 @@ type SaveStoreBusinessHourParams struct {
 func (q *Queries) SaveStoreBusinessHour(ctx context.Context, arg []SaveStoreBusinessHourParams) *SaveStoreBusinessHourBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.ID,
 			a.Weekday,
 			a.OpenHour,
@@ -378,7 +378,7 @@ type SaveStorePaymentMethodsParams struct {
 func (q *Queries) SaveStorePaymentMethods(ctx context.Context, arg []SaveStorePaymentMethodsParams) *SaveStorePaymentMethodsBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.ID,
 			a.PaymentMethod,
 		}

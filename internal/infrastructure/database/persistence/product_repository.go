@@ -36,7 +36,7 @@ func (r ProductRepository) FindByID(ctx context.Context, id string) (product.Pro
 		return product.Product{}, err
 	}
 
-	var details map[string]interface{}
+	var details map[string]any
 	err = json.Unmarshal(p.Details, &details)
 	if err != nil {
 		return product.Product{}, err

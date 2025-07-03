@@ -25,7 +25,7 @@ const (
 	OrderStatusFINISHED           OrderStatus = "FINISHED"
 )
 
-func (e *OrderStatus) Scan(src interface{}) error {
+func (e *OrderStatus) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = OrderStatus(s)
@@ -43,7 +43,7 @@ type NullOrderStatus struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullOrderStatus) Scan(value interface{}) error {
+func (ns *NullOrderStatus) Scan(value any) error {
 	if value == nil {
 		ns.OrderStatus, ns.Valid = "", false
 		return nil
@@ -70,7 +70,7 @@ const (
 	PaymentMethodBTC    PaymentMethod = "BTC"
 )
 
-func (e *PaymentMethod) Scan(src interface{}) error {
+func (e *PaymentMethod) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = PaymentMethod(s)
@@ -88,7 +88,7 @@ type NullPaymentMethod struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullPaymentMethod) Scan(value interface{}) error {
+func (ns *NullPaymentMethod) Scan(value any) error {
 	if value == nil {
 		ns.PaymentMethod, ns.Valid = "", false
 		return nil
@@ -112,7 +112,7 @@ const (
 	ProductTypeWATER ProductType = "WATER"
 )
 
-func (e *ProductType) Scan(src interface{}) error {
+func (e *ProductType) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = ProductType(s)
@@ -130,7 +130,7 @@ type NullProductType struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullProductType) Scan(value interface{}) error {
+func (ns *NullProductType) Scan(value any) error {
 	if value == nil {
 		ns.ProductType, ns.Valid = "", false
 		return nil
@@ -158,7 +158,7 @@ const (
 	StoreTypePUB         StoreType = "PUB"
 )
 
-func (e *StoreType) Scan(src interface{}) error {
+func (e *StoreType) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = StoreType(s)
@@ -176,7 +176,7 @@ type NullStoreType struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullStoreType) Scan(value interface{}) error {
+func (ns *NullStoreType) Scan(value any) error {
 	if value == nil {
 		ns.StoreType, ns.Valid = "", false
 		return nil

@@ -6,8 +6,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/oprimogus/flyfood-api/internal/api/controller"
+	// "github.com/oprimogus/flyfood-api/internal/api/controller"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/core/customer"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
 	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
@@ -25,12 +26,12 @@ func InitRouter(db *postgresDB.Database, repoFactory persistence.RepositoryFacto
 	r.Use(middleware.JSON)
 	r.Use(middleware.Prometheus)
 
-	controller.SetupHealthRoutes(r, db)
-	controller.SetupSwaggerRoutes(r)
-	controller.SetupCustomerRoutes(r, repoFactory)
-	controller.SetupOwnerRoutes(r, repoFactory, serviceFactory)
-	controller.SetupStoreRoutes(r, repoFactory, serviceFactory)
-	controller.SetupProductRoutes(r, repoFactory, serviceFactory)
+	// controller.SetupHealthRoutes(r, db)
+	// controller.SetupSwaggerRoutes(r)
+	customer.SetupRoutes(r, db)
+	// controller.SetupOwnerRoutes(r, repoFactory, serviceFactory)
+	// controller.SetupStoreRoutes(r, repoFactory, serviceFactory)
+	// controller.SetupProductRoutes(r, repoFactory, serviceFactory)
 
 	configInstance := config.GetInstance().Api
 	port := configInstance.Port

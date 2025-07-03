@@ -7,21 +7,22 @@ import (
 	"net/http"
 
 	"github.com/oprimogus/flyfood-api/internal/config"
+	logger "github.com/oprimogus/flyfood-api/pkg/log"
 )
 
 type CustomError struct {
-	Status       int         `json:"-"`
-	ErrorMessage string      `json:"error"`
-	Details      interface{} `json:"details,omitempty"`
-	TraceID      string      `json:"traceID"`
-	Debug        interface{} `json:"debug,omitempty"`
+	Status       int    `json:"-"`
+	ErrorMessage string `json:"error"`
+	Details      any    `json:"details,omitempty"`
+	TraceID      string `json:"traceID"`
+	Debug        any   `json:"debug,omitempty"`
 }
 
 type FieldError struct {
-	Field   string      `json:"field"`
-	Input   string      `json:"input"`
-	Message string      `json:"message"`
-	Debug   interface{} `json:"debug,omitempty"`
+	Field   string `json:"field"`
+	Input   string `json:"input"`
+	Message string `json:"message"`
+	Debug   any    `json:"debug,omitempty"`
 }
 
 func (e *CustomError) Error() string {
@@ -32,18 +33,19 @@ func (e *CustomError) StatusCode() int {
 	return e.Status
 }
 
-func New(traceID string, status int, message string, details ...interface{}) *CustomError {
-	err := &CustomError{
+func New(ctx context.Context, status int, err error, details ...any) *CustomError {
+	data := logger.GetRequestContext(ctx)
+	customErr := &CustomError{
 		Status:       status,
-		ErrorMessage: message,
-		TraceID:      traceID,
+		ErrorMessage: err.Error(),
+		TraceID:      data.TraceID,
 	}
 
 	if len(details) > 0 {
-		err.Details = details
+		customErr.Details = details
 	}
 
-	return err
+	return customErr
 }
 
 func HandleError(ctx context.Context, err error, traceID string) *CustomError {
@@ -53,7 +55,7 @@ func HandleError(ctx context.Context, err error, traceID string) *CustomError {
 
 	slog.DebugContext(ctx, err.Error())
 
-	if jsonErr := handleJSONError(err, traceID); jsonErr != nil {
+	if jsonErr := handleJSONError(ctx, err); jsonErr != nil {
 		return jsonErr
 	}
 
@@ -61,15 +63,7 @@ func HandleError(ctx context.Context, err error, traceID string) *CustomError {
 		return validationErr
 	}
 
-	if gocloakErr := handleGocloakError(err, traceID); gocloakErr != nil {
-		return gocloakErr
-	}
-
-	if customerErr := HandleCustomerError(err); customerErr != nil {
-		return customerErr
-	}
-
-	if dbError := handleDatabaseError(err, traceID); dbError != nil {
+	if dbError := handleDatabaseError(ctx, err); dbError != nil {
 		return dbError
 	}
 
@@ -80,8 +74,8 @@ func HandleError(ctx context.Context, err error, traceID string) *CustomError {
 	}
 
 	if config.GetInstance().Api.Environment != string(config.Production) {
-		return New(traceID, http.StatusInternalServerError, err.Error())
+		return New(ctx, http.StatusInternalServerError, err)
 	}
 
-	return New(traceID, http.StatusInternalServerError, "Internal Server Error")
+	return New(ctx, http.StatusInternalServerError, errors.New("Internal Server Error"))
 }

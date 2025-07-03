@@ -1,19 +1,20 @@
 package xerrors
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 )
 
-func handleJSONError(err error, traceID string) *CustomError {
+func handleJSONError(ctx context.Context, err error) *CustomError {
 	var unmarshalTypeError *json.UnmarshalTypeError
 	if errors.As(err, &unmarshalTypeError) {
 		return New(
-			traceID,
+			ctx,
 			http.StatusBadRequest,
-			fmt.Sprintf(
+			fmt.Errorf(
 				"Invalid JSON: field %s is not valid for type %s",
 				unmarshalTypeError.Field,
 				unmarshalTypeError.Value,
@@ -25,9 +26,9 @@ func handleJSONError(err error, traceID string) *CustomError {
 	var jsonSyntaxError *json.SyntaxError
 	if errors.As(err, &jsonSyntaxError) {
 		return New(
-			traceID,
+			ctx,
 			http.StatusBadRequest,
-			fmt.Sprintf("Invalid JSON: %s", jsonSyntaxError),
+			fmt.Errorf("Invalid JSON: %s", jsonSyntaxError),
 			jsonSyntaxError.Offset,
 		)
 	}

@@ -18,10 +18,6 @@ func (f RepositoryFactory) NewSQLC() sqlc.Querier {
 	return f.q
 }
 
-func (f RepositoryFactory) NewCustomerRepository() CustomerRepository {
-	return NewCustomerRepository(f.db)
-}
-
 func (f RepositoryFactory) NewStoreRepository() StoreRepository {
 	return NewStoreRepository(f.db)
 }

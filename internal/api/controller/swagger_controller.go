@@ -6,6 +6,7 @@ import (
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/api"
+	"github.com/oprimogus/flyfood-api/internal/core"
 	_ "github.com/oprimogus/flyfood-api/api"
 	"github.com/oprimogus/flyfood-api/internal/config"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -21,7 +22,7 @@ func docsHandler(w http.ResponseWriter, r *http.Request) {
 		DarkMode: true,
 	})
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

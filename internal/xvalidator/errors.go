@@ -9,10 +9,10 @@ var (
 )
 
 type FieldError struct {
-	Field   string      `json:"field"`
-	Input   string      `json:"input"`
-	Message string      `json:"message"`
-	Debug   interface{} `json:"debug,omitempty"`
+	Field   string `json:"field"`
+	Input   string `json:"input"`
+	Message string `json:"message"`
+	Debug   any    `json:"debug,omitempty"`
 }
 
 func (e *FieldError) Error() string {

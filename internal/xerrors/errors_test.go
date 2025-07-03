@@ -27,7 +27,7 @@ package xerrors
 //		TraceID string
 //		status  int
 //		message string
-//		details []interface{}
+//		details []any
 //		want    *CustomError
 //	}{
 //		{
@@ -47,7 +47,7 @@ package xerrors
 //			TraceID: "456",
 //			status:  http.StatusNotFound,
 //			message: "not found",
-//			details: []interface{}{"additional info"},
+//			details: []any{"additional info"},
 //			want: &CustomError{
 //				Status:       http.StatusNotFound,
 //				ErrorMessage: "not found",
@@ -58,7 +58,7 @@ package xerrors
 //	}
 //
 //	for _, tt := range tests {
-//		var details []interface{}
+//		var details []any
 //		if tt.details != nil {
 //			details = tt.details
 //		}

@@ -1,25 +1,26 @@
-package controller
+package core
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oprimogus/flyfood-api/internal/api/middleware"
-	"github.com/oprimogus/flyfood-api/internal/xerrors"
 	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
 	"strconv"
+
+	"github.com/oprimogus/flyfood-api/internal/xerrors"
+	logger "github.com/oprimogus/flyfood-api/pkg/log"
 )
 
-func HandleError(w http.ResponseWriter, r *http.Request, err error) {
-	data := middleware.GetRequestData(r.Context())
+func HandleApiError(w http.ResponseWriter, r *http.Request, err error) {
+	data := logger.GetRequestContext(r.Context())
 	xerror := xerrors.HandleError(r.Context(), err, data.TraceID)
 	w.WriteHeader(xerror.Status)
 	_ = json.NewEncoder(w).Encode(xerror)
 }
 
-func JSONResponse(w http.ResponseWriter, status int, response interface{}) {
+func JSONResponse(w http.ResponseWriter, status int, response any) {
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -28,7 +29,7 @@ func IsValidBool(queryParam string) (bool, error) {
 	return strconv.ParseBool(queryParam)
 }
 
-func isValidInt(queryParam string) (int, error) {
+func IsValidInt(queryParam string) (int, error) {
 	return strconv.Atoi(queryParam)
 }
 
@@ -37,13 +38,13 @@ func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key 
 
 	if err := r.ParseMultipartForm(maxSize << 20); err != nil {
 		message := fmt.Sprintf("arquivo excede o tamanho máximo: %d MB", maxSize)
-		err = xerrors.BadRequest("", message)
+		err = xerrors.BadRequest(r.Context(), message)
 		return nil, "", err
 	}
 
 	file, handler, err := r.FormFile(key)
 	if err != nil {
-		err = xerrors.BadRequest("", "falha ao recuperar o arquivo enviado")
+		err = xerrors.BadRequest(r.Context(), "falha ao recuperar o arquivo enviado")
 		return nil, "", err
 	}
 	defer func() {
@@ -58,12 +59,12 @@ func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key 
 	buffer := make([]byte, 512)
 	_, err = file.Read(buffer)
 	if err != nil {
-		err = xerrors.InternalServer("", "falha ao ler o arquivo")
+		err = xerrors.InternalServer(r.Context(), "falha ao ler o arquivo")
 		return nil, "", err
 	}
 
 	if _, err := file.Seek(0, 0); err != nil {
-		err = xerrors.InternalServer("", "falha ao reposicionar o cursor do arquivo")
+		err = xerrors.InternalServer(r.Context(), "falha ao reposicionar o cursor do arquivo")
 		return nil, "", err
 	}
 
@@ -78,7 +79,7 @@ func GetFileFormData(w http.ResponseWriter, r *http.Request, maxSize int64, key 
 
 	if !mimeAllowed {
 		message := fmt.Sprintf("formato de arquivo inválido. O tipo %s não é permitido", mimeTypeDetected)
-		err = xerrors.BadRequest("", message)
+		err = xerrors.BadRequest(r.Context(), message)
 		return nil, "", err
 	}
 

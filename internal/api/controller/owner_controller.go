@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
 	"github.com/oprimogus/flyfood-api/internal/config"
+	"github.com/oprimogus/flyfood-api/internal/core"
 	"github.com/oprimogus/flyfood-api/internal/core/owner"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
 	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
@@ -54,13 +55,13 @@ func (c ownerController) createOwner(w http.ResponseWriter, r *http.Request) {
 
 	err := c.command.NewOwner(r.Context(), authCtx.UserID())
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = zt.SetRole(r.Context(), authCtx.UserID(), zitadel.Owner)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -90,19 +91,19 @@ func (c ownerController) createStore(w http.ResponseWriter, r *http.Request) {
 	var params store.CreateNewStoreDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.CreateNewStore(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
@@ -130,19 +131,19 @@ func (c ownerController) updateStore(w http.ResponseWriter, r *http.Request) {
 	var params store.UpdateStoreDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.Update(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -169,19 +170,19 @@ func (c ownerController) addBusinessHour(w http.ResponseWriter, r *http.Request)
 	var params store.AddOrDeleteBusinessHourDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.AddStoreBusinessHour(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -208,19 +209,19 @@ func (c ownerController) removeBusinessHour(w http.ResponseWriter, r *http.Reque
 	var params store.AddOrDeleteBusinessHourDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.RemoveStoreBusinessHour(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -247,19 +248,19 @@ func (c ownerController) addPaymentMethod(w http.ResponseWriter, r *http.Request
 	var params store.AddOrDeletePaymentMethodDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.AddStorePaymentMethod(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -286,19 +287,19 @@ func (c ownerController) removePaymentMethod(w http.ResponseWriter, r *http.Requ
 	var params store.AddOrDeletePaymentMethodDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.RemoveStorePaymentMethod(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -325,19 +326,19 @@ func (c ownerController) openOrClose(w http.ResponseWriter, r *http.Request) {
 	var params store.SetOpenStateDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.OpenOrCloseStore(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -364,19 +365,19 @@ func (c ownerController) activatedOrDeactivate(w http.ResponseWriter, r *http.Re
 	var params store.SetActiveDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.ActiveOrDeactivateStore(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -400,9 +401,9 @@ func (c ownerController) activatedOrDeactivate(w http.ResponseWriter, r *http.Re
 //	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
 //	@Router			/v1/owner/store/{id}/profile-image [post]
 func (c ownerController) changeProfileImage(w http.ResponseWriter, r *http.Request) {
-	file, ext, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png", "image/jpg"})
+	file, ext, err := core.GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png", "image/jpg"})
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -413,7 +414,7 @@ func (c ownerController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 
 	fileBytes, err := converters.FileToBytes(file)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 	}
 
 	params := store.UploadStoreImageDTO{
@@ -424,13 +425,13 @@ func (c ownerController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.ChangeStoreProfileImage(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -455,9 +456,9 @@ func (c ownerController) changeProfileImage(w http.ResponseWriter, r *http.Reque
 //	@Router			/v1/owner/store/{id}/header-image [post]
 func (c ownerController) changeHeaderImage(w http.ResponseWriter, r *http.Request) {
 
-	file, _, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png"})
+	file, _, err := core.GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png"})
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -468,7 +469,7 @@ func (c ownerController) changeHeaderImage(w http.ResponseWriter, r *http.Reques
 
 	fileBytes, err := converters.FileToBytes(file)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 	}
 
 	params := store.UploadStoreImageDTO{
@@ -478,13 +479,13 @@ func (c ownerController) changeHeaderImage(w http.ResponseWriter, r *http.Reques
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.storeCommand.ChangeStoreHeaderImage(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -510,10 +511,10 @@ func (c ownerController) getOwnerStoreByID(w http.ResponseWriter, r *http.Reques
 
 	st, err := c.storeQuery.GetQueryOwnerStoreByID(r.Context(), stID)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
-	JSONResponse(w, http.StatusOK, st)
+	core.JSONResponse(w, http.StatusOK, st)
 }
 
 // getOwnerStores godoc
@@ -536,10 +537,10 @@ func (c ownerController) getOwnerStores(w http.ResponseWriter, r *http.Request) 
 
 	st, err := c.storeQuery.GetOwnerStores(r.Context(), authCtx.UserID())
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
-	JSONResponse(w, http.StatusOK, st)
+	core.JSONResponse(w, http.StatusOK, st)
 }
 
 func SetupOwnerRoutes(r *chi.Mux, repoFactory persistence.RepositoryFactory, services adapter.Factory) {

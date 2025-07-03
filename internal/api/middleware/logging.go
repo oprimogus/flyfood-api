@@ -58,10 +58,6 @@ func GetPath(route string) string {
 	return route
 }
 
-func GetRequestData(ctx context.Context) *logger.RequestData {
-	return ctx.Value(string(logger.RequestKey)).(*logger.RequestData)
-}
-
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		traceID := uuid.New().String()

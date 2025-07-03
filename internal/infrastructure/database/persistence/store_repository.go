@@ -110,7 +110,7 @@ func (r StoreRepository) FindStoreProductByID(ctx context.Context, id string) (p
 		return product.Product{}, err
 	}
 
-	var details map[string]interface{}
+	var details map[string]any
 	err = json.Unmarshal(p.Details, &details)
 	if err != nil {
 		return product.Product{}, err

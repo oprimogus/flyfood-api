@@ -1,6 +1,7 @@
 package xerrors
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -12,25 +13,25 @@ import (
 	"github.com/oprimogus/flyfood-api/internal/config"
 )
 
-const (
-	NotFoundRecord   = "Registro não encontrado"
-	DuplicatedRecord = "Já existe um registro com os dados fornecidos"
-	TooManyValues    = "There is more than one record"
-	InvalidValues    = "Invalid values for few fields"
-	UnknownError     = "Unknown error"
+var (
+	NotFoundRecord   = errors.New("Registro não encontrado")
+	DuplicatedRecord = errors.New("Já existe um registro com os dados fornecidos")
+	TooManyValues    = errors.New("Existe mais de um registro com o mesmo identificador")
+	InvalidValues    = errors.New("Alguns campos estão com valores inválidos")
+	UnknownError     = errors.New("Erro interno desconhecido")
 )
 
-func handleDatabaseError(err error, traceID string) *CustomError {
+func handleDatabaseError(ctx context.Context, err error) *CustomError {
 	if !isDatabaseError(err) {
 		return nil
 	}
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return New(traceID, http.StatusNotFound, NotFoundRecord)
+		return New(ctx, http.StatusNotFound, NotFoundRecord)
 	}
 
 	if errors.Is(err, pgx.ErrTooManyRows) {
-		return New(traceID, http.StatusInternalServerError, TooManyValues)
+		return New(ctx, http.StatusInternalServerError, TooManyValues)
 	}
 
 	var pgErr *pgconn.PgError
@@ -38,14 +39,14 @@ func handleDatabaseError(err error, traceID string) *CustomError {
 		slog.Error(pgErr.Error())
 		switch pgErr.Code {
 		case "23505":
-			return handleUniqueViolation(traceID, pgErr)
+			return handleUniqueViolation(ctx, pgErr)
 		case "23502", "22001", "22P02":
-			return handleColumnViolation(traceID, pgErr)
+			return handleColumnViolation(ctx, pgErr)
 		default:
 			if config.GetInstance().Api.Environment != string(config.Production) {
-				return New(traceID, http.StatusInternalServerError, UnknownError, pgErr)
+				return New(ctx, http.StatusInternalServerError, UnknownError, pgErr)
 			}
-			return New(traceID, http.StatusInternalServerError, UnknownError)
+			return New(ctx, http.StatusInternalServerError, UnknownError)
 		}
 	}
 
@@ -68,7 +69,7 @@ func snakeToCamelCase(s string) string {
 	return strings.Join(words, "")
 }
 
-func handleUniqueViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
+func handleUniqueViolation(ctx context.Context, pgErr *pgconn.PgError) *CustomError {
 	startField := strings.Index(pgErr.Detail, "(") + 1
 	endField := strings.Index(pgErr.Detail, ")=")
 	field := snakeToCamelCase(pgErr.Detail[startField:endField])
@@ -87,10 +88,10 @@ func handleUniqueViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
 		fieldErr.Debug = pgErr
 	}
 
-	return New(traceID, http.StatusConflict, DuplicatedRecord, fieldErr)
+	return New(ctx, http.StatusConflict, DuplicatedRecord, fieldErr)
 }
 
-func handleColumnViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
+func handleColumnViolation(ctx context.Context, pgErr *pgconn.PgError) *CustomError {
 	fieldErr := FieldError{
 		Field:   "",
 		Input:   "",
@@ -101,5 +102,5 @@ func handleColumnViolation(traceID string, pgErr *pgconn.PgError) *CustomError {
 		fieldErr.Debug = pgErr
 	}
 
-	return New(traceID, http.StatusBadRequest, InvalidValues, fieldErr)
+	return New(ctx, http.StatusBadRequest, InvalidValues, fieldErr)
 }

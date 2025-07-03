@@ -1,45 +1,49 @@
 package xerrors
 
-import "net/http"
+import (
+	"context"
+	"errors"
+	"net/http"
+)
 
-func InternalServer(traceID string, msg string) *CustomError {
+func InternalServer(ctx context.Context, msg string) *CustomError {
 	if msg == "" {
 		msg = "We encountered an error while processing your request."
 	}
-	return New(traceID, http.StatusInternalServerError, msg)
+	return New(ctx, http.StatusInternalServerError, errors.New(msg))
 }
 
-func Conflict(traceID string, msg string) *CustomError {
+func Conflict(ctx context.Context, msg string) *CustomError {
 	if msg == "" {
 		msg = "We encountered a conflict error while processing your request."
 	}
-	return New(traceID, http.StatusConflict, msg)
+	return New(ctx, http.StatusConflict, errors.New(msg))
 }
 
-func NotFound(traceID string, msg string) *CustomError {
+func NotFound(ctx context.Context, msg string) *CustomError {
 	if msg == "" {
 		msg = "The requested resource was not found."
 	}
-	return New(traceID, http.StatusNotFound, msg)
+	return New(ctx, http.StatusNotFound, errors.New(msg))
 }
 
-func Unauthorized(traceID string, msg string) *CustomError {
+func Unauthorized(ctx context.Context, msg string) *CustomError {
 	if msg == "" {
 		msg = "You are not authenticated to perform the requested action."
 	}
-	return New(traceID, http.StatusUnauthorized, msg)
+	return New(ctx, http.StatusUnauthorized, errors.New(msg))
 }
 
-func Forbidden(traceID string, msg string) *CustomError {
+func Forbidden(ctx context.Context, msg string) *CustomError {
 	if msg == "" {
 		msg = "You are not authorized to perform the requested action."
 	}
-	return New(traceID, http.StatusForbidden, msg)
+	return New(ctx, http.StatusForbidden, errors.New(msg))
 }
 
-func BadRequest(traceID string, msg string) *CustomError {
+func BadRequest(ctx context.Context, msg string) *CustomError {
 	if msg == "" {
 		msg = "Your request is in a bad format."
 	}
-	return New(traceID, http.StatusBadRequest, msg)
+	return New(ctx, http.StatusBadRequest, errors.New(msg))
 }

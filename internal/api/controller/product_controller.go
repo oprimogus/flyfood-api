@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/internal/api/middleware"
+	"github.com/oprimogus/flyfood-api/internal/core"
 	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
 	"github.com/oprimogus/flyfood-api/internal/core/store/product"
@@ -51,19 +52,19 @@ func (c productController) addNewProduct(w http.ResponseWriter, r *http.Request)
 	var params product.CreateProductDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.command.NewStoreProduct(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -95,19 +96,19 @@ func (c productController) updateProduct(w http.ResponseWriter, r *http.Request)
 	var params product.UpdateProductDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.command.UpdateProduct(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -139,19 +140,19 @@ func (c productController) increaseProductStock(w http.ResponseWriter, r *http.R
 	var params product.ChangeStockProductDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.command.IncreaseStock(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -183,19 +184,19 @@ func (c productController) decreaseProductStock(w http.ResponseWriter, r *http.R
 	var params product.ChangeStockProductDTO
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.command.DecreaseStock(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -221,9 +222,9 @@ func (c productController) decreaseProductStock(w http.ResponseWriter, r *http.R
 //	@Failure		500				{object}	xerrors.CustomError	"Internal server error"
 //	@Router			/v1/store/{store_id}/product/{product_id}/header-image [post]
 func (c productController) changeProductImage(w http.ResponseWriter, r *http.Request) {
-	file, _, err := GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png"})
+	file, _, err := core.GetFileFormData(w, r, int64(10), "image", []string{"image/jpeg", "image/png"})
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
@@ -235,7 +236,7 @@ func (c productController) changeProductImage(w http.ResponseWriter, r *http.Req
 
 	fileBytes, err := converters.FileToBytes(file)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 	}
 
 	params := product.UploadProductImageDTO{
@@ -246,13 +247,13 @@ func (c productController) changeProductImage(w http.ResponseWriter, r *http.Req
 
 	err = xvalidator.Validate(params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 
 	err = c.command.ChangeProductImage(r.Context(), authCtx.UserID(), params)
 	if err != nil {
-		HandleError(w, r, err)
+		core.HandleApiError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
