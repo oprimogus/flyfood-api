@@ -3,7 +3,8 @@ export
 
 .PHONY: lint
 lint:
-	@gofmt -s -w .
+    gofmt -s -w .
+	golangci-lint run
 
 .PHONY: install
 install:
