@@ -33,10 +33,7 @@ func StringToUUID(str string) (pgtype.UUID, error) {
 }
 
 func StringToText(str string) pgtype.Text {
-	isValid := true
-	if str == "" {
-		isValid = false
-	}
+	isValid := str != ""
 	return pgtype.Text{
 		String: str,
 		Valid:  isValid,

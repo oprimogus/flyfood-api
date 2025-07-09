@@ -42,7 +42,7 @@ func MakePostgres(ctx context.Context) (*Container, error) {
 		slog.ErrorContext(ctx, fmt.Sprintf("failed to get mapped port: %s", err))
 		return nil, err
 	}
-	port := strings.Replace(string(hostPort), "/tcp", "", -1)
+	port := strings.ReplaceAll(string(hostPort), "/tcp", "")
 
 	errOnMigration := postgresDB.GetTestInstance(port).Migrate()
 	if errOnMigration != nil {

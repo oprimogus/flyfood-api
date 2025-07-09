@@ -21,10 +21,6 @@ down:
 stop:
 	docker compose -f deployments/docker-compose.yaml stop
 
-.PHONY: mock-db
-mock-db:
-	go run scripts/populate_local_db.go
-
 .PHONY: sqlc
 sqlc:
 	go tool sqlc generate -f internal/infrastructure/database/sqlc/sqlc.yaml
@@ -102,4 +98,8 @@ migration-fix:
 
 .PHONY: infra
 infra:
-	go run scripts/create_infra.go
+	go run scripts/create_infra/main.go
+
+.PHONY: mock-db
+mock-db:
+	go run scripts/populate_local_db/main.go

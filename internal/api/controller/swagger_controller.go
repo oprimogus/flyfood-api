@@ -6,7 +6,6 @@ import (
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/go-chi/chi/v5"
 	"github.com/oprimogus/flyfood-api/api"
-	_ "github.com/oprimogus/flyfood-api/api"
 	"github.com/oprimogus/flyfood-api/internal/config"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
