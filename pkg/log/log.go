@@ -24,7 +24,6 @@ type RequestData struct {
 type ContextualHandler struct {
 	out  io.Writer
 	opts slog.HandlerOptions
-	ctx  context.Context
 }
 
 func NewContextualHandler(out io.Writer, opts *slog.HandlerOptions) *ContextualHandler {
@@ -38,18 +37,18 @@ func NewContextualHandler(out io.Writer, opts *slog.HandlerOptions) *ContextualH
 }
 
 func (h *ContextualHandler) Handle(ctx context.Context, r slog.Record) error {
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 
 	// Adiciona campos padrão
 	m["time"] = r.Time.Format(time.RFC3339)
 	m["level"] = r.Level.String()
 	m["message"] = r.Message
 
-	if reqData, ok := ctx.Value(string(RequestKey)).(*RequestData); ok {
+	if reqData, ok := ctx.Value(RequestKey).(*RequestData); ok {
 		m["request"] = reqData
 	}
 
-	attrs := make(map[string]interface{})
+	attrs := make(map[string]any)
 	r.Attrs(func(a slog.Attr) bool {
 		attrs[a.Key] = a.Value.Any()
 		return true

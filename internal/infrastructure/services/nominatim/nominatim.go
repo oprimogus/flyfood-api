@@ -3,7 +3,6 @@ package nominatim
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/oprimogus/flyfood-api/internal/config"
 	"io"
@@ -113,7 +112,7 @@ func Search(ctx context.Context, parameters Query) ([]Location, error) {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, _ := io.ReadAll(resp.Body)
 		slog.Warn("Nominatim API returned error", "status", resp.StatusCode, "response", string(body))
-		return nil, errors.New(fmt.Sprintf("nominatim API returned status %d", resp.StatusCode))
+		return nil, fmt.Errorf("nominatim API returned status %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)

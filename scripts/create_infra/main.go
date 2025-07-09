@@ -40,9 +40,8 @@ func main() {
 func calculateSum(b ...[]storage.Bucket) int {
 	sum := 0
 	bMap := make([][]storage.Bucket, len(b))
-	for i, v := range b {
-		bMap[i] = v
-	}
+
+	_ = copy(bMap, b)
 
 	for _, v := range bMap {
 		sum += len(v)

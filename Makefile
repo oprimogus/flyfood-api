@@ -3,7 +3,8 @@ export
 
 .PHONY: lint
 lint:
-	@gofmt -s -w .
+    gofmt -s -w .
+	golangci-lint run
 
 .PHONY: install
 install:
@@ -20,10 +21,6 @@ down:
 .PHONY: stop
 stop:
 	docker compose -f deployments/docker-compose.yaml stop
-
-.PHONY: mock-db
-mock-db:
-	go run scripts/populate_local_db.go
 
 .PHONY: sqlc
 sqlc:
@@ -102,4 +99,8 @@ migration-fix:
 
 .PHONY: infra
 infra:
-	go run scripts/create_infra.go
+	go run scripts/create_infra/main.go
+
+.PHONY: mock-db
+mock-db:
+	go run scripts/populate_local_db/main.go

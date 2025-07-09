@@ -25,7 +25,7 @@ type ValidationError struct {
 }
 
 func (e *ValidationError) Error() string {
-	return fmt.Sprintf("%s", MessageInvalidInput)
+	return MessageInvalidInput
 }
 
 func NewValidationError(fields []FieldError) *ValidationError {
