@@ -85,15 +85,15 @@ migration:
 		migrate create -ext sql -dir internal/infrastructure/database/postgres/migrations -seq $$name
 
 .PHONY: migration-up
-migration-up: 
+migration-up:
 	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
 
 .PHONY: migration-down
-migration-down: 
+migration-down:
 	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose down
 
 .PHONY: migration-fix
-migration-fix: 
+migration-fix:
 	@read -p "Enter migration version: " version; \
 	migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
 
