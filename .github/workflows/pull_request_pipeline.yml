@@ -19,15 +19,16 @@ jobs:
         with:
             go-version: ${{ env.GO_VERSION }}
 
-      - name: Cache go mod
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Cache go build
         uses: actions/cache@v4
         with:
-            path: |
-                ~/.cache/go-build
-                ~/go/pkg/mod
-            key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-            restore-keys: |
-                ${{ runner.os }}-go-
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-build-
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
@@ -44,16 +45,17 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          
-      - name: Cache go mod
+        
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Cache go build
         uses: actions/cache@v4
         with:
-            path: |
-                ~/.cache/go-build
-                ~/go/pkg/mod
-            key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-            restore-keys: |
-                ${{ runner.os }}-go-
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-build-
 
       - name: Create .env file
         run: |
