@@ -62,8 +62,8 @@ type QueryStoresInput struct {
 	Type           *Type            `json:"type" example:"RESTAURANT"`
 	PaymentMethods *[]PaymentMethod `json:"paymentMethods"`
 	City           *string          `json:"city" example:"New York"`
-	Page           int              `json:"page" example:"1" example:"1"`
-	MaxItems       int              `json:"maxItems" example:"10" example:"10"`
+	Page           int              `json:"page" example:"1"`
+	MaxItems       int              `json:"maxItems" example:"10"`
 }
 
 func (st *Store) ToQueryStore(products []product.ProductDTO) QueryStore {

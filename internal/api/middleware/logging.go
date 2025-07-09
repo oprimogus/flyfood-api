@@ -69,7 +69,7 @@ func Logging(next http.Handler) http.Handler {
 			ClientIP: r.RemoteAddr,
 		}
 
-		ctx := context.WithValue(r.Context(), string(logger.RequestKey), reqData)
+		ctx := context.WithValue(r.Context(), logger.RequestKey, reqData)
 		nr := r.WithContext(ctx)
 		next.ServeHTTP(w, nr)
 

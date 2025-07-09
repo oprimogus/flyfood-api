@@ -76,6 +76,14 @@ Repositório com mais informações [aqui](https://github.com/cosmtrek/air)
 
 Documentação disponível [aqui](https://github.com/go-playground/validator)
 
+### 5. golangci-lint
+
+```bash
+go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.2.1
+```
+
+Documentação disponível [aqui](https://golangci-lint.run/welcome/quick-start/)
+
 
 
 ## Primeira vez ao rodar o app localmente

@@ -3,7 +3,8 @@ export
 
 .PHONY: lint
 lint:
-	@gofmt -s -w .
+	gofmt -s -w .
+	golangci-lint run
 
 .PHONY: install
 install:
@@ -20,10 +21,6 @@ down:
 .PHONY: stop
 stop:
 	docker compose -f deployments/docker-compose.yaml stop
-
-.PHONY: mock-db
-mock-db:
-	go run scripts/populate_local_db.go
 
 .PHONY: sqlc
 sqlc:
@@ -88,18 +85,22 @@ migration:
 		migrate create -ext sql -dir internal/infrastructure/database/postgres/migrations -seq $$name
 
 .PHONY: migration-up
-migration-up: 
+migration-up:
 	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
 
 .PHONY: migration-down
-migration-down: 
+migration-down:
 	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose down
 
 .PHONY: migration-fix
-migration-fix: 
+migration-fix:
 	@read -p "Enter migration version: " version; \
 	migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
 
 .PHONY: infra
 infra:
-	go run scripts/create_infra.go
+	go run scripts/create_infra/main.go
+
+.PHONY: mock-db
+mock-db:
+	go run scripts/populate_local_db/main.go

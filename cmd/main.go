@@ -56,8 +56,6 @@ func run() (err error) {
 		logger.InitLogger(os.Stdout, slog.LevelDebug)
 	}
 
-	ctx := context.Background()
-
 	// Init database connection
 	db := postgres.GetInstance()
 	defer db.Close()
@@ -97,10 +95,8 @@ func run() (err error) {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server Shutdown:", err)
 	}
-	select {
-	case <-ctx.Done():
-		slog.Info("timeout of 5 seconds.")
-	}
+	<- ctx.Done()
+	slog.Info("timeout of 5 seconds")
 
 	slog.Info("Server exiting")
 	err = srv.Shutdown(context.Background())

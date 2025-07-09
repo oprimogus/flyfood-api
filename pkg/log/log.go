@@ -28,7 +28,6 @@ func GetRequestContext(ctx context.Context) *RequestData {
 type ContextualHandler struct {
 	out  io.Writer
 	opts slog.HandlerOptions
-	ctx  context.Context
 }
 
 func NewContextualHandler(out io.Writer, opts *slog.HandlerOptions) *ContextualHandler {
@@ -49,7 +48,7 @@ func (h *ContextualHandler) Handle(ctx context.Context, r slog.Record) error {
 	m["level"] = r.Level.String()
 	m["message"] = r.Message
 
-	if reqData, ok := ctx.Value(string(RequestKey)).(*RequestData); ok {
+	if reqData, ok := ctx.Value(RequestKey).(*RequestData); ok {
 		m["request"] = reqData
 	}
 

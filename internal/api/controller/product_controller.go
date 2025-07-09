@@ -19,7 +19,6 @@ import (
 )
 
 type productController struct {
-	validator *xvalidator.Validator
 	command   store.Command
 }
 
