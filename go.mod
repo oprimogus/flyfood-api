@@ -24,7 +24,6 @@ require (
 	github.com/twpayne/go-geom v1.6.1
 	github.com/zitadel/oidc/v3 v3.43.1
 	github.com/zitadel/zitadel-go/v3 v3.6.1
-	golang.org/x/sync v0.16.0
 )
 
 require (
@@ -192,6 +191,7 @@ require (
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // indirect
 	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250715232539-7130f93afb79 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250818200422-3122310a409c // indirect
