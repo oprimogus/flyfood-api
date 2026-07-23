@@ -1,13 +1,15 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"encoding/json"
 	"fmt"
-	_ "github.com/lib/pq"
 	"log"
 	"log/slog"
 	"os"
+
+	_ "github.com/lib/pq"
+	"github.com/oprimogus/flyfood-api/internal/infra/database"
 )
 
 func main() {
@@ -18,53 +20,30 @@ func main() {
 }
 
 func PopulateLocalDatabase() error {
-	db, err := getSQLDBConnection(createStringConn())
+    ctx := context.Background()
+	db, err := database.GetPostgres(ctx)
 	if err != nil {
 		panic(err)
 	}
-	defer func(db *sql.DB) {
-		err := db.Close()
+	defer func(db *database.Postgres) {
+		err := db.ClosePG()
 		if err != nil {
 			slog.Error("fail on close DB Connection")
 		}
 	}(db)
 
-	err = db.Ping()
+	err = db.Ping(ctx)
 	if err != nil {
 		panic("Fail connect in local database")
 	}
 	mocks := getMocks()
 	for _, v := range mocks {
-		err := executeSQLFile(db, v)
+		err := executeSQLFile(ctx, db, v)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func createStringConn() string {
-	dbHost := "localhost"
-	dbPort := "5432"
-	dbUsername := "cardapiogo"
-	dbPassword := "cardapiogo"
-	dbName := "postgres"
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost,
-		dbPort,
-		dbUsername,
-		dbPassword,
-		dbName,
-	)
-}
-
-func getSQLDBConnection(connStr string) (*sql.DB, error) {
-	sqlDB, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return nil, fmt.Errorf("database: could not open sql connection: %w", err)
-	}
-	return sqlDB, nil
 }
 
 func getMocks() []string {
@@ -79,13 +58,13 @@ func getMocks() []string {
 	return filesPath
 }
 
-func executeSQLFile(db *sql.DB, mock string) error {
+func executeSQLFile(ctx context.Context, db *database.Postgres, mock string) error {
 	query, err := os.ReadFile(mock)
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("erro ao ler mock %v: %w", mock, err)
 	}
-	_, err = db.Exec(string(query))
+	_, err = db.Exec(ctx, string(query))
 	if err != nil {
 		errJson, _ := json.Marshal(err)
 		log.Println(string(errJson))

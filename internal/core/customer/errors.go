@@ -1,10 +1,22 @@
 package customer
 
-import "fmt"
+import (
+	"context"
+	"errors"
+
+	"github.com/oprimogus/flyfood-api/pkg/xerrors"
+)
 
 var (
-	ErrMaxAddresses            = fmt.Errorf("você pode cadastrar até 5 endereços")
-	ErrTryRemoveInvalidAddress = fmt.Errorf("o endereço não pertence a essa conta")
-	ErrThereIsNoAddresses      = fmt.Errorf("você não possui este endereço cadastrado")
-	ErrCustomerAlreadyExist    = fmt.Errorf("dados já cadastrados")
+	errMaxAddresses = errors.New("você pode cadastrar até 5 endereços")
+	errCustomerNotFound = errors.New("cliente não encontrado")
 )
+
+func ErrMaxAddresses(ctx context.Context) error {
+	return xerrors.NewWithContext(ctx, errMaxAddresses).WithStatusBadRequest()
+}
+
+func ErrCustomerNotFound(ctx context.Context) error {
+	return xerrors.NewWithContext(ctx, errCustomerNotFound).WithStatusNotFound()
+}
+

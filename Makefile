@@ -24,7 +24,7 @@ stop:
 
 .PHONY: sqlc
 sqlc:
-	go tool sqlc generate -f internal/infrastructure/database/sqlc/sqlc.yaml
+	go tool sqlc generate -f internal/infra/database/sqlc/sqlc.yaml
 
 .PHONY: docs
 docs:
@@ -70,33 +70,18 @@ clean:
 dev:
 	go tool air
 
-.PHONY: run
-run:
-	make docs
-	go run -race cmd/main.go
-
-.PHONY: migrate
-migrate:
-	@ migrate -source file://internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" up
-
 .PHONY: migration
 migration:
 	@read -p "Enter migration name: " name; \
-		migrate create -ext sql -dir internal/infrastructure/database/postgres/migrations -seq $$name
+		go tool goose create $$name sql
 
-.PHONY: migration-up
-migration-up:
-	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose up
+.PHONY: migrate-up
+migrate-up:
+	go tool goose up
 
-.PHONY: migration-down
-migration-down:
-	@ migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" -verbose down
-
-.PHONY: migration-fix
-migration-fix:
-	@read -p "Enter migration version: " version; \
-	migrate -path internal/infrastructure/database/postgres/migrations -database "postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable&search_path=public" force $$version
-
+.PHONY: migrate-down
+migrate-down:
+	go tool goose down-to 0
 .PHONY: infra
 infra:
 	go run scripts/create_infra/main.go

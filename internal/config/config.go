@@ -3,23 +3,49 @@ package config
 import (
 	"log/slog"
 	"os"
+	"sync"
 
 	"github.com/subosito/gotenv"
 )
 
 var (
-	conf *Config
+	cfg   *Config
+	cOnce sync.Once
 )
 
-type DBConf struct {
-	Host     string
-	Port     string
-	Name     string
-	User     string
-	Password string
+type Config struct {
+	API              *API
+	Postgres         *Postgres
+	Zitadel          *Zitadel
+	AWS              *AWS
+	ExternalServices *ExternalServices
 }
 
-func (d *DBConf) LogValue() slog.Value {
+func Get() *Config {
+	cOnce.Do(func() {
+		cfg = newConfig()
+	})
+
+	return cfg
+}
+
+type API struct {
+	Port        string
+	BasePath    string
+	Name        string
+	Environment string
+	SQLCDebug   string
+}
+
+type Postgres struct {
+	Host         string
+	Port         string
+	UserName     string
+	Password     string
+	DatabaseName string
+}
+
+func (d *Postgres) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.String("Host", "redacted"),
 		slog.String("Port", "redacted"),
@@ -29,81 +55,44 @@ func (d *DBConf) LogValue() slog.Value {
 	)
 }
 
-type APIConf struct {
-	ServiceName string
-	BasePath    string
-	Port        string
-	GinMode     string
-	Environment string
-	sqlcDebug   string
-	Consts      map[string]string
-}
-
-type zitadelConfig struct {
-	Issuer                string
-	Api                   string
+type Zitadel struct {
 	Domain                string
 	Port                  string
 	ClientID              string
+	ProjectID             string
 	KeyPath               string
 	ServiceAccountKeyPath string
-	ProjectID             string
 }
 
-type resendConfig struct {
-	apiKey string
+type AWS struct {
+	Region          string
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionKey      string
 }
 
-func (r *resendConfig) APIKey() string {
-	return r.apiKey
-}
-
-type aws struct {
-	region          string
-	accessKeyID     string
-	secretAccessKey string
-	sessionKey      string
-}
-
-func (a *aws) LogValue() slog.Value {
+func (a *AWS) LogValue() slog.Value {
 	return slog.GroupValue(
-		slog.String("accessKeyID", "redacted"),
-		slog.String("secretAccessKey", "redacted"),
-		slog.String("sessionKey", "redacted"),
+		slog.String("AccessKeyID", "redacted"),
+		slog.String("SecretAccessKey", "redacted"),
+		slog.String("SessionKey", "redacted"),
 	)
-}
-
-func (a *aws) Region() string {
-	return a.region
-}
-
-func (a *aws) AccessKeyID() string {
-	return a.accessKeyID
-}
-
-func (a *aws) SecretAccessKey() string {
-	return a.secretAccessKey
-}
-
-func (a *aws) SessionKey() string {
-	return a.sessionKey
 }
 
 type ExternalService struct {
 	BaseURL string
+	ApiKey  string
 }
 
-type Nominatim struct {
-	ExternalService
+func (a *ExternalService) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("ApiKey", "redacted"),
+	)
 }
 
-type Config struct {
-	Database  *DBConf
-	Api       *APIConf
-	Zitadel   *zitadelConfig
-	Resend    *resendConfig
-	Aws       *aws
-	Nominatim *Nominatim
+type ExternalServices struct {
+	Resend    *ExternalService
+	Nominatim *ExternalService
 }
 
 func newConfig() *Config {
@@ -111,51 +100,44 @@ func newConfig() *Config {
 	if err != nil {
 		slog.Info("arquivo .env não encontrado, usando variáveis de ambiente")
 	}
-	return &Config{
-		Database: &DBConf{
-			Host:     os.Getenv("DB_HOST"),
-			Port:     os.Getenv("DB_PORT"),
-			Name:     os.Getenv("DB_NAME"),
-			User:     os.Getenv("DB_USERNAME"),
-			Password: os.Getenv("DB_PASSWORD"),
-		},
-		Api: &APIConf{
-			ServiceName: os.Getenv("API_SERVICE_NAME"),
-			BasePath:    os.Getenv("API_BASE_PATH"),
+	cfg := &Config{
+		API: &API{
 			Port:        os.Getenv("API_PORT"),
-			GinMode:     os.Getenv("GIN_MODE"),
-			Environment: os.Getenv("ENVIRONMENT"),
-			sqlcDebug:   os.Getenv("SQLCDEBUG"),
+			BasePath:    os.Getenv("API_BASE_PATH"),
+			Name:        os.Getenv("API_NAME"),
+			Environment: os.Getenv("API_ENVIRONMENT"),
+			SQLCDebug:   os.Getenv("API_SQLC_DEBUG"),
 		},
-		Zitadel: &zitadelConfig{
-			Issuer:                os.Getenv("ZITADEL_ISSUER"),
-			Api:                   os.Getenv("ZITADEL_API"),
+		Postgres: &Postgres{
+			Host:         os.Getenv("POSTGRES_HOST"),
+			Port:         os.Getenv("POSTGRES_PORT"),
+			UserName:     os.Getenv("POSTGRES_USERNAME"),
+			Password:     os.Getenv("POSTGRES_PASSWORD"),
+			DatabaseName: os.Getenv("POSTGRES_DATABASE_NAME"),
+		},
+		Zitadel: &Zitadel{
 			Domain:                os.Getenv("ZITADEL_DOMAIN"),
 			Port:                  os.Getenv("ZITADEL_PORT"),
 			ClientID:              os.Getenv("ZITADEL_CLIENT_ID"),
-			KeyPath:               os.Getenv("ZITADEL_KEY"),
-			ServiceAccountKeyPath: os.Getenv("ZITADEL_SERVICE_ACCOUNT_KEY"),
 			ProjectID:             os.Getenv("ZITADEL_PROJECT_ID"),
+			KeyPath:               os.Getenv("ZITADEL_KEY_PATH"),
+			ServiceAccountKeyPath: os.Getenv("ZITADEL_SERVICE_ACCOUNT_KEY_PATH"),
 		},
-		Resend: &resendConfig{
-			apiKey: os.Getenv("RESEND_API_KEY"),
+		AWS: &AWS{
+			Region:          os.Getenv("AWS_REGION"),
+			AccessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
+			SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
 		},
-		Aws: &aws{
-			region:          os.Getenv("AWS_REGION"),
-			accessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
-			secretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		},
-		Nominatim: &Nominatim{
-			ExternalService: ExternalService{
+		ExternalServices: &ExternalServices{
+			Resend: &ExternalService{
+				BaseURL: os.Getenv("RESEND_BASE_URL"),
+				ApiKey:  os.Getenv("RESEND_API_KEY"),
+			},
+			Nominatim: &ExternalService{
 				BaseURL: os.Getenv("NOMINATIM_BASE_URL"),
+				ApiKey:  os.Getenv("NOMINATIM_API_KEY"),
 			},
 		},
 	}
-}
-
-func GetInstance() *Config {
-	if conf == nil {
-		conf = newConfig()
-	}
-	return conf
+	return cfg
 }

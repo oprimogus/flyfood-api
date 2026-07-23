@@ -1,19 +1,19 @@
 services:
   postgres:
     container_name: flyfood-postgres
-    image: postgres
+    image: postgis/postgis:16-3.4
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: cardapiogo
-      POSTGRES_PASSWORD: cardapiogo
+      POSTGRES_DB: "cardapiogo"
+      POSTGRES_USER: "cardapiogo"
+      POSTGRES_PASSWORD: "cardapiogo"
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+     - postgres-data:/var/lib/postgresql/data
     networks:
       - observability
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "postgres", "-U", "cardapiogo" ]
+      test: [ "CMD-SHELL", "pg_isready", "-d", "cardapiogo", "-U", "cardapiogo" ]
       interval: '10s'
       timeout: '30s'
       retries: 5
@@ -26,7 +26,7 @@ services:
     environment:
       ZITADEL_DATABASE_POSTGRES_HOST: postgres
       ZITADEL_DATABASE_POSTGRES_PORT: 5432
-      ZITADEL_DATABASE_POSTGRES_DATABASE: postgres
+      ZITADEL_DATABASE_POSTGRES_DATABASE: cardapiogo
       ZITADEL_DATABASE_POSTGRES_USER_USERNAME: cardapiogo
       ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: cardapiogo
       ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable

@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oprimogus/flyfood-api/internal/core/address"
-	"github.com/oprimogus/flyfood-api/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/pkg/validator"
 )
 
 type State string
@@ -35,7 +35,7 @@ type Order struct {
 }
 
 func (o *Order) Validate() error {
-	return xvalidator.Validate(o)
+	return validator.Validate(o)
 }
 
 func NewOrder(storeID, customerID string, items []Item, amount, deliveryAmount int, address address.Address) (*Order, error) {
