@@ -1,6 +1,6 @@
 name: Pull Request Pipeline
 env:
-    GO_VERSION: '1.24.0'
+    GO_VERSION: '1.26.2'
 on:
   pull_request:
 
