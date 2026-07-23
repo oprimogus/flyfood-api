@@ -22,27 +22,27 @@ INSERT INTO customer (id, name, last_name, cpf, email, phone, created_at) VALUES
 ('20', 'Alice', 'Cardoso', '00112233445', 'alice.cardoso@email.com', '11988880000', '2024-01-01');
 
 -- Addresses
-INSERT INTO address (customer_id, name, address_line_1, address_line_2, neighborhood, city, state, postal_code, latitude, longitude, country, created_at) VALUES
-('1', 'Casa', 'Rua Augusta, 1000', 'Apto 101', 'Consolação', 'São Paulo', 'SP', '01304-001', '-23.550520', '-46.652937', 'Brasil', '2024-01-01'),
-('2', 'Casa', 'Rua Oscar Freire, 500', 'Casa', 'Jardins', 'São Paulo', 'SP', '01426-001', '-23.562256', '-46.669749', 'Brasil', '2024-01-01'),
-('3', 'Casa', 'Avenida Paulista, 1500', 'Apto 1001', 'Bela Vista', 'São Paulo', 'SP', '01311-200', '-23.564616', '-46.652857', 'Brasil', '2024-01-01'),
-('4', 'Casa', 'Rua dos Pinheiros, 800', 'Casa 2', 'Pinheiros', 'São Paulo', 'SP', '05422-001', '-23.566347', '-46.678661', 'Brasil', '2024-01-01'),
-('5', 'Casa', 'Rua João Cachoeira, 300', 'Apto 502', 'Itaim Bibi', 'São Paulo', 'SP', '04535-001', '-23.585372', '-46.672806', 'Brasil', '2024-01-01'),
-('6', 'Casa', 'Alameda Santos, 700', 'Apto 801', 'Jardim Paulista', 'São Paulo', 'SP', '01419-001', '-23.569651', '-46.648727', 'Brasil', '2024-01-01'),
-('7', 'Casa', 'Rua Harmonia, 400', 'Casa', 'Vila Madalena', 'São Paulo', 'SP', '05435-001', '-23.555372', '-46.687831', 'Brasil', '2024-01-01'),
-('8', 'Casa', 'Rua Amauri, 200', 'Apto 1501', 'Itaim Bibi', 'São Paulo', 'SP', '01448-001', '-23.581480', '-46.674929', 'Brasil', '2024-01-01'),
-('9', 'Casa', 'Rua Teodoro Sampaio, 1000', 'Apto 601', 'Pinheiros', 'São Paulo', 'SP', '05406-000', '-23.558736', '-46.676931', 'Brasil', '2024-01-01'),
-('10', 'Casa', 'Rua da Consolação, 2000', 'Apto 1201', 'Consolação', 'São Paulo', 'SP', '01301-100', '-23.555372', '-46.662831', 'Brasil', '2024-01-01'),
-('11', 'Casa', 'Rua Joaquim Floriano, 500', 'Apto 401', 'Itaim Bibi', 'São Paulo', 'SP', '04534-001', '-23.583372', '-46.675831', 'Brasil', '2024-01-01'),
-('12', 'Casa', 'Rua dos Tamboréus, 300', 'Casa', 'Moema', 'São Paulo', 'SP', '04543-001', '-23.601372', '-46.662831', 'Brasil', '2024-01-01'),
-('13', 'Casa', 'Rua Tabapuã, 800', 'Apto 901', 'Itaim Bibi', 'São Paulo', 'SP', '04533-001', '-23.584372', '-46.673831', 'Brasil', '2024-01-01'),
-('14', 'Casa', 'Rua Haddock Lobo, 600', 'Apto 701', 'Cerqueira César', 'São Paulo', 'SP', '01414-001', '-23.558372', '-46.662831', 'Brasil', '2024-01-01'),
-('15', 'Casa', 'Rua Lisboa, 400', 'Casa', 'Jardins', 'São Paulo', 'SP', '05413-001', '-23.567372', '-46.668831', 'Brasil', '2024-01-01'),
-('16', 'Casa', 'Rua Bela Cintra, 900', 'Apto 1101', 'Consolação', 'São Paulo', 'SP', '01415-001', '-23.557372', '-46.662831', 'Brasil', '2024-01-01'),
-('17', 'Casa', 'Rua Wisard, 200', 'Casa', 'Vila Madalena', 'São Paulo', 'SP', '05434-001', '-23.553372', '-46.687831', 'Brasil', '2024-01-01'),
-('18', 'Casa', 'Rua Gabriel Monteiro, 700', 'Apto 801', 'Jardim Paulistano', 'São Paulo', 'SP', '01441-001', '-23.573372', '-46.682831', 'Brasil', '2024-01-01'),
-('19', 'Casa', 'Rua Mourato Coelho, 500', 'Casa', 'Vila Madalena', 'São Paulo', 'SP', '05417-001', '-23.554372', '-46.687831', 'Brasil', '2024-01-01'),
-('20', 'Casa', 'Rua João Moura, 300', 'Apto 601', 'Pinheiros', 'São Paulo', 'SP', '05412-001', '-23.559372', '-46.677831', 'Brasil', '2024-01-01');
+INSERT INTO address (id, customer_id, name, address_line_1, address_line_2, neighborhood, city, state, postal_code, latitude, longitude, country, created_at) VALUES
+('019f2f81-5f00-74bc-8d99-3b9560f64c61', '1', 'Casa', 'Rua Augusta, 1000', 'Apto 101', 'Consolação', 'São Paulo', 'SP', '01304-001', '-23.550520', '-46.652937', 'Brasil', '2024-01-01'),
+('019f2f81-5f01-700d-9b1f-e8b23c914bf9', '2', 'Casa', 'Rua Oscar Freire, 500', 'Casa', 'Jardins', 'São Paulo', 'SP', '01426-001', '-23.562256', '-46.669749', 'Brasil', '2024-01-01'),
+('019f2f81-5f02-7c39-bfba-84ef8fbe1364', '3', 'Casa', 'Avenida Paulista, 1500', 'Apto 1001', 'Bela Vista', 'São Paulo', 'SP', '01311-200', '-23.564616', '-46.652857', 'Brasil', '2024-01-01'),
+('019f2f81-5f03-75b2-bc08-30752538cbba', '4', 'Casa', 'Rua dos Pinheiros, 800', 'Casa 2', 'Pinheiros', 'São Paulo', 'SP', '05422-001', '-23.566347', '-46.678661', 'Brasil', '2024-01-01'),
+('019f2f81-5f04-74ef-a6bc-e2b262d98bf7', '5', 'Casa', 'Rua João Cachoeira, 300', 'Apto 502', 'Itaim Bibi', 'São Paulo', 'SP', '04535-001', '-23.585372', '-46.672806', 'Brasil', '2024-01-01'),
+('019f2f81-5f05-7284-850d-8526543b59df', '6', 'Casa', 'Alameda Santos, 700', 'Apto 801', 'Jardim Paulista', 'São Paulo', 'SP', '01419-001', '-23.569651', '-46.648727', 'Brasil', '2024-01-01'),
+('019f2f81-5f06-79cf-9777-62cc3c7d627c', '7', 'Casa', 'Rua Harmonia, 400', 'Casa', 'Vila Madalena', 'São Paulo', 'SP', '05435-001', '-23.555372', '-46.687831', 'Brasil', '2024-01-01'),
+('019f2f81-5f07-73d8-a192-349079fe031e', '8', 'Casa', 'Rua Amauri, 200', 'Apto 1501', 'Itaim Bibi', 'São Paulo', 'SP', '01448-001', '-23.581480', '-46.674929', 'Brasil', '2024-01-01'),
+('019f2f81-5f08-7ea1-92cb-c5eb207f2df1', '9', 'Casa', 'Rua Teodoro Sampaio, 1000', 'Apto 601', 'Pinheiros', 'São Paulo', 'SP', '05406-000', '-23.558736', '-46.676931', 'Brasil', '2024-01-01'),
+('019f2f81-5f09-775b-9ba7-b7f2f1164de2', '10', 'Casa', 'Rua da Consolação, 2000', 'Apto 1201', 'Consolação', 'São Paulo', 'SP', '01301-100', '-23.555372', '-46.662831', 'Brasil', '2024-01-01'),
+('019f2f81-5f0a-7023-be1a-299f0e139ccf', '11', 'Casa', 'Rua Joaquim Floriano, 500', 'Apto 401', 'Itaim Bibi', 'São Paulo', 'SP', '04534-001', '-23.583372', '-46.675831', 'Brasil', '2024-01-01'),
+('019f2f81-5f0b-74e1-bbcb-79b9b005fe43', '12', 'Casa', 'Rua dos Tamboréus, 300', 'Casa', 'Moema', 'São Paulo', 'SP', '04543-001', '-23.601372', '-46.662831', 'Brasil', '2024-01-01'),
+('019f2f81-5f0c-7b8c-b03a-dd76d33f7c46', '13', 'Casa', 'Rua Tabapuã, 800', 'Apto 901', 'Itaim Bibi', 'São Paulo', 'SP', '04533-001', '-23.584372', '-46.673831', 'Brasil', '2024-01-01'),
+('019f2f81-5f0d-7fac-bdcf-88f57262bc34', '14', 'Casa', 'Rua Haddock Lobo, 600', 'Apto 701', 'Cerqueira César', 'São Paulo', 'SP', '01414-001', '-23.558372', '-46.662831', 'Brasil', '2024-01-01'),
+('019f2f81-5f0e-7cbf-aa6a-6bb2a50df882', '15', 'Casa', 'Rua Lisboa, 400', 'Casa', 'Jardins', 'São Paulo', 'SP', '05413-001', '-23.567372', '-46.668831', 'Brasil', '2024-01-01'),
+('019f2f81-5f0f-7fbb-ac1a-eb9c5f87b8be', '16', 'Casa', 'Rua Bela Cintra, 900', 'Apto 1101', 'Consolação', 'São Paulo', 'SP', '01415-001', '-23.557372', '-46.662831', 'Brasil', '2024-01-01'),
+('019f2f81-5f10-74be-bf0d-83023fc91bc3', '17', 'Casa', 'Rua Wisard, 200', 'Casa', 'Vila Madalena', 'São Paulo', 'SP', '05434-001', '-23.553372', '-46.687831', 'Brasil', '2024-01-01'),
+('019f2f81-5f11-7ccf-8bda-6fb9b5f5cc1a', '18', 'Casa', 'Rua Gabriel Monteiro, 700', 'Apto 801', 'Jardim Paulistano', 'São Paulo', 'SP', '01441-001', '-23.573372', '-46.682831', 'Brasil', '2024-01-01'),
+('019f2f81-5f12-70b8-bda3-376c66cf1c42', '19', 'Casa', 'Rua Mourato Coelho, 500', 'Casa', 'Vila Madalena', 'São Paulo', 'SP', '05417-001', '-23.554372', '-46.687831', 'Brasil', '2024-01-01'),
+('019f2f81-5f13-75ee-818a-f5bb5b0cb5c7', '20', 'Casa', 'Rua João Moura, 300', 'Apto 601', 'Pinheiros', 'São Paulo', 'SP', '05412-001', '-23.559372', '-46.677831', 'Brasil', '2024-01-01');
 
 -- Owners (first 10 customers are store owners)
 INSERT INTO owner (id, signature_active, created_at) VALUES

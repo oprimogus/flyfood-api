@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 	"github.com/oprimogus/flyfood-api/internal/config"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/observability"
+	"github.com/oprimogus/flyfood-api/internal/infra/observability"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 )
@@ -11,7 +11,7 @@ import (
 func Prometheus(next http.Handler) http.Handler {
 	metrics := observability.GetPrometheusMetrics()
 
-	service := config.GetInstance().Api.ServiceName
+	service := config.Get().API.Name
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rw := NewResponseRecorder(w)

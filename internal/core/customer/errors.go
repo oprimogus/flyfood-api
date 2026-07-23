@@ -3,35 +3,20 @@ package customer
 import (
 	"context"
 	"errors"
-	"net/http"
 
-	"github.com/oprimogus/flyfood-api/internal/xerrors"
+	"github.com/oprimogus/flyfood-api/pkg/xerrors"
 )
 
 var (
-	ErrMaxAddresses            = errors.New("você pode cadastrar até 5 endereços")
-	ErrTryRemoveInvalidAddress = errors.New("o endereço não pertence a essa conta")
-	ErrThereIsNoAddresses      = errors.New("você não possui este endereço cadastrado")
-	ErrCustomerAlreadyExist    = errors.New("dados já cadastrados")
+	errMaxAddresses = errors.New("você pode cadastrar até 5 endereços")
+	errCustomerNotFound = errors.New("cliente não encontrado")
 )
 
-var errStatusMap = map[error]int{
-	ErrMaxAddresses:            http.StatusUnprocessableEntity,
-	ErrTryRemoveInvalidAddress: http.StatusUnprocessableEntity,
-	ErrThereIsNoAddresses:      http.StatusUnprocessableEntity,
-	ErrCustomerAlreadyExist:    http.StatusUnprocessableEntity,
+func ErrMaxAddresses(ctx context.Context) error {
+	return xerrors.NewWithContext(ctx, errMaxAddresses).WithStatusBadRequest()
 }
 
-func HandleError(ctx context.Context, err error) *xerrors.CustomError {
-	for domainErr, status := range errStatusMap {
-		if errors.Is(err, domainErr) {
-			return xerrors.New(ctx, status, domainErr)
-		}
-	}
-
-	return xerrors.New(
-		ctx,
-		http.StatusInternalServerError,
-		err,
-	)
+func ErrCustomerNotFound(ctx context.Context) error {
+	return xerrors.NewWithContext(ctx, errCustomerNotFound).WithStatusNotFound()
 }
+

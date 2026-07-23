@@ -1,11 +1,6 @@
 package middleware
 
 import (
-	"context"
-	"github.com/google/uuid"
-	logger "github.com/oprimogus/flyfood-api/pkg/log"
-	"log/slog"
-	"net/http"
 	"strings"
 )
 
@@ -56,23 +51,4 @@ func GetPath(route string) string {
 	}
 
 	return route
-}
-
-func Logging(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		traceID := uuid.New().String()
-
-		reqData := &logger.RequestData{
-			TraceID:  traceID,
-			Method:   r.Method,
-			Path:     r.URL.Path,
-			ClientIP: r.RemoteAddr,
-		}
-
-		ctx := context.WithValue(r.Context(), logger.RequestKey, reqData)
-		nr := r.WithContext(ctx)
-		next.ServeHTTP(w, nr)
-
-		slog.InfoContext(nr.Context(), "request handled")
-	})
 }

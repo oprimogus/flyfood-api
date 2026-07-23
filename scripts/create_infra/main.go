@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/oprimogus/flyfood-api/internal/core/store"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter/storage"
+	"github.com/oprimogus/flyfood-api/internal/infra/services/adapter"
+	"github.com/oprimogus/flyfood-api/internal/infra/services/adapter/storage"
 	"log"
 )
 
 func main() {
 	ctx := context.Background()
-	_ = config.GetInstance()
+	_ = config.Get()
 	factory := adapter.NewServiceFactory()
 	service := factory.NewStorageService()
 

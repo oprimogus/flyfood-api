@@ -2,34 +2,27 @@ package store
 
 import (
 	"fmt"
+	"slices"
+
 	"github.com/google/uuid"
 	"github.com/oprimogus/flyfood-api/internal/core/address"
-	"github.com/oprimogus/flyfood-api/internal/xvalidator"
+	"github.com/oprimogus/flyfood-api/pkg/validator"
 )
 
 const (
 	DefaultScore = 500
 )
 
-func init() {
-	err := xvalidator.AddValidations(validationsMap)
-	if err != nil {
-		panic(err)
-	}
-}
-
 type Store struct {
-	ID          string `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OwnerID     string `json:"ownerID" validate:"required" example:"5692562784252"`
-	CNPJ        string `json:"cnpj" validate:"required,cnpj" example:"12345678000190"`
-	Name        string `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
-	Description string `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
-	Active      bool   `json:"active" validate:"boolean" example:"true"`
-	IsOpen      bool   `json:"isOpen" validate:"boolean" example:"false"`
-	Phone       string `json:"phone" validate:"required,phone" example:"+5511997590670"`
-	Score       int    `json:"score" validate:"required,number" example:"500"`
-	// DeliveryTime is defined in minutes
-	DeliveryTime   int             `json:"deliveryTime" validate:"number" example:"40"`
+	ID             uuid.UUID       `json:"id" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OwnerID        uuid.UUID       `json:"ownerID" validate:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	CNPJ           string          `json:"cnpj" validate:"required,cnpj" example:"12345678000190"`
+	Name           string          `json:"name" validate:"required,lte=25,gte=3" example:"Delicious Bakery"`
+	Description    string          `json:"description" validate:"required,lte=255" example:"Best bakery in town with fresh pastries"`
+	Active         bool            `json:"active" validate:"boolean" example:"true"`
+	IsOpen         bool            `json:"isOpen" validate:"boolean" example:"false"`
+	Phone          string          `json:"phone" validate:"required,phone" example:"+5511997590670"`
+	Score          int             `json:"score" validate:"required,number" example:"500"`
 	Address        address.Address `json:"address" validate:"required"`
 	Type           Type            `json:"type" validate:"required,storeType" example:"RESTAURANT"`
 	ProfileImage   string          `json:"profileImage" example:"https://example.com/profile.jpg"`
@@ -38,14 +31,19 @@ type Store struct {
 	PaymentMethods []PaymentMethod `json:"paymentMethods" validate:"required,dive"`
 }
 
-func NewStore(ownerID, cnpj, name, description,
-	phone string, address address.Address, types Type) (Store, error) {
+func NewStore(ownerID uuid.UUID, cnpj, name, description,
+	phone string, address address.Address, types Type) (*Store, error) {
 	uuidV7, err := uuid.NewV7()
 	if err != nil {
-		return Store{}, fmt.Errorf("fail on create store id: %w", err)
+		return nil, fmt.Errorf("fail on create store id: %w", err)
 	}
+	addressId, err := uuid.NewV7()
+	if err != nil {
+		return nil, fmt.Errorf("fail on create address id: %w", err)
+	}
+
 	newStore := Store{
-		ID:             uuidV7.String(),
+		ID:             uuidV7,
 		OwnerID:        ownerID,
 		CNPJ:           cnpj,
 		Name:           name,
@@ -59,15 +57,16 @@ func NewStore(ownerID, cnpj, name, description,
 		BusinessHours:  []BusinessHours{},
 		PaymentMethods: []PaymentMethod{},
 	}
+	newStore.Address.ID = addressId
 	if err := newStore.Validate(); err != nil {
-		return Store{}, err
+		return nil, err
 	}
 
-	return newStore, nil
+	return &newStore, nil
 }
 
 func (st *Store) Validate() error {
-	return xvalidator.Validate(st)
+	return validator.Validate(st)
 }
 
 func (st *Store) Activate() {
@@ -86,14 +85,13 @@ func (st *Store) CloseStore() {
 	st.IsOpen = false
 }
 
-func (st *Store) UpdateStoreProfile(name, description,
-	phone string, address address.Address, types Type, deliveryTime int) error {
+func (st *Store) UpdateStore(name, description,
+	phone string, address address.Address, types Type) error {
 	st.Name = name
 	st.Description = description
 	st.Phone = phone
 	st.Address = address
 	st.Type = types
-	st.DeliveryTime = deliveryTime
 	return st.Validate()
 }
 
@@ -130,10 +128,8 @@ func (st *Store) RemoveBusinessHour(hour BusinessHours) error {
 }
 
 func (st *Store) AddPaymentMethod(paymentMethod PaymentMethod) error {
-	for _, v := range st.PaymentMethods {
-		if v == paymentMethod {
-			return ErrPaymentMethodAlreadyDefined
-		}
+	if slices.Contains(st.PaymentMethods, paymentMethod) {
+		return ErrPaymentMethodAlreadyDefined
 	}
 	st.PaymentMethods = append(st.PaymentMethods, paymentMethod)
 	return nil

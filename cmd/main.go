@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,12 +11,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/oprimogus/flyfood-api/internal/api"
+	"github.com/go-chi/chi/v5"
+	"github.com/oprimogus/flyfood-api/internal/api/middleware"
 	"github.com/oprimogus/flyfood-api/internal/config"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/persistence"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/flyfood-api/internal/infrastructure/services/adapter"
-	logger "github.com/oprimogus/flyfood-api/pkg/log"
+	"github.com/oprimogus/flyfood-api/internal/core/customer"
+	"github.com/oprimogus/flyfood-api/internal/core/store"
+	"github.com/oprimogus/flyfood-api/internal/infra/database"
+	"github.com/oprimogus/flyfood-api/internal/infra/health"
+	"github.com/oprimogus/flyfood-api/internal/infra/logger"
+	"github.com/oprimogus/flyfood-api/internal/infra/swagger"
 )
 
 //	@title			FlyFood API
@@ -41,65 +44,88 @@ import (
 // @scope.openid							OpenID Connect basic login
 // @scope.email							Access to user's email
 // @scope.profile							Access to user's profile
+
 func main() {
 	if err := run(); err != nil {
-		log.Fatal("deu ruim")
+		slog.Error("fatal error", "err", err)
+		os.Exit(1)
 	}
 }
 
-func run() (err error) {
-	configInstance := config.GetInstance()
+func run() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if configInstance.Api.Environment == string(config.Production) {
-		logger.InitLogger(os.Stdout, slog.LevelInfo)
-	} else {
-		logger.InitLogger(os.Stdout, slog.LevelDebug)
+	logger.InitLogger(os.Stdout)
+	slog.Info("starting FlyFood API")
+
+	cfg := config.Get()
+
+	db, err := database.GetPostgres(ctx)
+	if err != nil {
+		return err
 	}
-
-	// Init database connection
-	db := postgres.GetInstance()
-	defer db.Close()
-
-	// Init Service factory
-	serviceFactory := adapter.NewServiceFactory()
-
-	// Init repositories
-	repoFactory := persistence.NewRepositoryFactory(db)
-
-	// Web server
-	handler := api.InitRouter(db, repoFactory, serviceFactory)
-
-	srv := &http.Server{
-		Addr:    ":" + configInstance.Api.Port,
-		Handler: handler,
-	}
-
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("listen: %s\n", err)
+	defer func() {
+		if cerr := db.ClosePG(); cerr != nil {
+			slog.Error("failed to close DB", "err", cerr)
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 5 seconds.
-	quit := make(chan os.Signal, 1)
-	// kill (no param) default send syscall.SIGTERM
-	// kill -2 is syscall.SIGINT
-	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Shutdown Server ...")
+	r := chi.NewRouter()
+	r.Use(logger.LoggingMiddleware)
+	r.Use(middleware.Recovery)
+	r.Use(middleware.Cors)
+	r.Use(middleware.JSON)
+	r.Use(middleware.Prometheus)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
+	// Resources / Modules
+	health.SetupHealthRoutes(r, db)
+	swagger.SetupSwaggerRoutes(r)
+	
+	customer.SetupRoutes(ctx, r, db)
+	store.SetupRoutes(ctx, r, db)
+
+	port := cfg.API.Port
+	if port == "" {
+		port = "3000"
 	}
-	<- ctx.Done()
-	slog.Info("timeout of 5 seconds")
 
-	slog.Info("Server exiting")
-	err = srv.Shutdown(context.Background())
+	slog.Info(fmt.Sprintf("Docs available in http://localhost:%s%s/docs", port, cfg.API.BasePath))
+	slog.Info(fmt.Sprintf("Listening and serving in 0.0.0.0:%v", port))
 
-	return err
+	_ = chi.Walk(r, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		middleware.MakePath(route)
+		return nil
+	})
+
+	server := &http.Server{
+		Addr:    ":" + cfg.API.Port,
+		Handler: r,
+	}
+
+	go func() {
+		slog.Info("server listening", "addr", server.Addr)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("server error", "err", err)
+			cancel()
+		}
+	}()
+
+	// graceful shutdown
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	<-sig
+
+	slog.Info("shutting down server")
+
+	ctxTimeout, cancelTimeout := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelTimeout()
+
+	if err := server.Shutdown(ctxTimeout); err != nil {
+		slog.Error("server shutdown failed", "err", err)
+		return err
+	}
+
+	slog.Info("server exited cleanly")
+	return nil
 }

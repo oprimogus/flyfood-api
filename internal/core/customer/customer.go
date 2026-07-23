@@ -1,38 +1,39 @@
 package customer
 
 import (
-	"github.com/oprimogus/flyfood-api/internal/core/address"
-	"github.com/oprimogus/flyfood-api/internal/xvalidator"
+	"github.com/google/uuid"
+	"github.com/oprimogus/flyfood-api/pkg/validator"
 )
 
 type Customer struct {
-	ID        string            `json:"id" validate:"required" example:"295105940221919239"`
-	Name      string            `json:"name" validate:"required,alpha,gte=3,lte=25" example:"John"`
-	LastName  string            `json:"lastName" validate:"required,gte=3,lte=60" example:"Doe"`
-	CPF       string            `json:"cpf,omitzero" validate:"cpf" example:"52024227090"`
-	Email     string            `json:"email" validate:"required,email" example:"johndoe@example.com"`
-	Phone     string            `json:"phone" validate:"phone" example:"+5513997590579"`
-	Addresses []address.Address `json:"addresses" validate:"dive"`
+	ID            uuid.UUID            `json:"id" validate:"required" example:"295105940221919239"`
+	ExternalID    string            `json:"externalId" validate:"required" example:"295105940221919239"`
+	Name          string            `json:"name" validate:"required,alpha,gte=3,lte=25" example:"John"`
+	LastName      string            `json:"lastName" validate:"required,gte=3,lte=60" example:"Doe"`
+	CPF           string            `json:"cpf,omitzero" validate:"cpf" example:"52024227090"`
+	Email         string            `json:"email" validate:"required,email" example:"johndoe@example.com"`
+	Phone         string            `json:"phone" validate:"phone" example:"+5513997590579"`
+}
+
+func NewCustomer(externalID, name, lastName, email, cpf, phone string) (*Customer, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+	newCustomer := &Customer{
+		ID:          id,
+		ExternalID:  externalID,
+		Name:        name,
+		LastName:    lastName,
+		CPF:         cpf,
+		Email:       email,
+		Phone:       phone,
+	}
+	return newCustomer, nil
 }
 
 func (c *Customer) Validate() error {
-	return xvalidator.Validate(c)
-}
-
-func NewCustomer(id, name, lastName, cpf, email, phone string) (*Customer, error) {
-	newCustomer := &Customer{
-		ID:        id,
-		Name:      name,
-		LastName:  lastName,
-		CPF:       cpf,
-		Email:     email,
-		Phone:     phone,
-		Addresses: []address.Address{},
-	}
-	if err := newCustomer.Validate(); err != nil {
-		return &Customer{}, err
-	}
-	return newCustomer, nil
+	return validator.Validate(c)
 }
 
 func (c *Customer) UpdateProfile(name, lastName, phone string) error {
@@ -42,26 +43,25 @@ func (c *Customer) UpdateProfile(name, lastName, phone string) error {
 	return c.Validate()
 }
 
-func (c *Customer) SaveNewAddress(address address.Address) error {
-	if len(c.Addresses) >= 5 {
-		return ErrMaxAddresses
-	}
-	c.Addresses = append(c.Addresses, address)
-
-	return c.Validate()
-}
-
-func (c *Customer) RemoveAddress(addrToRemove address.Address) error {
-	if len(c.Addresses) == 0 {
-		return ErrThereIsNoAddresses
-	}
-	var addrs []address.Address
-	for _, v := range c.Addresses {
-		if v != addrToRemove {
-			addrs = append(addrs, v)
-		}
-	}
-
-	c.Addresses = addrs
-	return c.Validate()
-}
+// func (c *Customer) AddNewAddress(addr address.CreateAddressDTO) error {
+//     if len(c.Addresses) >= 5 {
+//         return errMaxAddresses
+//     }
+//     id, err := uuid.NewV7()
+//     if err != nil {
+//         return err
+//     }
+// 	newAddr := address.Address{
+// 		ID:           id,
+// 		Name:         addr.Name,
+// 		AddressLine1: addr.AddressLine1,
+// 		AddressLine2: addr.AddressLine2,
+// 		Neighborhood: addr.Neighborhood,
+// 		City:         addr.City,
+// 		State:        addr.State,
+// 		PostalCode:   addr.PostalCode,
+// 		Country:      addr.Country,
+// 	}
+// 	c.Addresses = append(c.Addresses, newAddr)
+// 	return nil
+// }

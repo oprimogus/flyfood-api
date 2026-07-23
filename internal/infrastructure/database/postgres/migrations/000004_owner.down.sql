@@ -1,3 +1,0 @@
-ALTER TABLE "owner" DROP CONSTRAINT "owner_id_fkey";
-
-DROP TABLE IF EXISTS "owner" CASCADE;

@@ -11,4 +11,5 @@ var (
 	ErrInvalidHour                  = errors.New("horário inválido")
 	ErrOpeningHourEqualClosingHour  = errors.New("o horário de abertura e de encerramento não podem ser iguais")
 	ErrPaymentMethodAlreadyDefined  = errors.New("essa loja já está habilitada com o método de pagamento informado")
+	ErrStoreNotFound                = errors.New("loja não encontrada")
 )

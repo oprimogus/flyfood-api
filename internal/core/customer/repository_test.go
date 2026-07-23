@@ -1,338 +1,382 @@
-// go:build integration
-
 package customer
 
 import (
 	"context"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/oprimogus/flyfood-api/internal/config"
 	"github.com/oprimogus/flyfood-api/internal/core/address"
-	postgresDB "github.com/oprimogus/flyfood-api/internal/infrastructure/database/postgres"
-	"github.com/oprimogus/flyfood-api/test/integration"
+	"github.com/oprimogus/flyfood-api/internal/infra/database"
+	"github.com/oprimogus/flyfood-api/pkg/testcontainers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+func makeCustomer(id uuid.UUID, externalID, name, lastName, email, cpf string) Customer {
+	return Customer{
+		ID:         id,
+		ExternalID: externalID,
+		Name:       name,
+		LastName:   lastName,
+		CPF:        cpf,
+		Phone:      "+5513997590579",
+		Email:      email,
+	}
+}
+
+func makeAddress(id uuid.UUID, name string, isDefault bool) address.Address {
+	return address.Address{
+		ID:           id,
+		Name:         name,
+		Default:      isDefault,
+		AddressLine1: "Rua das Flores, 123",
+		AddressLine2: "Apto 4",
+		Neighborhood: "Centro",
+		City:         "Santos",
+		State:        "SP",
+		PostalCode:   "11010000",
+		Country:      "BR",
+		Latitude:     -23.9608,
+		Longitude:    -46.3336,
+	}
+}
+
+// ── suite setup ───────────────────────────────────────────────────────────────
 
 type CustomerRepositoryTestSuite struct {
 	suite.Suite
-	mockPostgres *integration.Container
-	customerRepo Repository
+	ctx          context.Context
+	mockPostgres *testcontainers.PostgresContainer
+	repo         Repository
 }
 
 func (s *CustomerRepositoryTestSuite) SetupSuite() {
-	ctx := context.Background()
-	mockDB, err := integration.MakePostgres(ctx)
-	if err != nil {
-		assert.Error(s.T(), err)
+	s.ctx = context.Background()
+
+	pgCfg := testcontainers.PostgresConfig{
+		DatabaseName: "flyfood",
+		Username:     "test",
+		Password:     "test",
 	}
+
+	mockDB, err := testcontainers.MakePostgres(s.ctx, pgCfg)
+	s.Require().NoError(err, "failed to start postgres container")
 	s.mockPostgres = mockDB
 
-	db := postgresDB.GetTestInstance(mockDB.Port)
+	cfg := config.Get()
+	cfg.Postgres.Host = "localhost"
+	cfg.Postgres.Port = mockDB.Port
+	cfg.Postgres.UserName = pgCfg.Username
+	cfg.Postgres.Password = pgCfg.Password
+	cfg.Postgres.DatabaseName = pgCfg.DatabaseName
 
-	s.customerRepo = NewCustomerRepository(db)
+	db, err := database.GetPostgres(s.ctx)
+	s.Require().NoError(err, "failed to connect to postgres")
+
+	err = db.Migrate(s.ctx)
+	s.Require().NoError(err, "failed to migrate database")
+
+	s.repo = NewRepository(db)
 }
 
 func (s *CustomerRepositoryTestSuite) TearDownSuite() {
-	ctx := context.Background()
-	s.mockPostgres.Kill(ctx)
+	s.mockPostgres.Kill(s.ctx)
 }
 
 func TestCustomerRepositorySuite(t *testing.T) {
 	suite.Run(t, new(CustomerRepositoryTestSuite))
 }
 
-func (s *CustomerRepositoryTestSuite) TestFindByID() {
-	testCases := []struct {
-		name           string
-		customer       *Customer
-		expectedError  error
-		expectedResult *Customer
-	}{
-		{
-			name: "Should save with success customer without address",
-			customer: &Customer{
-				ID:        "4687487487864",
-				Name:      "John",
-				LastName:  "Marston",
-				CPF:       "fake cpf",
-				Phone:     "fake phone",
-				Email:     "fake email",
-				Addresses: []address.Address{},
-			},
-			expectedError: nil,
-			expectedResult: &Customer{
-				ID:        "4687487487864",
-				Name:      "John",
-				LastName:  "Marston",
-				CPF:       "fake cpf",
-				Phone:     "fake phone",
-				Email:     "fake email",
-				Addresses: []address.Address{},
-			},
-		},
-		{
-			name: "Should save with success customer with address",
-			customer: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-			expectedError: nil,
-			expectedResult: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-		},
-	}
-
-	for _, test := range testCases {
-		ctx := context.Background()
-		err := s.customerRepo.Save(ctx, test.customer)
-		assert.NoError(s.T(), err, test.name)
-		actual, err := s.customerRepo.FindByID(ctx, test.customer.ID)
-		assert.NoError(s.T(), err, test.name)
-		assert.Equal(s.T(), test.expectedResult, actual, test.name)
-	}
-}
+// ── TestSave ──────────────────────────────────────────────────────────────────
 
 func (s *CustomerRepositoryTestSuite) TestSave() {
 	testCases := []struct {
-		name             string
-		savedCustomer    *Customer
-		inputCustomer    *Customer
-		expectedError    error
-		expectedCustomer *Customer
+		name        string
+		input       Customer
+		expectError bool
 	}{
 		{
-			name: "Should save with success customer with new address and remove older",
-			savedCustomer: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-			inputCustomer: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test 2 address",
-						AddressLine1: "test 2 Street",
-						AddressLine2: "test 2 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-					{
-						Name:         "test 3 address",
-						AddressLine1: "test 3 Street",
-						AddressLine2: "test 3 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-			expectedError: nil,
-			expectedCustomer: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test 2 address",
-						AddressLine1: "test 2 Street",
-						AddressLine2: "test 2 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-					{
-						Name:         "test 3 address",
-						AddressLine1: "test 3 Street",
-						AddressLine2: "test 3 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
+			name:        "should save customer successfully",
+			input:       makeCustomer(uuid.New(), "ext_save_001", "Arthur", "Morgan", "arthur@rdr.com", "52024227090"),
+			expectError: false,
 		},
 		{
-			name: "Should save with success customer with new address and keep older",
-			savedCustomer: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-			inputCustomer: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-					{
-						Name:         "test 2 address",
-						AddressLine1: "test 2 Street",
-						AddressLine2: "test 2 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-					{
-						Name:         "test 3 address",
-						AddressLine1: "test 3 Street",
-						AddressLine2: "test 3 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
-			expectedError: nil,
-			expectedCustomer: &Customer{
-				ID:       "4687487487864",
-				Name:     "John",
-				LastName: "Marston",
-				CPF:      "fake cpf",
-				Phone:    "fake phone",
-				Email:    "fake email",
-				Addresses: []address.Address{
-					{
-						Name:         "test address",
-						AddressLine1: "test Street",
-						AddressLine2: "test Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-					{
-						Name:         "test 2 address",
-						AddressLine1: "test 2 Street",
-						AddressLine2: "test 2 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-					{
-						Name:         "test 3 address",
-						AddressLine1: "test 3 Street",
-						AddressLine2: "test 3 Number",
-						Neighborhood: "test neighborhood",
-						City:         "test city",
-						State:        "test state",
-						PostalCode:   "test postal code",
-						Country:      "teste country",
-					},
-				},
-			},
+			name:        "should fail on duplicate external_id",
+			input:       makeCustomer(uuid.New(), "ext_save_001", "John", "Marston", "john@rdr.com", "52024227091"),
+			expectError: true,
+		},
+		{
+			name:        "should fail on duplicate email",
+			input:       makeCustomer(uuid.New(), "ext_save_002", "Dutch", "VanDerLinde", "arthur@rdr.com", "52024227092"),
+			expectError: true,
 		},
 	}
 
-	for _, test := range testCases {
-		ctx := context.Background()
-		err := s.customerRepo.Save(ctx, test.savedCustomer)
-		assert.NoError(s.T(), err, test.name)
+	for _, tc := range testCases {
+		tc := tc
+		s.Run(tc.name, func() {
+			err := s.repo.Save(s.ctx, &tc.input)
+			if tc.expectError {
+				s.Error(err)
+				return
+			}
+			s.NoError(err)
 
-		err = s.customerRepo.Save(ctx, test.inputCustomer)
-		assert.NoError(s.T(), err, test.name)
+			found, err := s.repo.FindByID(s.ctx, tc.input.ID)
+			s.NoError(err)
+			s.Equal(tc.input.ID, found.ID)
+			s.Equal(tc.input.ExternalID, found.ExternalID)
+			s.Equal(tc.input.Email, found.Email)
+		})
+	}
+}
 
-		actual, err := s.customerRepo.FindByID(ctx, test.savedCustomer.ID)
-		assert.NoError(s.T(), err, test.name)
-		assert.Equal(s.T(), test.expectedCustomer, actual, test.name)
+// ── TestFindByID ──────────────────────────────────────────────────────────────
+
+func (s *CustomerRepositoryTestSuite) TestFindByID() {
+	existing := makeCustomer(uuid.New(), "ext_findid_001", "Lenny", "Summers", "lenny@rdr.com", "52024227097")
+	s.Require().NoError(s.repo.Save(s.ctx, &existing))
+
+	testCases := []struct {
+		name        string
+		id          uuid.UUID
+		expectError bool
+		expected    *Customer
+	}{
+		{
+			name:        "should find customer by id",
+			id:          existing.ID,
+			expectError: false,
+			expected:    &existing,
+		},
+		{
+			name:        "should return error when customer does not exist",
+			id:          uuid.New(),
+			expectError: true,
+			expected:    nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.Run(tc.name, func() {
+			result, err := s.repo.FindByID(s.ctx, tc.id)
+			if tc.expectError {
+				s.Error(err)
+				s.Nil(result)
+				return
+			}
+			s.NoError(err)
+			s.Equal(tc.expected.ID, result.ID)
+			s.Equal(tc.expected.ExternalID, result.ExternalID)
+			s.Equal(tc.expected.Email, result.Email)
+		})
+	}
+}
+
+// ── TestFindByExternalID ──────────────────────────────────────────────────────
+
+func (s *CustomerRepositoryTestSuite) TestFindByExternalID() {
+	existing := makeCustomer(uuid.New(), "ext_findextid_001", "Hosea", "Matthews", "hosea@rdr.com", "52024227093")
+	s.Require().NoError(s.repo.Save(s.ctx, &existing))
+
+	testCases := []struct {
+		name        string
+		externalID  string
+		expectError bool
+	}{
+		{
+			name:        "should find customer by external id",
+			externalID:  existing.ExternalID,
+			expectError: false,
+		},
+		{
+			name:        "should return error when external id does not exist",
+			externalID:  "nonexistent_ext_id",
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.Run(tc.name, func() {
+			result, err := s.repo.FindByExternalID(s.ctx, tc.externalID)
+			if tc.expectError {
+				s.Error(err)
+				s.Nil(result)
+				return
+			}
+			s.NoError(err)
+			s.Equal(existing.ID, result.ID)
+			s.Equal(existing.ExternalID, result.ExternalID)
+		})
+	}
+}
+
+// ── TestSaveAddress ───────────────────────────────────────────────────────────
+
+func (s *CustomerRepositoryTestSuite) TestSaveAddress() {
+	customer := makeCustomer(uuid.New(), "ext_saveaddr_001", "Bill", "Williamson", "bill@rdr.com", "52024227098")
+	s.Require().NoError(s.repo.Save(s.ctx, &customer))
+
+	testCases := []struct {
+		name        string
+		customerID  uuid.UUID
+		addr        address.Address
+		expectError bool
+	}{
+		{
+			name:        "should save address successfully",
+			customerID:  customer.ID,
+			addr:        makeAddress(uuid.New(), "Casa", true),
+			expectError: false,
+		},
+		{
+			name:        "should save second address successfully",
+			customerID:  customer.ID,
+			addr:        makeAddress(uuid.New(), "Trabalho", false),
+			expectError: false,
+		},
+		{
+			name:        "should fail with nonexistent customer",
+			customerID:  uuid.New(),
+			addr:        makeAddress(uuid.New(), "Outro", false),
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.Run(tc.name, func() {
+			err := s.repo.SaveAddress(s.ctx, tc.customerID, tc.addr)
+			if tc.expectError {
+				s.Error(err)
+				return
+			}
+			s.NoError(err)
+
+			addresses, err := s.repo.FindAddressesByExternalCustomerID(s.ctx, customer.ExternalID)
+			s.NoError(err)
+			s.NotEmpty(addresses)
+
+			found := false
+			for _, a := range addresses {
+				if a.ID == tc.addr.ID {
+					found = true
+					s.Equal(tc.addr.Name, a.Name)
+					s.Equal(tc.addr.City, a.City)
+					s.Equal(tc.addr.Default, a.Default)
+					break
+				}
+			}
+			s.True(found, "saved address should be found in customer's addresses")
+		})
+	}
+}
+
+// ── TestDeleteAddress ─────────────────────────────────────────────────────────
+
+func (s *CustomerRepositoryTestSuite) TestDeleteAddress() {
+	customer := makeCustomer(uuid.New(), "ext_deladdr_001", "Micah", "Bell", "micah@rdr.com", "52024227094")
+	s.Require().NoError(s.repo.Save(s.ctx, &customer))
+
+	addr := makeAddress(uuid.New(), "Esconderijo", true)
+	s.Require().NoError(s.repo.SaveAddress(s.ctx, customer.ID, addr))
+
+	testCases := []struct {
+		name        string
+		customerID  uuid.UUID
+		addressID   uuid.UUID
+		expectError bool
+	}{
+		{
+			name:        "should fail when address does not belong to customer",
+			customerID:  uuid.New(),
+			addressID:   addr.ID,
+			expectError: true,
+		},
+		{
+			name:        "should delete address successfully",
+			customerID:  customer.ID,
+			addressID:   addr.ID,
+			expectError: false,
+		},
+		{
+			name:        "should fail when address is already deleted",
+			customerID:  customer.ID,
+			addressID:   addr.ID,
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.Run(tc.name, func() {
+			err := s.repo.DeleteAddress(s.ctx, tc.customerID, tc.addressID)
+			if tc.expectError {
+				s.Error(err)
+				return
+			}
+			s.NoError(err)
+
+			addresses, err := s.repo.FindAddressesByExternalCustomerID(s.ctx, customer.ExternalID)
+			s.NoError(err)
+
+			for _, a := range addresses {
+				s.NotEqual(addr.ID, a.ID, "deleted address should not appear in results")
+			}
+		})
+	}
+}
+
+// ── TestFindAddressesByExternalCustomerID ─────────────────────────────────────
+
+func (s *CustomerRepositoryTestSuite) TestFindAddressesByExternalCustomerID() {
+	customer := makeCustomer(uuid.New(), "ext_findaddr_001", "Charles", "Smith", "charles@rdr.com", "52024227095")
+	s.Require().NoError(s.repo.Save(s.ctx, &customer))
+
+	addr1 := makeAddress(uuid.New(), "Casa", true)
+	addr2 := makeAddress(uuid.New(), "Trabalho", false)
+	s.Require().NoError(s.repo.SaveAddress(s.ctx, customer.ID, addr1))
+	s.Require().NoError(s.repo.SaveAddress(s.ctx, customer.ID, addr2))
+
+	testCases := []struct {
+		name            string
+		externalID      string
+		expectError     bool
+		expectedCount   int
+	}{
+		{
+			name:          "should return all addresses for customer",
+			externalID:    customer.ExternalID,
+			expectError:   false,
+			expectedCount: 2,
+		},
+		{
+			name:          "should return empty list for customer with no addresses",
+			externalID:    "ext_findaddr_no_addr",
+			expectError:   false,
+			expectedCount: 0,
+		},
+	}
+
+	// Setup: customer sem endereços
+	noAddrCustomer := makeCustomer(uuid.New(), "ext_findaddr_no_addr", "Javier", "Escuella", "javier@rdr.com", "52024227096")
+	s.Require().NoError(s.repo.Save(s.ctx, &noAddrCustomer))
+
+	for _, tc := range testCases {
+		tc := tc
+		s.Run(tc.name, func() {
+			result, err := s.repo.FindAddressesByExternalCustomerID(s.ctx, tc.externalID)
+			if tc.expectError {
+				s.Error(err)
+				return
+			}
+			s.NoError(err)
+			assert.Len(s.T(), result, tc.expectedCount)
+		})
 	}
 }

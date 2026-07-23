@@ -1,20 +1,20 @@
 package store
 
-type PaymentMethod string
+type PaymentMethod int
 
 const (
-	Credit  PaymentMethod = "CREDIT"
-	Debit   PaymentMethod = "DEBIT"
-	Cash    PaymentMethod = "CASH"
-	Pix     PaymentMethod = "PIX"
-	Bitcoin PaymentMethod = "BTC"
+	Credit  PaymentMethod = iota + 1
+	Debit
+	Cash
+	Pix
+	Bitcoin
 )
 
-func IsValidPaymentMethod(PaymentMethodEnum string) bool {
+func IsValidPaymentMethod(PaymentMethodEnum int) bool {
 	switch PaymentMethod(PaymentMethodEnum) {
 	case Credit, Debit, Pix, Cash, Bitcoin:
 		return true
 	default:
 		return false
-	}
+	}   
 }

@@ -3,13 +3,13 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oprimogus/flyfood-api/internal/infra/logger"
 	"log/slog"
 	"net/http"
 	"runtime/debug"
 	"strings"
 
-	"github.com/oprimogus/flyfood-api/internal/xerrors"
-	logger "github.com/oprimogus/flyfood-api/pkg/log"
+	"github.com/oprimogus/flyfood-api/pkg/xerrors"
 )
 
 // Recovery é um middleware que recupera e lida com panics durante o processamento de uma requisição
@@ -48,7 +48,7 @@ func Recovery(next http.Handler) http.Handler {
 					w.WriteHeader(http.StatusInternalServerError)
 
 					// Codifica o erro
-					_ = json.NewEncoder(w).Encode(xerrors.InternalServer(r.Context(), "Erro interno do servidor"))
+					_ = json.NewEncoder(w).Encode(xerrors.NewWithContext(r.Context(), fmt.Errorf("Erro interno do servidor: %w", err)))
 				}
 			}
 		}()
@@ -67,7 +67,7 @@ type errorDetails struct {
 	ClientIP     string
 }
 
-// prepareErrorDetails prepara os detalhes do erro para log e debug
+// prepareErrorDetails prepara os detalhes do erro para logger e debug
 func prepareErrorDetails(r *http.Request, err error, stackTrace []byte) errorDetails {
 	// Obtém o trace ID do contexto, se disponível
 	traceID := ""
