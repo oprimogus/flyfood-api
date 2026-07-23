@@ -26,9 +26,9 @@ jobs:
         run: go mod download
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: v1.64.0
+          version: v2.12
 
   test:
     name: Run Tests
@@ -42,7 +42,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-        
+
       - name: Download dependencies
         run: go mod download
 
