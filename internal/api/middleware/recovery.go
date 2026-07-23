@@ -48,7 +48,7 @@ func Recovery(next http.Handler) http.Handler {
 					w.WriteHeader(http.StatusInternalServerError)
 
 					// Codifica o erro
-					_ = json.NewEncoder(w).Encode(xerrors.NewWithContext(r.Context(), fmt.Errorf("Erro interno do servidor: %w", err)))
+					_ = json.NewEncoder(w).Encode(xerrors.NewWithContext(r.Context(), fmt.Errorf("erro interno do servidor: %w", err)))
 				}
 			}
 		}()

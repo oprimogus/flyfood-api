@@ -71,14 +71,14 @@ func (s *StoreRepositoryTestSuite) TearDownSuite() {
 func (s *StoreRepositoryTestSuite) seedMinimalTestData() {
 	ctx := context.Background()
 
-	_, err := s.db.Pool.Exec(ctx, `
+	_, err := s.db.Exec(ctx, `
 		INSERT INTO customer (id, external_id, name, last_name, email, phone)
 		VALUES ($1, 'ext-test-owner', 'Test', 'Owner', 'owner@test.com', '+5511999999999')
 		ON CONFLICT (id) DO NOTHING
 	`, s.ownerID)
 	assert.NoError(s.T(), err, "seed customer")
 
-	_, err = s.db.Pool.Exec(ctx, `
+	_, err = s.db.Exec(ctx, `
 		INSERT INTO owner (id, signature_active, created_at)
 		VALUES ($1, true, NOW())
 		ON CONFLICT (id) DO NOTHING
@@ -88,16 +88,16 @@ func (s *StoreRepositoryTestSuite) seedMinimalTestData() {
 
 func (s *StoreRepositoryTestSuite) cleanupTestData() {
 	ctx := context.Background()
-	_, _ = s.db.Pool.Exec(ctx, `
+	_, _ = s.db.Exec(ctx, `
 		DELETE FROM store_business_hour
 		WHERE store_id IN (SELECT id FROM store WHERE owner_id = $1)
 	`, s.ownerID)
-	_, _ = s.db.Pool.Exec(ctx, `
+	_, _ = s.db.Exec(ctx, `
 		DELETE FROM store_payment_method
 		WHERE store_id IN (SELECT id FROM store WHERE owner_id = $1)
 	`, s.ownerID)
-	_, _ = s.db.Pool.Exec(ctx, "DELETE FROM store WHERE owner_id = $1", s.ownerID)
-	_, _ = s.db.Pool.Exec(ctx, "DELETE FROM address WHERE id NOT IN (SELECT address_id FROM store)")
+	_, _ = s.db.Exec(ctx, "DELETE FROM store WHERE owner_id = $1", s.ownerID)
+	_, _ = s.db.Exec(ctx, "DELETE FROM address WHERE id NOT IN (SELECT address_id FROM store)")
 }
 
 func (s *StoreRepositoryTestSuite) defaultAddress() address.Address {

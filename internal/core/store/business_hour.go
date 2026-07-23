@@ -57,23 +57,6 @@ func isValidHour(input string) bool {
 	return err == nil
 }
 
-func isValidTimeRange(start, end string) error {
-	if start == end {
-		return ErrOpeningHourEqualClosingHour
-	}
-	_, err := NewMinutesOfDayFromHHMM(start)
-	if err != nil {
-		return ErrInvalidHour
-	}
-
-	_, err = NewMinutesOfDayFromHHMM(end)
-	if err != nil {
-		return ErrInvalidHour
-	}
-
-	return nil
-}
-
 func IsValidBusinessHour(bh BusinessHours) error {
 	if bh.WeekDay > 6 || bh.WeekDay < 0 {
 		return ErrInvalidWeekDayBusinessHour

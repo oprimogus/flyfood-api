@@ -110,7 +110,9 @@ func (r repository) Save(ctx context.Context, st *Store) error {
     if err != nil {
         return xerrors.NewWithContext(ctx, err)
     }
-    defer transaction.Rollback(ctx)
+    defer func() {
+		_ = transaction.Rollback(ctx)
+	}()
     
     tq := sqlc.New(transaction)
 
@@ -147,7 +149,7 @@ func (r repository) Save(ctx context.Context, st *Store) error {
     }
     err = tq.SaveStore(ctx, argsSaveStore)
     if err != nil {
-        transaction.Rollback(ctx)
+        _ = transaction.Rollback(ctx)
         return xerrors.NewWithContext(ctx, err)
     }
 

@@ -121,13 +121,15 @@ func (r repository) FindAddressesByExternalCustomerID(ctx context.Context, exter
 }
 
 func (r repository) SaveAddress(ctx context.Context, customerId uuid.UUID, addr address.Address) error {
-    transaction, err := r.db.Begin(ctx)
-    if err != nil {
-        return xerrors.NewWithContext(ctx, err)
-    }
-    defer transaction.Rollback(ctx)
-    
-    tq := sqlc.New(transaction)
+	transaction, err := r.db.Begin(ctx)
+	if err != nil {
+		return xerrors.NewWithContext(ctx, err)
+	}
+	defer func() {
+		_ = transaction.Rollback(ctx)
+	}()
+
+	tq := sqlc.New(transaction)
 
 	if err := tq.SaveAddress(ctx, sqlc.SaveAddressParams{
 		ID:           database.ToPgTypeUUID(addr.ID),
@@ -157,32 +159,34 @@ func (r repository) SaveAddress(ctx context.Context, customerId uuid.UUID, addr 
 }
 
 func (r repository) DeleteAddress(ctx context.Context, customerId uuid.UUID, addressId uuid.UUID) error {
-    transaction, err := r.db.Begin(ctx)
-    if err != nil {
-        return xerrors.NewWithContext(ctx, err)
-    }
-    defer transaction.Rollback(ctx)
-    
-    tq := sqlc.New(transaction)
+	transaction, err := r.db.Begin(ctx)
+	if err != nil {
+		return xerrors.NewWithContext(ctx, err)
+	}
+	defer func() {
+		_ = transaction.Rollback(ctx)
+	}()
 
-    _, err = tq.DeleteCustomerAddress(ctx, sqlc.DeleteCustomerAddressParams{
-        CustomerID: database.ToPgTypeUUID(customerId),
-        AddressID:  database.ToPgTypeUUID(addressId),
-    })
-    if err != nil {
-        if errors.Is(err, pgx.ErrNoRows) {
-            return xerrors.NewWithContext(ctx, fmt.Errorf("Address of ID %s does not exist", addressId.String()))
-        }
-        return err
-    }
+	tq := sqlc.New(transaction)
 
-    _, err = tq.DeleteAddress(ctx, database.ToPgTypeUUID(addressId))
-    if err != nil {
-        if errors.Is(err, pgx.ErrNoRows) {
-            return xerrors.NewWithContext(ctx, fmt.Errorf("Address of ID %s does not exist", addressId.String()))
-        }
-        return err
-    }
+	_, err = tq.DeleteCustomerAddress(ctx, sqlc.DeleteCustomerAddressParams{
+		CustomerID: database.ToPgTypeUUID(customerId),
+		AddressID:  database.ToPgTypeUUID(addressId),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return xerrors.NewWithContext(ctx, fmt.Errorf("address of ID %s does not exist", addressId.String()))
+		}
+		return err
+	}
 
-    return transaction.Commit(ctx)
+	_, err = tq.DeleteAddress(ctx, database.ToPgTypeUUID(addressId))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return xerrors.NewWithContext(ctx, fmt.Errorf("address of ID %s does not exist", addressId.String()))
+		}
+		return err
+	}
+
+	return transaction.Commit(ctx)
 }

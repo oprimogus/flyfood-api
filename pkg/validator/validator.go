@@ -21,15 +21,15 @@ func NewValidator() *xvalidator{
 
 func init() {
     v = NewValidator()
-    AddNewValidation(NewValidation("cpf", "CPF inválido", IsValidCpf))
-    AddNewValidation(NewValidation("cnpj", "CNPJ inválido", IsValidCnpj))
-    AddNewValidation(NewValidation("cpfCnpj", "CPF/CNPJ inválido", IsValidCpfOrCnpj))
-    AddNewValidation(NewValidation("phone", "número de telefone inválido", IsValidPhone))
-    AddNewValidation(NewValidation("week", "dia de semana inválido", isValidWeekDay))
+    _ = AddNewValidation(NewValidation("cpf", "CPF inválido", IsValidCpf))
+    _ = AddNewValidation(NewValidation("cnpj", "CNPJ inválido", IsValidCnpj))
+    _ = AddNewValidation(NewValidation("cpfCnpj", "CPF/CNPJ inválido", IsValidCpfOrCnpj))
+    _ = AddNewValidation(NewValidation("phone", "número de telefone inválido", IsValidPhone))
+    _ = AddNewValidation(NewValidation("week", "dia de semana inválido", isValidWeekDay))
 }
 
 func Validate(data any) error {
-	err := v.Validate.Struct(data)
+	err := v.Struct(data)
 	if err != nil {
 		if errs, ok := errors.AsType[validator.ValidationErrors](err); ok {
 			mapErrFields := make([]FieldError, len(errs))

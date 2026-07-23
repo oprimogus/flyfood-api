@@ -40,13 +40,7 @@ func NewZitadel() (*ServiceZitadel, error) {
 		return nil, fmt.Errorf("invalid port to connect with zitadel: %s", confZ.Port)
 	}
 
-	var zitadelConf *zitadel.Zitadel
-	zitadelConf = zitadel.New(confZ.Domain, zitadel.WithPort(uint16(port)))
-	// if conf.API.Environment == string(config.Production) {
-	// 	zitadelConf = zitadel.New(confZ.Domain, zitadel.WithPort(uint16(port)))
-	// } else {
-	// 	zitadelConf = zitadel.New(confZ.Domain, zitadel.WithInsecure(string(confZ.Port)))
-	// }
+	zitadelConf := zitadel.New(confZ.Domain, zitadel.WithPort(uint16(port)))
 
 	authZ, err := authorization.New(ctx, zitadelConf, oauth.DefaultAuthorization(confZ.KeyPath))
 	if err != nil {

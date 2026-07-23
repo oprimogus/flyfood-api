@@ -89,6 +89,9 @@ func (d *Postgres) Migrate(ctx context.Context) error {
 	goose.SetBaseFS(migrationsFS)
 
 	fsys, err := fs.Sub(migrationsFS, "migrations")
+	if err != nil {
+		return fmt.Errorf("could not get fs: %w", err)
+	}
 
 	postgresLock, err := lock.NewPostgresSessionLocker()
 	if err != nil {

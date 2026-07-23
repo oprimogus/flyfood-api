@@ -80,6 +80,9 @@ func (s *service) UpdateStore(ctx context.Context, customerExternalID string, in
 		input.Address,
 		input.Type,
 	)
+	if err != nil {
+		return err
+	}
 
 	err = s.r.Save(ctx, st)
 	if err != nil {
